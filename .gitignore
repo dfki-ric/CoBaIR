@@ -1,0 +1,4 @@
+*.gv*
+settings.json
+*.pdf
+*.svg
