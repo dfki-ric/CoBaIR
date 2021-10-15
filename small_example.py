@@ -75,6 +75,10 @@ cpt_handover_tool = TabularCPD(variable='hand over tool', variable_card=2,  # Fa
 DAG = bn.make_DAG(DAG, CPD=[cpt_human_holding_object, cpt_human_activity,
                   cpt_speech_commands, cpt_pick_up_tool, cpt_handover_tool])
 # bn.print_CPD(DAG)
+
+# %% save / Load
+bn.bnlearn.save(DAG, filepath='bnlearn_model', overwrite=True)
+DAG = bn.bnlearn.load(filepath='bnlearn_model')
 # %%
 # inference
 evidence = {
