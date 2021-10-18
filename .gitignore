@@ -2,3 +2,6 @@
 settings.json
 *.pdf
 *.svg
+*.pyc
+.ipynb_checkpoints
+bnlearn_model.pkl
