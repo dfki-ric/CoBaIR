@@ -121,6 +121,7 @@ class BayesNet():
         '''
         infers the probabilities for the intentions with given evidence
         '''
+        # TODO: evidence should be plain values and not cards. translation to cards and discretazation should be done internally
         inference = {}
         for intention in self.intentions:
             # only True values of binary intentions will be saved
