@@ -41,7 +41,8 @@ value_to_prob = {5: 0.95, 4: 0.75, 3: 0.5, 2: 0.25, 1: 0.05, 0: 0.0}
 # initialize the bayesNet
 contexts = list(content['contexts'].keys())
 evidence = contexts
-intentions = content['intentions'].keys()
+intentions = list(content['intentions'].keys())
+print(intentions, contexts)
 edges = list(itertools.product(contexts, intentions))
 DAG = bn.make_DAG(edges)
 
@@ -79,34 +80,20 @@ for intention, context_influence in content['intentions'].items():
             average += value_to_prob[context_influence[evidence[i]
                                                        ][card_to_value[evidence[i]][count[i]]]]
         average /= len(evidence)
-        pos_values.insert(0, average)
+        pos_values.append(average)
     print(intention, pos_values)
-    # TODO: check the ordering of the values!! + create a TabularCPD with these Values(and automatic generated neg_values) and so on and add it into the cpts list
+    # create neg_values
+    neg_values = [1-value for value in pos_values]
+    print(neg_values)
+    # create a TabularCPD with these Values(and automatic generated neg_values) and so on and add it into the cpts list
+    cpts.append(TabularCPD(variable=intention, variable_card=2,  # intentions are always binary
+                           # see https://pgmpy.org/factors/discrete.html?highlight=cpd#module-pgmpy.factors.discrete.CPD
+                           values=[neg_values, pos_values],
+                           evidence=evidence,
+                           evidence_card=evidence_card))
 # %%
 
-# cpt_pick_up_tool = TabularCPD(variable='pick up tool', variable_card=2,  # False, True
-#                               values=[np.add([0.01, 0.12, 0.85, 0.88, 0.85, 0.88, 0.1, 0.15, 0.88, 0.9, 0.88, 0.9], 0.0).tolist(),  # These are False values and the can be computed from true values because intentions are binary
-#                                       # P(pick up tool[0]| human holding object[0], speech commands[0]), P(pick up tool[0]| human holding object[0], speech commands[1]), P(pick up tool[0]| human holding object[0], speech commands[2]), ... see https://pgmpy.org/factors/discrete.html?highlight=cpd#module-pgmpy.factors.discrete.CPD
-#                                       np.add([0.99, 0.88, 0.15, 0.12, 0.15, 0.12,
-#                                               0.9, 0.85, 0.12, 0.1, 0.12, 0.1], 0.0).tolist(),
-#                                       ],
-#                               evidence=evidence,
-#                               evidence_card=evidence_card)
-# # print(cpt_pick_up_tool)
-
-# cpt_handover_tool = TabularCPD(variable='hand over tool', variable_card=2,  # False, True
-#                                values=[np.add([0.85, 0.88, 0.01, 0.12, 0.85, 0.88, 0.88, 0.9, 0.1, 0.15, 0.88, 0.9], 0.03).tolist(),
-#                                        # P(pick up tool[0]| human holding object[0], speech commands[0]), P(pick up tool[0]| human holding object[0], speech commands[1]), P(pick up tool[0]| human holding object[0], speech commands[2]), ... see http://pgmpy.org/factors.html#module-pgmpy.factors.discrete.CPD
-#                                        np.add([0.15, 0.12, 0.99, 0.88, 0.15, 0.12,
-#                                                0.12, 0.1, 0.9, 0.85, 0.12, 0.1], -0.03).tolist(),
-#                                        ],
-#                                evidence=['human holding object',
-#                                          'speech commands', 'human activity'],
-#                                evidence_card=[2, 3, 2])
-# # print(cpt_pick_up_tool)
-
-DAG = bn.make_DAG(DAG, CPD=[cpt_human_holding_object, cpt_human_activity,
-                            cpt_speech_commands, cpt_pick_up_tool, cpt_handover_tool])
+DAG = bn.make_DAG(DAG, CPD=cpts)
 # bn.print_CPD(DAG)
 
 # %% save / Load
@@ -115,11 +102,24 @@ DAG = bn.bnlearn.load(filepath='bnlearn_model')
 # %%
 # inference
 evidence = {
-    'human holding object': 1,
-    # 'speech commands': 2,
-    'human activity': 0
+    'speech commands': value_to_card['speech commands']['other'],
+    'human holding object': value_to_card['human holding object'][True],
+    'human activity': value_to_card['human activity']['working']
 }
+inference = {}
+for intention in intentions:
+    # only True values of binary intentions will be saved
+    inference[intention] = bn.inference.fit(
+        DAG, variables=[intention], evidence=evidence).values[1]
+# normalize inference
+normalized_inference = {}
+probability_sum = sum(inference.values())
+for intention, probability in inference.items():
+    normalized_inference[intention] = inference[intention] / probability_sum
 
-q1 = bn.inference.fit(DAG, variables=['hand over tool'], evidence=evidence)
-q2 = bn.inference.fit(DAG, variables=['pick up tool'], evidence=evidence)
+print(inference)
+print(normalized_inference)
+
+# %%
+
 # %%
