@@ -4,3 +4,4 @@ settings.json
 *.svg
 *.pyc
 .ipynb_checkpoints
+bnlearn_model.pkl
