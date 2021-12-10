@@ -5,3 +5,4 @@ settings.json
 *.pyc
 .ipynb_checkpoints
 bnlearn_model.pkl
+env
