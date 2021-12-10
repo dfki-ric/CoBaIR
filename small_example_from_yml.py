@@ -17,7 +17,7 @@ __author__ = 'Adrian Lubitz'
 
 # %%
 # Load config from file
-with open("small_example.yaml") as stream:
+with open("small_example.yml") as stream:
     config = yaml.safe_load(stream)
 net = BayesNet(config)
 # %%

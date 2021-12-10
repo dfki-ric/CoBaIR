@@ -1,0 +1,11 @@
+
+
+stages:
+  - test
+
+run_tests:
+  image: python:3.8-slim
+  stage: test
+  script:
+    - pip install -r requirements.txt
+    - python -m unittest discover -s tests

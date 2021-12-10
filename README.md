@@ -8,7 +8,7 @@ You need to install all dependencies from the `requirements.txt` with `pip insta
 `python small_example_from_yaml.py`
 
 you can also run `small_example_from_yaml.py` in interactive mode and dynamically change the evidence in the last cell.
-This example automatically loads the file `small_example.yaml`. If you wish to load another file you need to specify it in `small_example_from_yaml.py`.
+This example automatically loads the file `small_example.yml`. If you wish to load another file you need to specify it in `small_example_from_yaml.py`.
 
 ## Config Format
 The configuration file for a two layer bayesian net for context based intention recognition follows the given format:
