@@ -1,14 +1,14 @@
-# Bayesian Net for Intention Recognition
+# CoBaBaIR
 
-Module for context based intention recognition with bayes net.
+CoBaBaIR is a python lib for **Co**ntext **Ba**sed **Ba**yesian **I**ntention **R**ecognition.
+It uses a two-layer Bayesian Net of the following structure.
+![two-layer Bayesian Net](docs/images/2layerbayesian.svg)
+
 
 ## Install dependencies
 You need to install all dependencies from the `requirements.txt` with `pip install -r requirements.txt`.
-## Run test
-`python small_example_from_yaml.py`
 
-you can also run `small_example_from_yaml.py` in interactive mode and dynamically change the evidence in the last cell.
-This example automatically loads the file `small_example.yml`. If you wish to load another file you need to specify it in `small_example_from_yaml.py`.
+
 
 ## Config Format
 The configuration file for a two layer bayesian net for context based intention recognition follows the given format:
@@ -130,7 +130,8 @@ intentions:
 
 ```
 
-### Values to be set
+
+### CPT Values
 In the default approach of creating a CPT(Conditional Probability Table) you would need to determine
 
  n<sub>v</sub>(i, c) = &sum;<sub>j</sub> c<sub>j</sub> + i * &prod;<sub>j</sub> c<sub>j</sub>
@@ -141,3 +142,11 @@ In the default approach of creating a CPT(Conditional Probability Table) you wou
  While in the optimized version the product is replaced with a sum resulting in the following:
 
  n<sub>v</sub>(i, c) = (i+1)&sum;<sub>j</sub> c<sub>j</sub>
+
+
+## Run tests
+Tests are implemented with [unittest](https://docs.python.org/3/library/unittest.html) and can be executed with:
+
+```bash
+python -m unittest discover -s tests
+```
