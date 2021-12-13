@@ -1,0 +1,10 @@
+site_name: CoBaBaIR - Documentation
+plugins:
+  - include-markdown
+
+theme:
+  name: 'material'
+  palette:
+    primary: orange
+    accent: indigo
+

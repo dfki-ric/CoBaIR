@@ -2,6 +2,7 @@
 
 stages:
   - test
+  - docu
 
 run_tests:
   image: python:3.8-slim
@@ -9,3 +10,13 @@ run_tests:
   script:
     - pip install -r requirements.txt
     - python -m unittest discover -s tests
+
+build_docu:
+  image: python:3.8-slim
+  stage: docu
+  script:
+    - pip install -r doc_requirements.txt
+    - mkdocs build
+  artifacts:
+    paths:
+      - site
