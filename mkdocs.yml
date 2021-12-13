@@ -1,6 +1,8 @@
 site_name: CoBaBaIR - Documentation
 plugins:
   - include-markdown
+  - search
+  - mkdocstrings
 
 theme:
   name: 'material'
@@ -8,3 +10,6 @@ theme:
     primary: orange
     accent: indigo
 
+nav:
+  - Getting started: index.md
+  - API Documentation: API.md
