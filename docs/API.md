@@ -1,3 +1,3 @@
 # Reference
 
-<!-- ::: bayesian_intention_recognition.bayes_net.BayesNet -->
+::: bayesian_intention_recognition.bayes_net.BayesNet
