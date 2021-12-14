@@ -16,6 +16,7 @@ build_docu:
   stage: docu
   script:
     - pip install -r doc_requirements.txt
+    - pip install .
     - mkdocs build
   artifacts:
     paths:
