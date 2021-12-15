@@ -4,19 +4,29 @@ stages:
   - test
   - docu
 
-run_tests_3.8:
-  image: python:3.8-slim
-  stage: test
-  script:
-    - pip install .
-    - python -m unittest discover -s tests
+#run_tests_3.8:
+#  image: python:3.8-slim
+#  stage: test
+#  script:
+#    - pip install .
+#    - python -m unittest discover -s tests
 
-run_tests_3.6:
-  image: python:3.6-slim
+#run_tests_3.6:
+#  image: python:3.6-slim
+#  stage: test
+#  script:
+#    - pip install .
+#    - python -m unittest discover -s tests
+
+run_tests_ubuntu18.04:
+  image: ubuntu:18.04
   stage: test
   script:
-    - pip install .
-    - python -m unittest discover -s tests
+    - sudo apt update
+    - sudo apt install python3-pip
+    - pip3 install .
+    - python3 --version
+    - python3 -m unittest discover -s tests
 
 build_docu:
   image: python:3.8-slim
