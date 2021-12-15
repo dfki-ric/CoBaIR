@@ -22,8 +22,8 @@ run_tests_ubuntu18.04:
   image: ubuntu:18.04
   stage: test
   script:
-    - sudo apt update
-    - sudo apt install python3-pip
+    - apt update
+    - apt install python3-pip
     - pip3 install .
     - python3 --version
     - python3 -m unittest discover -s tests
