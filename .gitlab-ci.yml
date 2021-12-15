@@ -24,7 +24,7 @@ run_tests_ubuntu18.04:
   script:
     - apt update
     - apt install python3-pip -y
-    - apt install libjpeg8-dev zlib1g-dev #dependencies for pillow
+    - apt install libjpeg8-dev zlib1g-dev -y #dependencies for pillow
     - pip3 --version
     - python3 --version
     - pip3 install .
