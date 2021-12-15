@@ -25,7 +25,6 @@ run_tests_ubuntu18.04:
     - apt update
     - apt install python3-pip -y
     - pip3 --version
-    - python --version
     - python3 --version
     - pip3 install .
     - python3 -m unittest discover -s tests
