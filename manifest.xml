@@ -12,6 +12,8 @@
   <depend package="bnlearn" />
   <depend package="pyyaml" />
 
+  <activity>active</activity>
+
   <stage>0</stage>
 
 </package>
