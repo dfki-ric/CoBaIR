@@ -1,0 +1,16 @@
+<package>
+  <description brief="">
+
+  </description>
+  <author></author>
+  <maintainer></maintainer>
+  <license></license>
+  <url></url>
+
+  <depend package="pgmpy" />
+  <depend package="bnlearn" />
+  <depend package="pyyaml" />
+
+  <stage>0</stage>
+
+</package>
