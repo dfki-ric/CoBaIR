@@ -4,31 +4,20 @@ stages:
   - test
   - docu
 
-#run_tests_3.8:
-#  image: python:3.8-slim
-#  stage: test
-#  script:
-#    - pip install .
-#    - python -m unittest discover -s tests
-
-#run_tests_3.6:
-#  image: python:3.6-slim
-#  stage: test
-#  script:
-#    - pip install .
-#    - python -m unittest discover -s tests
-
-run_tests_ubuntu18.04:
-  image: ubuntu:18.04
+run_tests_3.8:
+  image: python:3.8-slim
   stage: test
   script:
-    - apt update
-    - apt install python3-pip -y
-    - apt install libjpeg8-dev zlib1g-dev -y #dependencies for pillow
-    - pip3 --version
-    - python3 --version
-    - pip3 install .
-    - python3 -m unittest discover -s tests
+    - pip install .
+    - python -m unittest discover -s tests
+
+run_tests_3.6:
+  image: python:3.6-slim
+  stage: test
+  script:
+    - pip install .
+    - python -m unittest discover -s tests
+
 
 build_docu:
   image: python:3.8-slim
