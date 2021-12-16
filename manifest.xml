@@ -1,0 +1,19 @@
+<package>
+  <description brief="CoBaBaIR">
+    CoBaBaIR is a python lib for Context Based Bayesian Intention Recognition. It uses a two-layer Bayesian Net of the following structure.
+  </description>
+  <author>Adrian Lubitz/Adrian.Lubitz@dfki.de</author>
+  <maintainer>Adrian Lubitz/Adrian.Lubitz@dfki.de</maintainer>
+  <license></license>
+  <url>https://git.hb.dfki.de/kimmi_sf/implementation/bayesian-net-for-intention-recognition</url>
+
+  <!---Dependencies is only neccessary because autoproj is not installing the lib propperly---->
+  <depend package="pgmpy" />
+  <depend package="bnlearn" />
+  <depend package="pyyaml" />
+
+  <activity>active</activity>
+
+  <stage>0</stage>
+
+</package>
