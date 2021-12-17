@@ -11,7 +11,7 @@ from tests import N
 # 3rd party imports
 
 # local imports
-from bayesian_intention_recognition.bayes_net import BayesNet, load_config, config_to_default_dict
+from CoBaBIR.bayes_net import BayesNet, load_config, config_to_default_dict
 # end file header
 __author__ = 'Adrian Lubitz'
 
