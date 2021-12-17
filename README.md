@@ -1,6 +1,6 @@
-# CoBaBaIR
+# CoBaBIR
 
-CoBaBaIR is a python lib for **Co**ntext **Ba**sed **Ba**yesian **I**ntention **R**ecognition.
+CoBaBIR is a python lib for **Co**ntext **Ba**sed **B**ayesian **I**ntention **R**ecognition.
 It uses a two-layer Bayesian Net of the following structure.
 ![two-layer Bayesian Net](docs/images/2layerbayesian.svg)
 
