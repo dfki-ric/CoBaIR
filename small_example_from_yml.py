@@ -9,7 +9,7 @@ is created from a config file.
 # 3rd party imports
 import yaml
 # local imports
-from bayesian_intention_recognition.bayes_net import BayesNet
+from CoBaBIR.bayes_net import BayesNet
 
 # end file header
 __author__ = 'Adrian Lubitz'
