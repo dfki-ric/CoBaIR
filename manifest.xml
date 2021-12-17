@@ -7,7 +7,7 @@
   <license></license>
   <url>https://git.hb.dfki.de/kimmi_sf/implementation/bayesian-net-for-intention-recognition</url>
 
-  <!---Dependencies is only neccessary because autoproj is not installing the lib propperly---->
+  <!---Dependencies is only neccessary because autoproj is not installing the lib propperly-->
   <depend package="pgmpy" />
   <depend package="bnlearn" />
   <depend package="pyyaml" />
