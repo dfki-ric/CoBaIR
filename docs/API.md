@@ -1,3 +1,3 @@
 # Reference
 
-<!-- ::: CoBaBIR.bayes_net.BayesNet -->
+::: CoBaBIR.bayes_net.BayesNet
