@@ -1,0 +1,34 @@
+contexts:
+  human activity:
+    idle: 0.2
+    working: 0.8
+  human holding object:
+    false: 0.6
+    true: 0.4
+  speech commands:
+    handover: 0.2
+    other: 0.6
+    pickup: 0.2
+intentions:
+  hand over tool:
+    human activity:
+      idle: 4
+      working: 1
+    human holding object:
+      false: 4
+      true: 1
+    speech commands:
+      handover: 5
+      other: 0
+      pickup: 0
+  pick up tool:
+    human activity:
+      idle: 4
+      working: 3
+    human holding object:
+      false: 4
+      true: 1
+    speech commands:
+      handover: 10
+      other: 0
+      pickup: 5
