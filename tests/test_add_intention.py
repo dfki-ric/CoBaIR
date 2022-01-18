@@ -10,7 +10,7 @@ from collections import defaultdict
 
 # local imports
 from tests import N
-from bayesian_intention_recognition.bayes_net import BayesNet, load_config
+from CoBaBIR.bayes_net import BayesNet, load_config
 # end file header
 __author__ = 'Adrian Lubitz'
 
