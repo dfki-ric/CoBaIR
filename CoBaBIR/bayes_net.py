@@ -157,13 +157,17 @@ class BayesNet():
             'human activity': 'idle'
         }
         '''
-        # TODO: evidence should be plain values and not cards. translation to cards should be done internally
+        # evidence should be plain values and not cards. translation to cards is done internally
+        card_evidence = {}
+        for context, initialization in evidence.items():
+            card_evidence[context] = self.value_to_card[context][initialization]
+
         if self.valid:
             inference = {}
             for intention in self.intentions:
                 # only True values of binary intentions will be saved
                 inference[intention] = bn.inference.fit(
-                    self.DAG, variables=[intention], evidence=evidence).values[1]
+                    self.DAG, variables=[intention], evidence=card_evidence).values[1]
             if normalized:
                 return self.normalize_inference(inference)
             else:

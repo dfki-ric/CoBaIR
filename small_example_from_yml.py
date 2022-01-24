@@ -23,9 +23,9 @@ net = BayesNet(config)
 # %%
 # infer intentions with the given evidence
 evidence = {
-    'speech commands': net.value_to_card['speech commands']['pickup'],
-    'human holding object': net.value_to_card['human holding object'][True],
-    'human activity': net.value_to_card['human activity']['idle']
+    'speech commands': 'pickup',
+    'human holding object': True,
+    'human activity': 'idle'
 }
 normalized_inference = net.infer(evidence)
 print(normalized_inference)
