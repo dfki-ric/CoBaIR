@@ -28,6 +28,8 @@ class BayesNet():
         '''
         self.valid = False
 
+        self.discretization_functions = {}
+
         # config = deepcopy(config)
         config = config_to_default_dict(config)
 
@@ -140,27 +142,50 @@ class BayesNet():
         neg_values = [1-value for value in pos_values]
         return [neg_values, pos_values]
 
+    def valid_evidence(self, context, instantiation):
+        """
+        returns true if evidence is a valid instantiation for the context 
+        """
+        if not instantiation in self.config['contexts'][context]:
+            return False, f'{instantiation} is not a valid instantiation for {context}'
+        else:
+            return True, ''
+
+    def bind_discretization_function(self, context, discretization_function):
+        """
+        binds a discretization_function to a specific context.
+        """
+        if context not in self.contexts:
+            raise ValueError(
+                f'Cannot bind discretization function to {context}. Context does not exist!')
+        self.discretization_functions[context] = discretization_function
+
     def infer(self, evidence, normalized=True):
         '''
         infers the probabilities for the intentions with given evidence
         evidence has the following form:
-        evidence = {
-            'speech commands': net.value_to_card['speech commands']['pickup'],
-            'human holding object': net.value_to_card['human holding object'][True],
-            'human activity': net.value_to_card['human activity']['idle']
-        }
-        -
-        This should change in the future. value_to_card should be called internally which would result in the following:
         evidence = {
             'speech commands': 'pickup',
             'human holding object': True,
             'human activity': 'idle'
         }
         '''
-        # evidence should be plain values and not cards. translation to cards is done internally
+        # check if evidence values are in instantiations and create a card form of bnlearn
+
         card_evidence = {}
-        for context, initialization in evidence.items():
-            card_evidence[context] = self.value_to_card[context][initialization]
+        for context, instantiation in evidence.items():
+            valid, err_msg = self.valid_evidence(context, instantiation)
+            if valid:
+                card_evidence[context] = self.value_to_card[context][instantiation]
+            elif context in self.discretization_functions:
+                discrete_instantiation = self.discretization_functions[context](
+                    instantiation)
+                valid, err_msg = self.valid_evidence(
+                    context, discrete_instantiation)
+                if valid:
+                    card_evidence[context] = self.value_to_card[context][discrete_instantiation]
+                else:
+                    raise ValueError(err_msg)
 
         if self.valid:
             inference = {}
@@ -433,5 +458,6 @@ def load_config(path):
 def default_to_regular(d):
     # transform dicts or default dicts because otherwise it will stop at the first dict and if that has another defaultdict in it - that won't transform
     if isinstance(d, defaultdict) or isinstance(d, dict):
-        d = {k: default_to_regular(v) for k, v in d.items()}
+        d = {k: default_to_regular(
+            v) for k, v in d.items() if not isinstance(v, dict) or v}
     return d
