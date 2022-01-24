@@ -1,4 +1,4 @@
-site_name: CoBaBIR - Documentation
+site_name: CoBaIR - Documentation
 plugins:
   - include-markdown
   - search
