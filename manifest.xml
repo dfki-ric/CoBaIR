@@ -1,6 +1,7 @@
 <package>
-  <description brief="CoBaBIR">
-    CoBaBIR is a python lib for Context Based Bayesian Intention Recognition. It uses a two-layer Bayesian Net of the following structure.
+  <description brief="CoBaIR">
+    CoBaIR is a python lib for Context Based Intention Recognition.
+    Default it uses a two-layer Bayesian Net of the following structure.
   </description>
   <author>Adrian Lubitz/Adrian.Lubitz@dfki.de</author>
   <maintainer>Adrian Lubitz/Adrian.Lubitz@dfki.de</maintainer>
