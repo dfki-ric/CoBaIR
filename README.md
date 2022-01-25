@@ -1,7 +1,9 @@
-# CoBaBIR
+# CoBaIR
 
-CoBaBIR is a python lib for **Co**ntext **Ba**sed **B**ayesian **I**ntention **R**ecognition.
-It uses a two-layer Bayesian Net of the following structure.
+CoBaIR is a python lib for **Co**ntext **Ba**sed **I**ntention **R**ecognition.
+
+## Bayesian Approach
+In the bayesian approach CoBaIR uses a two-layer Bayesian Net of the following structure.
 ![two-layer Bayesian Net](docs/images/2layerbayesian.svg)
 
 
@@ -11,6 +13,13 @@ You need to install all dependencies from the `requirements.txt` with `pip insta
 
 
 ## Config Format
+Configs will be saved in yml files. For convenience the is a configurator which can be started with
+
+```bash
+python start_configurator.py
+```
+
+### Bayesian Approach
 The configuration file for a two layer bayesian net for context based intention recognition follows the given format:
 
 ```yaml
@@ -150,3 +159,18 @@ Tests are implemented with [unittest](https://docs.python.org/3/library/unittest
 ```bash
 python -m unittest discover -s tests
 ```
+
+## Build docu
+Documentation is implemented with the [material theme](https://squidfunk.github.io/mkdocs-material/) for [mkdocs](https://www.mkdocs.org/).
+
+### Dependencies
+Install all dependencies for building the docu with 
+```bash
+pip install -r doc_requirements.txt
+```
+### Build
+Build the docu with 
+```bash
+mkdocs build
+```
+The documentation will be in the `site` folder.
