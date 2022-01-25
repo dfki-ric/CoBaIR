@@ -8,8 +8,8 @@ import argparse
 import yaml
 
 # local imports
-from CoBaBIR.configurator import Configurator
-from CoBaBIR.bayes_net import load_config
+from CoBaIR.configurator import Configurator
+from CoBaIR.bayes_net import load_config
 
 # end file header
 __author__ = 'Adrian Lubitz'
