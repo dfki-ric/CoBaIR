@@ -146,10 +146,13 @@ class BayesNet():
         """
         returns true if evidence is a valid instantiation for the context 
         """
-        if not instantiation in self.config['contexts'][context]:
-            return False, f'{instantiation} is not a valid instantiation for {context}'
-        else:
-            return True, ''
+        try:
+            if not instantiation in self.config['contexts'][context]:
+                return False, f'{instantiation} is not a valid instantiation for {context}'
+            else:
+                return True, ''
+        except:
+            return False, ''
 
     def bind_discretization_function(self, context, discretization_function):
         """
