@@ -4,7 +4,7 @@ This module provides a class for a two-layer bayes net for context based intenti
 
 # System imports
 import itertools
-from collections import defaultdict
+from collections import defaultdict, Hashable
 from copy import deepcopy
 import warnings
 
@@ -146,13 +146,12 @@ class BayesNet():
         """
         returns true if evidence is a valid instantiation for the context 
         """
-        try:
-            if not instantiation in self.config['contexts'][context]:
-                return False, f'{instantiation} is not a valid instantiation for {context}'
-            else:
-                return True, ''
-        except:
-            return False, ''
+        if context not in self.config['contexts']:
+            return False, 'ignore'  # ignoring unrelated contexts
+        if not isinstance(instantiation, Hashable) or not instantiation in self.config['contexts'][context].keys():
+            return False, f'{instantiation} is not a valid instantiation for {context}. Must be one of {list(self.config["contexts"][context].keys())}'
+        else:
+            return True, ''
 
     def bind_discretization_function(self, context, discretization_function):
         """
@@ -174,7 +173,6 @@ class BayesNet():
         }
         '''
         # check if evidence values are in instantiations and create a card form of bnlearn
-
         card_evidence = {}
         for context, instantiation in evidence.items():
             valid, err_msg = self.valid_evidence(context, instantiation)
@@ -188,6 +186,9 @@ class BayesNet():
                 if valid:
                     card_evidence[context] = self.value_to_card[context][discrete_instantiation]
                 else:
+                    raise ValueError(err_msg)
+            else:
+                if not err_msg == 'ignore':
                     raise ValueError(err_msg)
 
         if self.valid:
