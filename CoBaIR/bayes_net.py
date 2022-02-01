@@ -22,9 +22,13 @@ __author__ = 'Adrian Lubitz'
 
 
 class BayesNet():
-    def __init__(self, config=None, merge_config=False) -> None:
+    def __init__(self, config: dict = None, merge_config: bool = False) -> None:
         '''
-        Initializes the DAG with the given config
+        Initializes the BayesNet with the given config.
+
+        Args:
+            config: A dict with a config following the config format.
+            merge_config: Flag if the given config should be merged. Was used internally and is DEPRECATED
         '''
         self.valid = False
 
@@ -123,10 +127,32 @@ class BayesNet():
             self.evidence_card.append(
                 len(self.config['contexts'][evidence_variable]))
 
-    def calculate_probability_values(self, context_influence):
+    def calculate_probability_values(self, context_influence: dict) -> list:
         '''
         Calculates the probability values with the given context_influence from the config.
+
         Influence on the positive case(intention is true) is calculated as the average over all influences for the given context.
+        The influence mapping is given in
+        self.value_to_prob = {5: 0.95, 4: 0.75,
+            3: 0.5, 2: 0.25, 1: 0.05, 0: 0.0}
+        Args:
+            context_influence:
+                A dict with the influence values for contexts.
+                Example: {'speech commands': 
+                            {'pickup': 5, 'handover': 0, 'other': 0}, 
+                          'human holding object': 
+                            {True: 1, False: 4}, 
+                          'human activity': 
+                            {'idle': 4, 'working': 3}
+                          }
+        Returns:
+            list:
+            A list of lists containing the probability values for the negative and positive respectively.
+            Example: 
+
+            [[0.416, 0.5, 0.183, 0.266, 0.733, 0.816, 0.5, 0.583, 0.733, 0.816, 0.5, 0.583], 
+
+             [0.583, 0.5, 0.816, 0.733, 0.266, 0.183, 0.5, 0.416, 0.266, 0.183, 0.5, 0.416]]
         '''
         # For every intention calculate the average of their influencing contexts
         pos_values = []
