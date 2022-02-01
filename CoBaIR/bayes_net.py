@@ -4,7 +4,7 @@ This module provides a class for a two-layer bayes net for context based intenti
 
 # System imports
 import itertools
-from collections import defaultdict
+from collections import defaultdict, Hashable
 from copy import deepcopy
 import warnings
 
@@ -27,6 +27,8 @@ class BayesNet():
         Initializes the DAG with the given config
         '''
         self.valid = False
+
+        self.discretization_functions = {}
 
         # config = deepcopy(config)
         config = config_to_default_dict(config)
@@ -140,30 +142,61 @@ class BayesNet():
         neg_values = [1-value for value in pos_values]
         return [neg_values, pos_values]
 
+    def valid_evidence(self, context, instantiation):
+        """
+        returns true if evidence is a valid instantiation for the context 
+        """
+        if context not in self.config['contexts']:
+            return False, 'ignore'  # ignoring unrelated contexts
+        if not isinstance(instantiation, Hashable) or not instantiation in self.config['contexts'][context].keys():
+            return False, f'{instantiation} is not a valid instantiation for {context}. Must be one of {list(self.config["contexts"][context].keys())}'
+        else:
+            return True, ''
+
+    def bind_discretization_function(self, context, discretization_function):
+        """
+        binds a discretization_function to a specific context.
+        """
+        if context not in self.contexts:
+            raise ValueError(
+                f'Cannot bind discretization function to {context}. Context does not exist!')
+        self.discretization_functions[context] = discretization_function
+
     def infer(self, evidence, normalized=True):
         '''
         infers the probabilities for the intentions with given evidence
         evidence has the following form:
-        evidence = {
-            'speech commands': net.value_to_card['speech commands']['pickup'],
-            'human holding object': net.value_to_card['human holding object'][True],
-            'human activity': net.value_to_card['human activity']['idle']
-        }
-        -
-        This should change in the future. value_to_card should be called internally which would result in the following:
         evidence = {
             'speech commands': 'pickup',
             'human holding object': True,
             'human activity': 'idle'
         }
         '''
-        # TODO: evidence should be plain values and not cards. translation to cards should be done internally
+        # check if evidence values are in instantiations and create a card form of bnlearn
+        card_evidence = {}
+        for context, instantiation in evidence.items():
+            valid, err_msg = self.valid_evidence(context, instantiation)
+            if valid:
+                card_evidence[context] = self.value_to_card[context][instantiation]
+            elif context in self.discretization_functions:
+                discrete_instantiation = self.discretization_functions[context](
+                    instantiation)
+                valid, err_msg = self.valid_evidence(
+                    context, discrete_instantiation)
+                if valid:
+                    card_evidence[context] = self.value_to_card[context][discrete_instantiation]
+                else:
+                    raise ValueError(err_msg)
+            else:
+                if not err_msg == 'ignore':
+                    raise ValueError(err_msg)
+
         if self.valid:
             inference = {}
             for intention in self.intentions:
                 # only True values of binary intentions will be saved
                 inference[intention] = bn.inference.fit(
-                    self.DAG, variables=[intention], evidence=evidence).values[1]
+                    self.DAG, variables=[intention], evidence=card_evidence).values[1]
             if normalized:
                 return self.normalize_inference(inference)
             else:
@@ -429,5 +462,6 @@ def load_config(path):
 def default_to_regular(d):
     # transform dicts or default dicts because otherwise it will stop at the first dict and if that has another defaultdict in it - that won't transform
     if isinstance(d, defaultdict) or isinstance(d, dict):
-        d = {k: default_to_regular(v) for k, v in d.items()}
+        d = {k: default_to_regular(
+            v) for k, v in d.items() if not isinstance(v, dict) or v}
     return d
