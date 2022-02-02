@@ -11,12 +11,13 @@ run_tests_3.8:
     - pip install .
     - python -m unittest discover -s tests
 
-run_tests_3.6:
-  image: python:3.6-slim
-  stage: test
-  script:
-    - pip install .
-    - python -m unittest discover -s tests
+## No need for python3.6 support
+# run_tests_3.6:
+#   image: python:3.6-slim
+#   stage: test
+#   script:
+#     - pip install .
+#     - python -m unittest discover -s tests
 
 
 build_docu:
