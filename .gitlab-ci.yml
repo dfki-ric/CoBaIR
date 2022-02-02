@@ -29,3 +29,12 @@ build_docu:
   artifacts:
     paths:
       - site
+
+upload_docu:
+  image: ubuntu:latest
+  stage: docu
+  script:
+    - rm -rf /home/www/htdocs/apis/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME
+    - mkdir -p /home/www/htdocs/apis/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME
+    - cp -R site/* /home/www/htdocs/apis/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME
+
