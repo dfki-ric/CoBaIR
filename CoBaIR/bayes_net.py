@@ -251,9 +251,18 @@ class BayesNet():
         else:
             raise Exception('Configuration is invalid')
 
-    def normalize_inference(self, inference):
+    def normalize_inference(self, inference: dict) -> dict:
         '''
-        Normalizes the inference to a proper probability distribution
+        Normalizes the inference to a proper probability distribution.
+
+        Inference which is not normalized will just be normalized for one intention being True or False, 
+        which leads to uninterpretable results for inference of multiple intentions.
+
+        Args:
+            inference: dictionary of intentions and the corresponding probabilities
+        Returns:
+            dict: dictionary of intentions and the corresponding normalized probabilities.
+
         '''
         normalized_inference = {}
         probability_sum = sum(inference.values())
@@ -263,7 +272,10 @@ class BayesNet():
 
     def validate_config(self):
         '''
-        validate that the config follows the correct format
+        validate that the current config follows the correct format.
+
+        Raises:
+            AssertionError: An AssertionError is raised if the config is not valid.
         '''
         # contexts and intentions need to be defined
         assert 'contexts' in self.config, 'Field "contexts" must be defined in the config'
@@ -286,17 +298,23 @@ class BayesNet():
             assert sum(instantiations.values(
             )) == 1.0, f'The sum of probabilities for context instantiations must be 1 - For {context} it is {sum(instantiations.values())}!'
 
-    def create_zero_influence_dict(self, context_with_instantiations):
+    def create_zero_influence_dict(self, context_with_instantiations: dict) -> defaultdict:
         """
-        This is using the context with instantiations from the creation of a new context to set all values to zero
-        It will have the following shape:
-        {new_context:{
-            inst_1:0,
-            inst_2:0,
-            ...
-            inst_3:0
+        This uses the context dict from config['contexts'] to instantiate a dict that can be used in config['intentions']['some_context']
+
+        Args:
+            context_with_instantiations: a dict holding contexts, their instantiations and corresponding apriori possibilities
+        Returns:
+            defaultdict:
+            A dictionary with zero-initialized influence values for every given context.
+            Example:
+            {some_context:{
+                inst_1:0,
+                inst_2:0,
+                ...
+                inst_3:0
+                }
             }
-        }
         """
         zeros = defaultdict(lambda: defaultdict(dict))
         for context, instantiations in context_with_instantiations.items():
@@ -304,10 +322,19 @@ class BayesNet():
                 zeros[context][instantiation] = 0
         return zeros
 
-    def add_context(self, context, instantiations):
+    def add_context(self, context: str, instantiations: dict):
         """
-        this will add a new context to the config and updates the bayesNet
-        This call can crash if the config is not valid after the call
+        This will add a new context to the config and updates the bayesNet
+
+        Args:
+            context: a new context for the config
+            instantiations: 
+                a dict of the instantiations and their corresponding apriori probabilities
+                Example:
+                    {True: 0.6, False:0.4}
+        Raises:
+            ValueError: Raises a ValueError if the context already exists in the config
+            AssertionError: An AssertionError is raised if the resulting config is not valid.
         """
         # check if context exists already
         if context in self.config['contexts']:
