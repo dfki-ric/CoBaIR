@@ -3,6 +3,7 @@ This module provides a class for a two-layer bayes net for context based intenti
 '''
 
 # System imports
+from __future__ import annotations
 import itertools
 from collections import defaultdict, Hashable
 from copy import deepcopy
@@ -168,9 +169,17 @@ class BayesNet():
         neg_values = [1-value for value in pos_values]
         return [neg_values, pos_values]
 
-    def valid_evidence(self, context, instantiation):
+    def valid_evidence(self, context: str, instantiation) -> tuple[bool, str]:
         """
-        returns true if evidence is a valid instantiation for the context 
+        Tests if evidence is a valid instantiation for the context.
+
+        Returns a bool if evidence is valid or not and a string with a error message if not valid.
+        Args:
+            context: a context
+            instantiation: an instantiation of the context
+        Returns:
+            tuple[bool, str]:
+            A tuple of bool to indicate validity and str for error message 
         """
         if context not in self.config['contexts']:
             return False, 'ignore'  # ignoring unrelated contexts
@@ -182,21 +191,33 @@ class BayesNet():
     def bind_discretization_function(self, context, discretization_function):
         """
         binds a discretization_function to a specific context.
+
+
+        Args:
+            context: One of the possible contexts from the config
+            discretization_function: A discretization function which has to take one parameter and return one of the possible discrete context instantiations.
         """
         if context not in self.contexts:
             raise ValueError(
                 f'Cannot bind discretization function to {context}. Context does not exist!')
         self.discretization_functions[context] = discretization_function
 
-    def infer(self, evidence, normalized=True):
+    def infer(self, evidence, normalized=True) -> dict:
         '''
-        infers the probabilities for the intentions with given evidence
-        evidence has the following form:
-        evidence = {
-            'speech commands': 'pickup',
-            'human holding object': True,
-            'human activity': 'idle'
-        }
+        infers the probabilities for the intentions with given evidence.
+
+        Args:
+            evidence: 
+                Evidence to infer the probabilities of all intentions.
+                Evidence can contain context which is not in the config as well as it must not contain all possible contexts.
+                Example:
+                    {'speech commands': 'pickup',
+                     'human holding object': True,
+                     'human activity': 'idle'}
+            normalized: Flag if the returned inference is normalized to sum up to 1.
+        Returns:
+            dict:
+            A dictionary of intentions and the corresponding probabilities.
         '''
         # check if evidence values are in instantiations and create a card form of bnlearn
         card_evidence = {}
