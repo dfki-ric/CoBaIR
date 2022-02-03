@@ -303,7 +303,7 @@ class BayesNet():
         This uses the context dict from config['contexts'] to instantiate a dict that can be used in config['intentions']['some_context']
 
         Args:
-            context_with_instantiations: a dict holding contexts, their instantiations and corresponding apriori possibilities
+            context_with_instantiations: a dict holding contexts, their instantiations and corresponding apriori probabilities
         Returns:
             defaultdict:
             A dictionary with zero-initialized influence values for every given context.
@@ -324,7 +324,7 @@ class BayesNet():
 
     def add_context(self, context: str, instantiations: dict):
         """
-        This will add a new context to the config and updates the bayesNet
+        This will add a new context to the config and updates the bayesNet.
 
         Args:
             context: a new context for the config
@@ -350,9 +350,16 @@ class BayesNet():
         # reinizialize
         self.__init__(self.config, merge_config=False)
 
-    def add_intention(self, intention):
+    def add_intention(self, intention: str):
         """
-        this will add a new intention to the config and updates the bayesNet
+        This will add a new intention to the config and updates the bayesNet.
+
+        Args:
+            intention: Name of a new intention
+
+        Raises:
+            ValueError: Raises a ValueError if the intention already exists in the config
+            AssertionError: An AssertionError is raised if the resulting config is not valid.
         """
         # check if intention exists already
         if intention in self.config['intentions']:
@@ -369,10 +376,24 @@ class BayesNet():
         # reinizialize
         self.__init__(self.config, merge_config=False)
 
-    def edit_context(self, context, instantiations, new_name=None):
+    def edit_context(self, context: str, instantiations: dict, new_name: str = None):
         """
         Edits an existing context - this can also be used to remove instantiations
-        Changing the name of an instantiation will always set the influence value of this instantiation to zero for all intentions!
+
+        !!! note
+            Changing the name of an instantiation will always set the influence value of this instantiation to zero for all intentions!
+
+        Args:
+            context: Name of the context to edit
+            instantiations:
+                A Dict of instantiations and their corresponding apriori probabilities.
+                Example: {True: 0.6, False: 0.4}
+            new_name: A new name for the context
+
+
+        Raises:
+            ValueError: Raises a ValueError if the context does not exists in the config
+            AssertionError: An AssertionError is raised if the resulting config is not valid.
         """
         # check if context exists already - only then I can edit
         if context not in self.config['contexts']:
@@ -394,9 +415,17 @@ class BayesNet():
         # reinizialize
         self.__init__(self.config, merge_config=False)
 
-    def edit_intention(self, intention, new_name):
+    def edit_intention(self, intention: str, new_name: str):
         """
-        Edits an existing intention
+        Edits an existing intention.
+
+        Args:
+            intention: Name of the intention to edit
+            new_name: A new name for the intention
+
+        Raises:
+            ValueError: Raises a ValueError if the intention does not exists in the config
+            AssertionError: An AssertionError is raised if the resulting config is not valid.
         """
         # check if context exists already - only then I can edit
         if intention not in self.config['intentions']:
@@ -411,9 +440,15 @@ class BayesNet():
         # reinizialize
         self.__init__(self.config, merge_config=False)
 
-    def del_context(self, context):
+    def del_context(self, context: str):
         """
-        remove a context
+        removes a context.
+
+        Args:
+            context: Name of the context to delete
+
+        Raises:
+            AssertionError: An AssertionError is raised if the resulting config is not valid.
         """
         del(self.config['contexts'][context])
         self.remove_context_from_intentions()
@@ -423,15 +458,27 @@ class BayesNet():
 
     def del_intention(self, intention):
         """
-        remove a context
+        remove an intention.
+
+        Args:
+            intention: Name of the intention to delete
+
+        Raises:
+            AssertionError: An AssertionError is raised if the resulting config is not valid.
         """
         del(self.config['intentions'][intention])
         # reinizialize
         self.__init__(self.config, merge_config=False)
 
-    def save(self, path, save_invalid=True):
+    def save(self, path: str, save_invalid: bool = True):
         """
-        saves the config of the bayesNet
+        saves the config of the bayesNet to a yml file.
+
+        Args:
+            path: path to the file the config will be saved in
+            save_invalid: Flag to decide if invalid configs can be saved
+        Raises:
+            ValueError: A ValueError is raised if `save_invalid` is `False` and the config is not valid
         """
         if not self.valid and not save_invalid:
             raise ValueError(
