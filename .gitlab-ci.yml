@@ -3,6 +3,7 @@
 stages:
   - test
   - docu
+  - deploy
 
 run_tests_3.8:
   image: python:3.8-slim
@@ -32,7 +33,7 @@ build_docu:
 
 upload_docu:
   image: ubuntu:latest
-  stage: docu
+  stage: deploy
   script:
     - rm -rf /home/www/htdocs/apis/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME
     - mkdir -p /home/www/htdocs/apis/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME
