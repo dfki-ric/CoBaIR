@@ -1,3 +1,4 @@
-# Reference
+# CoBaIR
 
-::: CoBaIR.bayes_net.BayesNet
+::: CoBaIR
+

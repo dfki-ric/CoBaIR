@@ -487,17 +487,30 @@ class BayesNet():
         with open(path, 'w') as save_file:
             yaml.dump(default_to_regular(self.config), save_file)
 
-    def load(self, path):
+    def load(self, path: str):
         """
-        Loads a config and reinitializes the bayesNet
+        Loads a config from file and reinitializes the bayesNet.
+
+        Args:
+            path: path to the file the config is saved in
+        Raises:
+            AssertionError: An AssertionError is raised if the resulting config is not valid.        
         """
         config = load_config(path)
         # reinizialize with config
         self.__init__(config)
 
-    def change_context_apriori_value(self, context, instantiation, value):
+    def change_context_apriori_value(self, context: str, instantiation, value: float):
         """
-        Change the apriori_value for a context instantiation 
+        Changes the apriori_value for a context instantiation.
+
+        Args:
+            context: Name of the context
+            instantiation: The instantiation for which the apriori value needs to be changed
+            value: the new apriori value
+        Raises:
+            ValueError: Raises a ValueError if the instantiation does not exists in the config
+            AssertionError: An AssertionError is raised if the resulting config is not valid.
         """
         # check if this value already exists because I'm using defaultdict - otherwise you can just add values
         if instantiation in self.config['contexts'][context]:
@@ -508,9 +521,18 @@ class BayesNet():
             raise ValueError(
                 'change_context_apriori_value can only change values that exist already')
 
-    def change_influence_value(self, intention, context, instantiation, value):
+    def change_influence_value(self, intention: str, context: str, instantiation, value: int):
         """
-        Change the influence value for a specific instatiation of a context for a specific intention.
+        Change the influence value for a specific instantiation of a context for a specific intention.
+
+        Args:
+            intention: Name of the intention
+            context: name of the context
+            instantiation: The instantiation for which the influence value should be changed
+            value: the new influence value. Can be one out of [0, 1, 2, 3, 4, 5]
+        Raises:
+            ValueError: Raises a ValueError if the instantiation does not exists in the config
+            AssertionError: An AssertionError is raised if the resulting config is not valid.
         """
         # check if this value already exists because I'm using defaultdict - otherwise you can just add values
         if instantiation in self.config['intentions'][intention][context]:
@@ -522,8 +544,7 @@ class BayesNet():
 
     def transport_context_into_intentions(self):
         """
-        This checks if context is defined in the 'contexts' section of self.config which is not present in all intentions as influencing context. 
-        Same for instantiations
+        Transports contexts and their instantiations defined in the config['contexts'] into config['intentions'] as influencing context if not present. 
         """
         for context in self.config['contexts']:
             for instantiation in self.config['contexts'][context]:
@@ -534,7 +555,7 @@ class BayesNet():
 
     def remove_context_from_intentions(self):
         """
-        This removes context or instantiations after removing/changing instantiations and/or context
+        This removes context or instantiations after removing/changing instantiations and/or context.
         """
         # This is a hack because you can't edit while iterating a dict
         contexts_to_remove_from_intentions = []
@@ -555,7 +576,16 @@ class BayesNet():
             del(self.config['intentions'][intention][context][instantiation])
 
 
-def config_to_default_dict(config):
+def config_to_default_dict(config: dict):
+    """
+    This casts a config given as dict into a defaultdict.
+
+    Args:
+        config: A dict with a config following the config format.
+    Returns:
+        defaultdict:
+            a defaultdict containing the config
+    """
     if config == None:
         return None
     new_config = {'intentions': defaultdict(lambda: defaultdict(
@@ -574,6 +604,15 @@ def config_to_default_dict(config):
 
 
 def load_config(path):
+    """
+    Helper function to load a config.
+
+    Args:
+        path: path to the file the config is saved in
+    Returns:
+        defaultdict:
+            a defaultdict containing the config
+    """
     with open(path) as stream:
         return config_to_default_dict(yaml.safe_load(stream))
 
@@ -581,7 +620,16 @@ def load_config(path):
 
 
 def default_to_regular(d):
-    # transform dicts or default dicts because otherwise it will stop at the first dict and if that has another defaultdict in it - that won't transform
+    """
+    This casts a defaultdict to a regular dict which is needed for saving as yml file.
+
+    Args:
+        d: the dict which should be casted
+    Returns:
+        dict:
+            a regular dict casted from the defaultdict
+    """
+    # casts dicts or default dicts because otherwise it will stop at the first dict and if that has another defaultdict in it - that won't cast
     if isinstance(d, defaultdict) or isinstance(d, dict):
         d = {k: default_to_regular(
             v) for k, v in d.items() if not isinstance(v, dict) or v}
