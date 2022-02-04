@@ -3,6 +3,7 @@
 stages:
   - test
   - docu
+  - deploy
 
 run_tests_3.8:
   image: python:3.8-slim
@@ -29,3 +30,14 @@ build_docu:
   artifacts:
     paths:
       - site
+
+upload_docu:
+  image: ubuntu:latest
+  stage: deploy
+  script:
+    - rm -rf /home/www/htdocs/apis/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME
+    - mkdir -p /home/www/htdocs/apis/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME
+    - cp -R site/* /home/www/htdocs/apis/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/'
+
