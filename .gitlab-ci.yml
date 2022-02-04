@@ -8,6 +8,7 @@ run_tests_3.8:
   image: python:3.8-slim
   stage: test
   script:
+    - pip install --upgrade pip
     - pip install .
     - python -m unittest discover -s tests
 
@@ -24,6 +25,7 @@ build_docu:
   image: python:3.8-slim
   stage: docu
   script:
+    - pip install --upgrade pip
     - pip install -r doc_requirements.txt
     - pip install .
     - mkdocs build
