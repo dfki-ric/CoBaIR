@@ -6,7 +6,7 @@ stages:
   - deploy
 
 run_tests_3.8:
-  image: python:3.8-slim
+  image: python:3.8-bullseye
   stage: test
   script:
     - pip install --upgrade pip
@@ -15,7 +15,7 @@ run_tests_3.8:
 
 ## No need for python3.6 support
 # run_tests_3.6:
-#   image: python:3.6-slim
+#   image: python:3.6-bullseye
 #   stage: test
 #   script:
 #     - pip install .
@@ -23,7 +23,7 @@ run_tests_3.8:
 
 
 build_docu:
-  image: python:3.8-slim
+  image: python:3.8-bullseye
   stage: docu
   script:
     - pip install --upgrade pip
