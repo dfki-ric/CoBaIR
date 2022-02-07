@@ -10,6 +10,7 @@ from tkinter.simpledialog import Dialog
 from threading import Timer
 from copy import deepcopy
 import traceback
+from types import FunctionType as function
 
 import yaml
 # 3rd party imports
@@ -22,8 +23,18 @@ __author__ = 'Adrian Lubitz'
 
 
 class NewIntentionDialog(Dialog):
+    """Dialog Window for new Intention"""
 
     def body(self, master):
+        """
+        Sets the Layout.
+
+        Args:
+            master: the master window this dialog belongs to
+        Returns:
+            tk.Entry:
+                the initial focus
+        """
 
         tk.Label(master, text="New Intention:").grid(row=0)
         self.intention_entry = tk.Entry(master)
@@ -31,6 +42,13 @@ class NewIntentionDialog(Dialog):
         return self.intention_entry  # initial focus
 
     def validate(self):
+        """
+        highlights empty fields
+
+        Returns:
+            bool:
+                True if the entry is not empty
+        """
         if not self.intention_entry.get():
             # mark red
             self.intention_entry.configure(highlightbackground='red',
@@ -40,12 +58,25 @@ class NewIntentionDialog(Dialog):
             return True
 
     def apply(self):
+        """
+        Applies the result to hand it over to the master
+        """
         self.result = self.intention_entry.get()
 
 
 class NewContextDialog(Dialog):
+    """Dialog Window for new Context"""
 
     def body(self, master):
+        """
+        Sets the Layout.
+
+        Args:
+            master: the master window this dialog belongs to
+        Returns:
+            tk.Entry:
+                the initial focus
+        """
         name_frame = tk.Frame(master)
         name_frame.grid(row=0)
         tk.Label(name_frame, text="New Context:").grid(row=0)
@@ -77,6 +108,9 @@ class NewContextDialog(Dialog):
         return self.context_entry  # initial focus
 
     def new_instantiation(self):
+        """
+        Creates two new Entries to input more instantiations
+        """
         name_entry = tk.Entry(self.instantiations_frame)
         probability_entry = tk.Entry(self.instantiations_frame)
         name_entry.grid(row=self.shown_instantiations, column=0)
@@ -85,6 +119,13 @@ class NewContextDialog(Dialog):
         self.shown_instantiations += 1
 
     def validate(self):
+        """
+        highlights empty fields
+
+        Returns:
+            bool:
+                True if the entries are not empty
+        """
         # TODO: entries cannot be the same (len(entries) must be the same as len(set(entries.get())))
         empty_entries = []
         self.context_entry.configure(highlightbackground='black',
@@ -107,6 +148,9 @@ class NewContextDialog(Dialog):
             return True
 
     def apply(self):
+        """
+        Applies the result to hand it over to the master
+        """
         self.result = defaultdict(lambda: defaultdict(dict))
         for instantiation in self.instantiations:
             self.result[self.context_entry.get(
@@ -119,9 +163,12 @@ class Configurator(tk.Tk):
     It can as well be used in a live mode to test the configuration
     '''
 
-    def __init__(self, config=None, *args, **kwargs):
+    def __init__(self, config: dict = None, *args, **kwargs):
         '''
         Setting up the GUI
+
+        Args:
+            config: A dict with a config following the config format.
         '''
         tk.Tk.__init__(self, *args, **kwargs)
         self.setup_layout()
@@ -139,24 +186,10 @@ class Configurator(tk.Tk):
 
         self.title("Context Based Intention Recognition Configurator")
 
-    # def create_zero_influence_dict(self, contexts_with_instantiations):
-    #     """
-    #     This is using the context with instantiations from the creation of a new context to set all values to zero
-    #     It will have the following shape:
-    #     {new_context:{
-    #         inst_1:0,
-    #         inst_2:0,
-    #         ...
-    #         inst_3:0
-    #     }}
-    #     """
-    #     zeros = defaultdict(lambda: defaultdict(dict))
-    #     for context, instantiations in contexts_with_instantiations.items():
-    #         for instantiation, value in instantiations.items():
-    #             zeros[context][instantiation] = 0
-    #     return zeros
-
     def create_fields(self):
+        """
+        Creates all necessary fields in the GUI
+        """
 
         self.set_context_dropdown(self.bayesNet.config['contexts'].keys())
 
@@ -166,6 +199,9 @@ class Configurator(tk.Tk):
         self.set_intention_dropdown(self.bayesNet.config['intentions'].keys())
 
     def new_context(self):
+        """
+        Open a new Dialog to create new contexts.
+        """
         # remove errorText
         self.error_label['text'] = f""
         # open small dialog to create context
@@ -186,6 +222,9 @@ class Configurator(tk.Tk):
             self.context_selected(new_context)
 
     def new_intention(self):
+        """
+        Open a new Dialog to create new intentions.
+        """
         # remove errorText
         self.error_label['text'] = f""
         dialog = NewIntentionDialog(self, title="New Intention")
@@ -201,6 +240,9 @@ class Configurator(tk.Tk):
             self.influencing_context_selected(dialog.result)
 
     def setup_layout(self):
+        """
+        Setting up the layout of the GUI.
+        """
         ###### Context ######
         # TODO: remove/edit context or instantiation
         self.context_label_frame = tk.Frame(self)
@@ -265,9 +307,13 @@ class Configurator(tk.Tk):
         self.error_label = tk.Label(self.error_frame, fg='#f00')
         self.error_label.pack()
 
-    def set_context_dropdown(self, options, command=None):
+    def set_context_dropdown(self, options: list, command: function = None):
         '''
-        This sets the options for a context optionMenu with the options and the corresponding command
+        This sets the options for a context optionMenu with the options and the corresponding command.
+
+        Args:
+            options: A list containing the options in the context dropdown
+            command: a function which will be triggered when clicked on the dropdown option
         '''
         if not command:
             command = self.context_selected
@@ -287,9 +333,13 @@ class Configurator(tk.Tk):
         self.context_dropdown.grid(row=0, column=1)
         command(self.context_selection.get())
 
-    def set_influencing_context_dropdown(self, options, command=None):
+    def set_influencing_context_dropdown(self, options: list, command: function = None):
         '''
-        This sets the options for the influencing context optionMenu with the options and the corresponding command
+        This sets the options for the influencing context optionMenu with the options and the corresponding command.
+
+        Args:
+            options: A list containing the options in the influencing context dropdown
+            command: a function which will be triggered when clicked on the dropdown option
         '''
         if not command:
             command = self.influencing_context_selected
@@ -308,9 +358,13 @@ class Configurator(tk.Tk):
         self.influencing_context_dropdown.grid(row=0, column=1)
         command(self.influencing_context_selection.get())
 
-    def set_intention_dropdown(self, options, command=None):
+    def set_intention_dropdown(self, options: list, command: function = None):
         '''
         This sets the options for a intention optionMenu with the options and the corresponding command
+
+        Args:
+            options: A list containing the options in the intention dropdown
+            command: a function which will be triggered when clicked on the dropdown option
         '''
         if not command:
             command = self.influencing_context_selected
@@ -329,7 +383,13 @@ class Configurator(tk.Tk):
         self.intention_dropdown.grid(row=0, column=3)
         command(self.intention_selection.get())
 
-    def context_selected(self, context):
+    def context_selected(self, context: str):
+        """
+        Callback for click on context in context dropdown.
+
+        Args:
+            context: name of the clicked context
+        """
         for active_context, instantiations in self.context_instantiations.items():
             for instantiation, widgets in instantiations.items():
                 for widget in widgets:
@@ -361,7 +421,13 @@ class Configurator(tk.Tk):
             )
             row += 1
 
-    def influencing_context_selected(self, context_or_intention):
+    def influencing_context_selected(self, context_or_intention: str):
+        """
+        Callback for click on context in influencing context dropdown.
+
+        Args:
+            context_or_intention: name of the clicked context
+        """
         for active_intention, active_context in self.intention_instantiations.items():
             for active_context, instantiations in active_context.items():
                 for instantiation, widgets in instantiations.items():
@@ -398,6 +464,9 @@ class Configurator(tk.Tk):
             row += 1
 
     def load(self):
+        """
+        opens a askopenfilename dialog to load a config
+        """
         # open file selector
         filetypes = (
             ('yaml files', '*.yml'),
@@ -417,6 +486,9 @@ class Configurator(tk.Tk):
         self.create_fields()
 
     def save(self):
+        """
+        opens a asksaveasfilename dialog to save a config
+        """
         filetypes = (
             ('yaml files', '*.yml'),
             ('All files', '*.*')
@@ -427,13 +499,15 @@ class Configurator(tk.Tk):
         if save_filepath:
             # TODO. how to handle saving invalid config?
             self.bayesNet.save(save_filepath)
-            # yaml.dump(default_to_regular(
-            #     self.bayesNet.config), save_file)
-        # except Exception as e:
-        #     # show Exception text in designated area
-        #     self.error_label['text'] = f"couldn't save file:\n{e}"
 
     def apriori_values_changed(self, *args, context, instantiation):
+        """
+        Callback for change of the apriori values.
+
+        Args:
+            context: name of the context
+            instantiation: name of the corresponding instantiation
+        """
         # update config
         self.error_label['text'] = f""
         try:
@@ -443,14 +517,18 @@ class Configurator(tk.Tk):
             self.error_label['text'] = f"{e}"
 
     def influence_values_changed(self, value, context, intention, instantiation):
+        """
+        Callback for change of the influence values.
+
+        Args:
+            value: new influence value
+            context: name of the context
+            intention: name of the intention
+            instantiation: name of the corresponding instantiation
+        """
         self.error_label['text'] = f""
         try:
             self.bayesNet.change_influence_value(
                 intention=intention, context=context, instantiation=instantiation, value=int(value))
         except AssertionError as e:
             self.error_label['text'] = f"{e}"
-        # update view!
-        # self.create_fields()
-        # self.tmp_config['intentions'][intention][context][instantiation] = int(
-        #     value)
-        # self.update_bayes_net()
