@@ -13,15 +13,21 @@ __author__ = 'Adrian Lubitz'
 
 
 class Counter():
+    """A counter for different bases on different positions"""
+
     def __init__(self, evidence_cards: list) -> None:
         '''
         Takes a list of ints (int must be >=2) and creates the counter
+
+        Args:
+            evidence_cards: list of ints as mapping of base to position
         '''
         self.evidence_cards = evidence_cards
         self.current_evidence = [0] * len(self.evidence_cards)
         self.first_call = True
 
     def __iter__(self):
+        """Returns self as a iterator"""
         return self
 
     def __next__(self, start=-1):

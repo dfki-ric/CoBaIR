@@ -1,40 +1,35 @@
 """
-This module contains some default decorator functions to dicretize 
+This module contains some default functions to discretize incoming evidence
+
+!!! note
+    If you want to bindb a discretizer with different default values using 
+    `bayes_net.bind_discretization_function` you have to wrap it in a lambda
+    function like this: 
+
+    ```
+    net.bind_discretization_function('some context', lambda x: binary_decision(x, decision_boundary=0.7))
+    ```
 """
 
 
-def discretized_1d_range(ranges, values, deafult):
+def binary_decision(prob_value: float, decision_boundary: float = 0.5, flip: bool = False):
     """
-    Decorator for 1d range discretization. It takes a set of ranges to check against the the corresponding values to return for those ranges.
-    If a value is in multiple ranges the first suitable will be used.
+    This function discretizes a probability value into the discrete values True and False.
 
-    ranges is a list of functions/lambda-statements taking one value as input and returning true or false
-    values is a list of the corresponding values
-    default is the default value which will be returned if no range returned true
+    Args:
+        prob_value: A probability value between 0 and 1
+        decision_boundary: Values >= this decision boundary will be discretized as True
+        flip: A flag which decides if the discrete result is flipped
+    Returns:
+        bool:
+            A boolean discretization of the given probaility value
+    Raises:
+        ValueError: A ValueError is raised if the probability value is not in the range [0.0, 1.0]
     """
-    def wrap(f):
-        def wrapped_f(*args, **kwargs):
-            result = f(*args, **kwargs)
-            # TODO: one-dimensionality
-            # TODO: check if in ranges, else return default
-        return wrapped_f
-    return wrap
-
-
-def discrete_hand_opening_degree(hand_opening_degree):
-    '''
-    this function transforms a hand opening degree into a discrete value of [closed=0, relaxed=1, wide-open=2]
-    :param hand_opening_degree: A value from the hand opening degree prediction module - it is in the range 0-100%, where 0% is a completely closed hand and 100% would be a completely open hand.
-    :type hand_opening_degree: float
-    :returns: a discrete value of [closed=0, relaxed=1, wide-open=2]
-    :rtype: int
-    '''
-    CLOSED = 0
-    RELAXED = 1
-    WIDE_OPEN = 2
-    if hand_opening_degree < 25:
-        return CLOSED
-    elif hand_opening_degree > 75:
-        return WIDE_OPEN
+    if prob_value > 1.0 or prob_value < 0.0:
+        raise ValueError(
+            f'Probability values have to be in the range of [0.0, 1.0]. Given value is {prob_value}')
+    if prob_value >= decision_boundary:
+        return True != flip
     else:
-        return RELAXED
+        return False != flip

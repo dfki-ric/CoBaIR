@@ -10,6 +10,9 @@ theme:
     primary: orange
     accent: indigo
 
+markdown_extensions:
+  - admonition
+
 nav:
   - Getting started: index.md
   - API Documentation: API.md

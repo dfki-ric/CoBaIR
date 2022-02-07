@@ -3,29 +3,44 @@
 stages:
   - test
   - docu
+  - deploy
 
 run_tests_3.8:
-  image: python:3.8-slim
+  image: python:3.8-bullseye
   stage: test
   script:
+    - pip install --upgrade pip
     - pip install .
     - python -m unittest discover -s tests
 
-run_tests_3.6:
-  image: python:3.6-slim
-  stage: test
-  script:
-    - pip install .
-    - python -m unittest discover -s tests
+## No need for python3.6 support
+# run_tests_3.6:
+#   image: python:3.6-bullseye
+#   stage: test
+#   script:
+#     - pip install .
+#     - python -m unittest discover -s tests
 
 
 build_docu:
-  image: python:3.8-slim
+  image: python:3.8-bullseye
   stage: docu
   script:
+    - pip install --upgrade pip
     - pip install -r doc_requirements.txt
     - pip install .
     - mkdocs build
   artifacts:
     paths:
       - site
+
+upload_docu:
+  image: ubuntu:latest
+  stage: deploy
+  script:
+    - rm -rf /home/www/htdocs/apis/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME
+    - mkdir -p /home/www/htdocs/apis/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME
+    - cp -R site/* /home/www/htdocs/apis/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/'
+

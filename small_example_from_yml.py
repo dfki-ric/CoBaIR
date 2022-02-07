@@ -10,6 +10,7 @@ is created from a config file.
 import yaml
 # local imports
 from CoBaIR.bayes_net import BayesNet
+from CoBaIR.default_discretizer import binary_decision
 
 # end file header
 __author__ = 'Adrian Lubitz'
@@ -17,21 +18,11 @@ __author__ = 'Adrian Lubitz'
 
 # %%
 # Load config from file
-with open("small_example_after_inference.yml") as stream:
+with open("small_example.yml") as stream:
     config = yaml.safe_load(stream)
 net = BayesNet(config)
 # %%
-# define discetazaion function
-
-
-def binary_decision(prob_value):
-    if prob_value > 1.0 or prob_value < 0.0:
-        raise ValueError(
-            f'Probability values have to be in the range of [0.0, 1.0]. Given value is {prob_value}')
-    if prob_value >= 0.5:
-        return True
-    else:
-        return False
+# define discetazaion functio
 
 
 def invalid_discretization_function(a):
@@ -40,16 +31,19 @@ def invalid_discretization_function(a):
 
 # %%
 # bind discetazaion function
-net.bind_discretization_function('human holding object', binary_decision)
+net.bind_discretization_function(
+    'human holding object', lambda x: binary_decision(x, decision_boundary=0.7))
 net.bind_discretization_function(
     'speech commands', invalid_discretization_function)  # this will only be triggered if the evidence for speech commands is invalid
 # %%
 # infer intentions with the given evidence
 evidence = {
     'speech commands': 'pickup',
-    'human holding object': 0.6,
+    'human holding object': 0.7,
     'human activity': 'idle',
     'invalid context': 'does not matter in evidence'
 }
 normalized_inference = net.infer(evidence)
 print(normalized_inference)
+
+# %%
