@@ -172,18 +172,8 @@ class Configurator(tk.Tk):
         '''
         tk.Tk.__init__(self, *args, **kwargs)
         self.setup_layout()
-        # initialization of the timer
-        # self.change_timer = Timer(1, self._update_bayes_net)
-
-        self.bayesNet = BayesNet()
-        # This will only be used for the case where you defined context or intention  before the other exists
-        # self.tmp_config = config
-        # if not self.tmp_config:
-        #     self.tmp_config = defaultdict(
-        #         lambda: defaultdict(lambda: defaultdict(dict)))
-        # if self.tmp_config:
-        #     self._update_bayes_net()
-
+        self.bayesNet = BayesNet(config)
+        self.create_fields()
         self.title("Context Based Intention Recognition Configurator")
 
     def create_fields(self):
