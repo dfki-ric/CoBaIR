@@ -221,6 +221,12 @@ class Configurator(tk.Tk):
             # Explicit call is neccessary because set seems not to trigger the callback
             self.context_selected(new_context)
 
+    def edit_context(self):
+        pass
+
+    def delete_context(self):
+        pass
+
     def new_intention(self):
         """
         Open a new Dialog to create new intentions.
@@ -239,12 +245,17 @@ class Configurator(tk.Tk):
             # Explicit call is neccessary because set seems not to trigger the callback
             self.influencing_context_selected(dialog.result)
 
+    def edit_intention(self):
+        pass
+
+    def delete_intention(self):
+        pass
+
     def setup_layout(self):
         """
         Setting up the layout of the GUI.
         """
         ###### Context ######
-        # TODO: remove/edit context or instantiation
         self.context_label_frame = tk.Frame(self)
         self.context_label_frame.grid(row=0, column=0)
         tk.Label(self.context_label_frame,
@@ -255,16 +266,28 @@ class Configurator(tk.Tk):
         self.context_dropdown = tk.OptionMenu(
             self.context_label_frame, self.context_selection, *values, command=self.context_selected, value=self.context_selection.get())
         self.context_dropdown.grid(row=0, column=1)
+
+        self.edit_context_button = tk.Button(self.context_label_frame,
+                                             command=self.edit_context, text='Edit')
+        self.edit_context_button.grid(row=0, column=2)
+        # TODO: visibility false
+        self.edit_context_button.grid_remove()
+
+        self.delete_context_button = tk.Button(self.context_label_frame,
+                                               command=self.delete_context, text='Delete')
+        self.delete_context_button.grid(row=0, column=3)
+        # TODO: visibility false
+        self.delete_context_button.grid_remove()
+
         self.new_context_button = tk.Button(self.context_label_frame,
                                             command=self.new_context, text='New Context')
-        self.new_context_button.grid(row=0, column=2)
+        self.new_context_button.grid(row=0, column=4)
 
         self.context_frame = tk.Frame(self)
         self.context_frame.grid(row=1, column=0, columnspan=3)
         self.context_instantiations = defaultdict(dict)
 
         ##### Intention ####
-        # TODO: remove/edit intention
         self.intention_label_frame = tk.Frame(self)
         self.intention_label_frame.grid(row=2, column=0)
         tk.Label(self.intention_label_frame,
@@ -284,9 +307,17 @@ class Configurator(tk.Tk):
             self.intention_label_frame, self.intention_selection, *values, command=self.influencing_context_selected, value=self.intention_selection.get())
         self.intention_dropdown.grid(row=0, column=3)
 
+        self.edit_intention_button = tk.Button(self.intention_label_frame,
+                                               command=self.edit_intention, text='Edit')
+        self.edit_intention_button.grid(row=0, column=4)
+        # TODO: visibility false
+        self.delete_intention_button = tk.Button(self.intention_label_frame,
+                                                 command=self.delete_intention, text='Delete')
+        self.delete_intention_button.grid(row=0, column=5)
+        # TODO: visibility false
         self.new_intention_button = tk.Button(self.intention_label_frame,
                                               command=self.new_intention, text='New Intention')
-        self.new_intention_button.grid(row=0, column=4)
+        self.new_intention_button.grid(row=0, column=6)
         self.intention_frame = tk.Frame(self)
         self.intention_frame.grid(row=3, column=0)
         self.intention_instantiations = defaultdict(lambda: defaultdict(dict))
