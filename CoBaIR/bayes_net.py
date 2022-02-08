@@ -53,8 +53,8 @@ class BayesNet():
 
         self.validate_config()
         # Translation dicts for context to card number in bnlearn and vice versa
-        self.create_value_to_card()
-        self.create_card_to_value()
+        self._create_value_to_card()
+        self._create_card_to_value()
         # Translation dict for the std values to probabilities
         self.value_to_prob = {5: 0.95, 4: 0.75,
                               3: 0.5, 2: 0.25, 1: 0.05, 0: 0.0}
@@ -63,18 +63,18 @@ class BayesNet():
         self.contexts = self.evidence = list(self.config['contexts'].keys())
         self.intentions = list(self.config['intentions'].keys())
         self.edges = list(itertools.product(self.contexts, self.intentions))
-        self.create_evidence_card()
+        self._create_evidence_card()
 
         # create CPTs for the bayes net
         self.cpts = []
-        self.create_context_cpts()
-        self.create_intention_cpts()
+        self._create_context_cpts()
+        self._create_intention_cpts()
         self.DAG = bn.make_DAG(self.edges, CPD=self.cpts)
         # This is the config of the currently running BayesNet
         self.valid_config = deepcopy(self.config)
         self.valid = True
 
-    def create_value_to_card(self):
+    def _create_value_to_card(self):
         '''
         Initializes the translation dict for the context values to card numbers for bnlearn
         '''
@@ -85,7 +85,7 @@ class BayesNet():
                 self.value_to_card[context][key] = count
                 count += 1
 
-    def create_card_to_value(self):
+    def _create_card_to_value(self):
         '''
         Initializes the backtranslation dict for the context values to card numbers for bnlearn
         '''
@@ -94,7 +94,7 @@ class BayesNet():
             for name, num in values.items():
                 self.card_to_value[intention][num] = name
 
-    def create_context_cpts(self):
+    def _create_context_cpts(self):
         '''
         Create the Conditional Probability Tables for all context nodes in the DAG and APPENDS them to self.cpts
         '''
@@ -106,12 +106,12 @@ class BayesNet():
             self.cpts.append(TabularCPD(variable=context,
                              variable_card=len(probabilities), values=values))
 
-    def create_intention_cpts(self):
+    def _create_intention_cpts(self):
         '''
         Create the Conditional Probability Tables for all intention nodes in the DAG and APPENDS them to self.cpts
         '''
         for intention, context_influence in self.config['intentions'].items():
-            values = self.calculate_probability_values(context_influence)
+            values = self._calculate_probability_values(context_influence)
             # create a TabularCPD
             self.cpts.append(TabularCPD(variable=intention, variable_card=2,  # intentions are always binary
                                         # see https://pgmpy.org/factors/discrete.html?highlight=cpd#module-pgmpy.factors.discrete.CPD
@@ -119,7 +119,7 @@ class BayesNet():
                                         evidence=self.evidence,
                                         evidence_card=self.evidence_card))
 
-    def create_evidence_card(self):
+    def _create_evidence_card(self):
         '''
         create the evidence_card for bnlearn
         '''
@@ -128,7 +128,7 @@ class BayesNet():
             self.evidence_card.append(
                 len(self.config['contexts'][evidence_variable]))
 
-    def calculate_probability_values(self, context_influence: dict) -> list:
+    def _calculate_probability_values(self, context_influence: dict) -> list:
         '''
         Calculates the probability values with the given context_influence from the config.
 
@@ -298,7 +298,7 @@ class BayesNet():
             assert sum(instantiations.values(
             )) == 1.0, f'The sum of probabilities for context instantiations must be 1 - For {context} it is {sum(instantiations.values())}!'
 
-    def create_zero_influence_dict(self, context_with_instantiations: dict) -> defaultdict:
+    def _create_zero_influence_dict(self, context_with_instantiations: dict) -> defaultdict:
         """
         This uses the context dict from config['contexts'] to instantiate a dict that can be used in config['intentions']['some_context']
 
@@ -344,9 +344,9 @@ class BayesNet():
         self.config['contexts'][context] = instantiations
         # add this context in every intention with instantiations and values beeing zero.
         # for intention in self.config['intentions']:
-        #     self.config['intentions'][intention] = {**self.config['intentions'][intention], **self.create_zero_influence_dict(
+        #     self.config['intentions'][intention] = {**self.config['intentions'][intention], **self._create_zero_influence_dict(
         #         {context: instantiations})}
-        self.transport_context_into_intentions()
+        self._transport_context_into_intentions()
         # reinizialize
         self.__init__(self.config, merge_config=False)
 
@@ -368,9 +368,9 @@ class BayesNet():
         # add in the intention filled with zeros for all contexts
         self.config['intentions'][intention] = defaultdict(
             lambda: defaultdict(int))
-        self.transport_context_into_intentions()
+        self._transport_context_into_intentions()
         # for context, instantiations_with_values in self.config['contexts'].items():
-        #     zeros = self.create_zero_influence_dict(
+        #     zeros = self._create_zero_influence_dict(
         #         {context: instantiations_with_values})
         #     self.config['intentions'][intention][context] = zeros[context]
         # reinizialize
@@ -410,8 +410,8 @@ class BayesNet():
             context = new_name
 
         self.config['contexts'][context] = instantiations
-        self.remove_context_from_intentions()
-        self.transport_context_into_intentions()
+        self._remove_context_from_intentions()
+        self._transport_context_into_intentions()
         # reinizialize
         self.__init__(self.config, merge_config=False)
 
@@ -451,8 +451,8 @@ class BayesNet():
             AssertionError: An AssertionError is raised if the resulting config is not valid.
         """
         del(self.config['contexts'][context])
-        self.remove_context_from_intentions()
-        self.transport_context_into_intentions()
+        self._remove_context_from_intentions()
+        self._transport_context_into_intentions()
         # reinizialize
         self.__init__(self.config, merge_config=False)
 
@@ -542,7 +542,7 @@ class BayesNet():
             raise ValueError(
                 'change_influence_value can only change values that exist already')
 
-    def transport_context_into_intentions(self):
+    def _transport_context_into_intentions(self):
         """
         Transports contexts and their instantiations defined in the config['contexts'] into config['intentions'] as influencing context if not present. 
         """
@@ -553,7 +553,7 @@ class BayesNet():
                         # This only works if it is a defaultdict
                         self.config['intentions'][intention][context][instantiation] = 0
 
-    def remove_context_from_intentions(self):
+    def _remove_context_from_intentions(self):
         """
         This removes context or instantiations after removing/changing instantiations and/or context.
         """

@@ -2,6 +2,9 @@
 
 CoBaIR is a python lib for **Co**ntext **Ba**sed **I**ntention **R**ecognition.
 
+## Documentation
+The Documentation can be accessed via the VPN on http://bob.dfki.uni-bremen.de/apis/kimmi_sf/implementation/CoBaIR/latest
+
 ## Bayesian Approach
 In the bayesian approach CoBaIR uses a two-layer Bayesian Net of the following structure.
 ![two-layer Bayesian Net](docs/images/2layerbayesian.svg)
