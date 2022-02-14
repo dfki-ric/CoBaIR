@@ -26,7 +26,14 @@ class NewIntentionDialog(Dialog):
     """Dialog Window for new Intention"""
 
     def __init__(self, parent, title: str = ..., intention: str = None) -> None:
-        # TODO: docstring - can I inherit docstring?
+        """
+        Extends the Constructor of Dialog to use an already existing intention.
+
+        If an intention is given it will be filled in the corresponding text field.
+
+        Args:
+            intention: An intention that will be filled in the dialog
+        """
         self.intention = intention
         super().__init__(parent, title)
 
@@ -76,6 +83,17 @@ class NewContextDialog(Dialog):
 
     def __init__(self, parent, title: str = ..., predefined_context: dict = None) -> None:
         # TODO: docstring - can I inherit docstring?
+        """
+        Extends the Constructor of Dialog to use already existing context and the corresponding instantiations and values.
+
+        If context and their corresponding instantiations and values are given it will be filled in the corresponding text fields.
+
+        Args:
+            predefined_context: 
+                Context with the corresponding instantiations.
+                Example: {'speech commands': {'pickup': 0.2, 'handover': 0.2, 'other': 0.6}}
+        """
+        print("predefined_context: ", predefined_context)
         self.predefined_context = deepcopy(predefined_context)
         super().__init__(parent, title)
 
