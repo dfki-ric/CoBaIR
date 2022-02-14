@@ -50,8 +50,6 @@ class NewIntentionDialog(Dialog):
 
         tk.Label(master, text="New Intention:").grid(row=0)
         self.intention_entry = tk.Entry(master)
-        if self.intention:
-            self.intention_entry.insert(0, self.intention)
         self.intention_entry.grid(row=1)
         return self.intention_entry  # initial focus
 
@@ -82,7 +80,6 @@ class NewContextDialog(Dialog):
     """Dialog Window for new Context"""
 
     def __init__(self, parent, title: str = ..., predefined_context: dict = None) -> None:
-        # TODO: docstring - can I inherit docstring?
         """
         Extends the Constructor of Dialog to use already existing context and the corresponding instantiations and values.
 
@@ -109,7 +106,7 @@ class NewContextDialog(Dialog):
         """
         name_frame = tk.Frame(master)
         name_frame.grid(row=0)
-        tk.Label(name_frame, text="Context:").grid(row=0)
+        tk.Label(name_frame, text="New Context:").grid(row=0)
         self.context_entry = tk.Entry(name_frame)
         self.context_entry.grid(row=0, column=1)
 
@@ -121,30 +118,12 @@ class NewContextDialog(Dialog):
         tk.Label(self.instantiations_frame,
                  text="Apriori Probability").grid(row=0, column=1)
         self.instantiations = []
-        self.shown_instantiations = 0
-        # TODO: Fill the entries here if predefined_context is given!
-        if self.predefined_context:
-            # it's always only one new context
-            context = list(self.predefined_context.keys())[0]
-            instantiations = self.predefined_context[context]
-            self.context_entry.insert(0, context)
-        else:
-            instantiations = {}
-        while(self.shown_instantiations < 2 or instantiations):
+        self.shown_instantiations = 1
+        while(self.shown_instantiations < 3):
             # tk.Label(self.instantiations_frame,
             #          text=f"Instantiation {self.shown_instantiations}:").grid(row=self.shown_instantiations)
             name_entry = tk.Entry(self.instantiations_frame)
             probability_entry = tk.Entry(self.instantiations_frame)
-            if instantiations:
-                # get name
-                name = list(instantiations.keys())[0]
-                # get value
-                value = instantiations[name]
-                # set entries
-                name_entry.insert(0, name)
-                probability_entry.insert(0, value)
-                # del entry
-                del(instantiations[name])
             name_entry.grid(row=self.shown_instantiations, column=0)
             probability_entry.grid(row=self.shown_instantiations, column=1)
             self.instantiations.append((name_entry, probability_entry))
@@ -226,10 +205,7 @@ class Configurator(tk.Tk):
 
     def create_fields(self):
         """
-        Creates all necessary fields in the GUI.
-
-        This should be used whenever the config is changed. 
-        It reads all values from the config and adjusts the GUI accordingly.
+        Creates all necessary fields in the GUI
         """
 
         self.set_context_dropdown(self.bayesNet.config['contexts'].keys())
@@ -238,28 +214,6 @@ class Configurator(tk.Tk):
             self.bayesNet.config['contexts'].keys())
 
         self.set_intention_dropdown(self.bayesNet.config['intentions'].keys())
-        self.adjust_button_visibility()
-
-    def adjust_button_visibility(self):
-        """
-        Adjusts if buttons are visible or not.
-
-        Buttons for edit and delete will only be visible if there is a corresponding intention or context already created.
-        """
-        if self.bayesNet.config['contexts']:
-            # set visible
-            self.edit_context_button.grid()
-            self.delete_context_button.grid()
-        else:
-            self.edit_context_button.grid_remove()
-            self.delete_context_button.grid_remove()
-        if self.bayesNet.config['intentions']:
-            # set visible
-            self.edit_intention_button.grid()
-            self.delete_intention_button.grid()
-        else:
-            self.edit_intention_button.grid_remove()
-            self.delete_intention_button.grid_remove()
 
     def new_context(self):
         """
@@ -269,9 +223,9 @@ class Configurator(tk.Tk):
         self.error_label['text'] = f""
         # open small dialog to create context
         dialog = NewContextDialog(self, title="New Context")
+        # it's always only one new context
         if dialog.result:
             # check if context already exists!
-            # it's always only one new context
             new_context = list(dialog.result.keys())[0]
             try:
                 self.bayesNet.add_context(
@@ -283,53 +237,6 @@ class Configurator(tk.Tk):
             self.context_selection.set(new_context)
             # Explicit call is neccessary because set seems not to trigger the callback
             self.context_selected(new_context)
-
-    def edit_context(self):
-        """
-        Edit the currently selected context.
-
-        !!! note
-        Changing the name of an instantiation will always set the influence value of this instantiation to zero for all intentions!
-
-        !!! note 
-        The GUI can only handle strings for now. This means every instantiation name will be casted to a string upon editing.
-        """
-        # TODO: renaming instantiations should not neccesarily put influence values to zero - check cases
-        # TODO: this will always set the instantiations as Strings
-        # Open the new Context dialog with prefilled values
-        # remove errorText
-        self.error_label['text'] = f""
-        # open small dialog to create context
-        context = self.context_selection.get()
-        instantiations = self.bayesNet.config['contexts'][context]
-        dialog = NewContextDialog(self, title="Edit Context", predefined_context={
-                                  context: instantiations})
-
-        if dialog.result:
-            try:
-                # it's always only one new context
-                new_context_name = list(dialog.result.keys())[0]
-                new_instantiations = dialog.result[new_context_name]
-                self.bayesNet.edit_context(
-                    context, new_instantiations, new_context_name)
-            except AssertionError as e:
-                self.error_label['text'] = f"{e}"
-            self.create_fields()
-            self.context_selection.set(new_context_name)
-            # Explicit call is neccessary because set seems not to trigger the callback
-            self.context_selected(new_context_name)
-
-    def delete_context(self):
-        """"
-        Deletes the currently selected context.
-        """
-        self.error_label['text'] = f""
-        context = self.context_selection.get()
-        try:
-            self.bayesNet.del_context(context)
-        except AssertionError as e:
-            self.error_label['text'] = f"{e}"
-        self.create_fields()
 
     def new_intention(self):
         """
@@ -349,43 +256,12 @@ class Configurator(tk.Tk):
             # Explicit call is neccessary because set seems not to trigger the callback
             self.influencing_context_selected(dialog.result)
 
-    def edit_intention(self):
-        """
-        Edit the name of the currently selected intention
-        """
-
-        self.error_label['text'] = f""
-        # open small dialog to create context
-        intention = self.intention_selection.get()
-        dialog = NewIntentionDialog(self,
-                                    title="Edit Intention", intention=intention)
-        if dialog.result:
-            try:
-                self.bayesNet.edit_intention(intention, dialog.result)
-            except AssertionError as e:
-                self.error_label['text'] = f"{e}"
-            self.create_fields()
-            self.intention_selection.set(dialog.result)
-            # Explicit call is neccessary because set seems not to trigger the callback
-            self.influencing_context_selected(dialog.result)
-
-    def delete_intention(self):
-        """
-        Delete the currently selected intention
-        """
-        self.error_label['text'] = f""
-        intention = self.intention_selection.get()
-        try:
-            self.bayesNet.del_intention(intention)
-        except AssertionError as e:
-            self.error_label['text'] = f"{e}"
-        self.create_fields()
-
     def setup_layout(self):
         """
         Setting up the layout of the GUI.
         """
         ###### Context ######
+        # TODO: remove/edit context or instantiation
         self.context_label_frame = tk.Frame(self)
         self.context_label_frame.grid(row=0, column=0)
         tk.Label(self.context_label_frame,
@@ -396,24 +272,16 @@ class Configurator(tk.Tk):
         self.context_dropdown = tk.OptionMenu(
             self.context_label_frame, self.context_selection, *values, command=self.context_selected, value=self.context_selection.get())
         self.context_dropdown.grid(row=0, column=1)
-
-        self.edit_context_button = tk.Button(self.context_label_frame,
-                                             command=self.edit_context, text='Edit')
-        self.edit_context_button.grid(row=0, column=2)
-
-        self.delete_context_button = tk.Button(self.context_label_frame,
-                                               command=self.delete_context, text='Delete')
-        self.delete_context_button.grid(row=0, column=3)
-
         self.new_context_button = tk.Button(self.context_label_frame,
                                             command=self.new_context, text='New Context')
-        self.new_context_button.grid(row=0, column=4)
+        self.new_context_button.grid(row=0, column=2)
 
         self.context_frame = tk.Frame(self)
         self.context_frame.grid(row=1, column=0, columnspan=3)
         self.context_instantiations = defaultdict(dict)
 
         ##### Intention ####
+        # TODO: remove/edit intention
         self.intention_label_frame = tk.Frame(self)
         self.intention_label_frame.grid(row=2, column=0)
         tk.Label(self.intention_label_frame,
@@ -433,17 +301,9 @@ class Configurator(tk.Tk):
             self.intention_label_frame, self.intention_selection, *values, command=self.influencing_context_selected, value=self.intention_selection.get())
         self.intention_dropdown.grid(row=0, column=3)
 
-        self.edit_intention_button = tk.Button(self.intention_label_frame,
-                                               command=self.edit_intention, text='Edit')
-        self.edit_intention_button.grid(row=0, column=4)
-
-        self.delete_intention_button = tk.Button(self.intention_label_frame,
-                                                 command=self.delete_intention, text='Delete')
-        self.delete_intention_button.grid(row=0, column=5)
-
         self.new_intention_button = tk.Button(self.intention_label_frame,
                                               command=self.new_intention, text='New Intention')
-        self.new_intention_button.grid(row=0, column=6)
+        self.new_intention_button.grid(row=0, column=4)
         self.intention_frame = tk.Frame(self)
         self.intention_frame.grid(row=3, column=0)
         self.intention_instantiations = defaultdict(lambda: defaultdict(dict))
@@ -478,6 +338,7 @@ class Configurator(tk.Tk):
         if options:
             self.context_selection.set(
                 list(options)[0] if options else 'Context')
+            print(f"options: {options}")
             self.context_dropdown = tk.OptionMenu(
                 self.context_label_frame, self.context_selection, *options, command=command)
         else:  # clear
@@ -552,12 +413,10 @@ class Configurator(tk.Tk):
                     try:
                         widget.destroy()
                     except Exception as e:
-                        print(f"couldn't destroy: {e}")  # TODO: better logging
+                        print(f"couldn't destroy: {e}")
 
         self.context_instantiations = defaultdict(dict)
         row = 0
-        if context not in self.bayesNet.config['contexts']:
-            return
         config = self.bayesNet.config
         for instantiation, value in config['contexts'][context].items():
             instantiation_label = tk.Label(self.context_frame,
@@ -593,7 +452,6 @@ class Configurator(tk.Tk):
                         try:
                             widget.destroy()
                         except Exception as e:
-                            # TODO: better logging
                             print(f"couldn't destroy: {e}")
         intention = self.intention_selection.get()
         context = self.influencing_context_selection.get()
