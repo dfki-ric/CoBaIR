@@ -23,16 +23,17 @@ __author__ = 'Adrian Lubitz'
 
 
 class BayesNet():
-    def __init__(self, config: dict = None, merge_config: bool = False) -> None:
+    def __init__(self, config: dict = None, merge_config: bool = False, bn_verbosity: int = 0) -> None:
         '''
         Initializes the BayesNet with the given config.
 
         Args:
             config: A dict with a config following the config format.
             merge_config: Flag if the given config should be merged. Was used internally and is DEPRECATED
+            bn_verbosity: sets the verbose flag for bnlearn. See [bnlearn API](https://erdogant.github.io/bnlearn/pages/html/bnlearn.bnlearn.html?highlight=verbose#bnlearn.bnlearn.make_DAG) for more information
         '''
         self.valid = False
-
+        self.bn_verbosity = bn_verbosity
         self.discretization_functions = {}
 
         # config = deepcopy(config)
@@ -69,7 +70,8 @@ class BayesNet():
         self.cpts = []
         self._create_context_cpts()
         self._create_intention_cpts()
-        self.DAG = bn.make_DAG(self.edges, CPD=self.cpts)
+        self.DAG = bn.make_DAG(self.edges, CPD=self.cpts,
+                               verbose=self.bn_verbosity)
         # This is the config of the currently running BayesNet
         self.valid_config = deepcopy(self.config)
         self.valid = True
@@ -243,7 +245,7 @@ class BayesNet():
             for intention in self.intentions:
                 # only True values of binary intentions will be saved
                 inference[intention] = bn.inference.fit(
-                    self.DAG, variables=[intention], evidence=card_evidence).values[1]
+                    self.DAG, variables=[intention], evidence=card_evidence, verbose=self.bn_verbosity).values[1]
             if normalized:
                 return self.normalize_inference(inference)
             else:
