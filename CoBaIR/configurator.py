@@ -82,7 +82,6 @@ class NewContextDialog(Dialog):
     """Dialog Window for new Context"""
 
     def __init__(self, parent, title: str = ..., predefined_context: dict = None) -> None:
-        # TODO: docstring - can I inherit docstring?
         """
         Extends the Constructor of Dialog to use already existing context and the corresponding instantiations and values.
 
