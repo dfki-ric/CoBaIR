@@ -146,14 +146,14 @@ intentions:
 ### CPT Values
 In the default approach of creating a CPT(Conditional Probability Table) you would need to determine
 
- n<sub>v</sub>(i, c, j) = &sum;<sub>j</sub> c<sub>j</sub> + i * &prod;<sub>i</sub> n<sub>i</sub> &prod;<sub>j</sub> c<sub>j</sub>
+ n<sub>v</sub>(i, j c, n) = &sum;<sub>j</sub> c<sub>j</sub> + i * &prod;<sub>i</sub> n<sub>i</sub> &prod;<sub>j</sub> c<sub>j</sub>
 
 
  values. Where n<sub>v</sub> is the number of values which needs to be determined, c is the number of possible instantiations for a context i is the number of intentions and n is the number of possible instantiations for Intentions.
 
  While in the optimized version the product is replaced with a sum resulting in the following:
 
- n<sub>v</sub>(i, c, j) = (i+1)&sum;<sub>j</sub> c<sub>j</sub>
+ n<sub>v</sub>(i, j, c) = (i+1)&sum;<sub>j</sub> c<sub>j</sub>
 
 This is possible due to the following assumptions:
 
