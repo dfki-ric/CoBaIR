@@ -153,7 +153,7 @@ In the default approach of creating a CPT(Conditional Probability Table) you wou
 
  While in the optimized version the product is replaced with a sum resulting in the following:
 
- n<sub>v</sub>(i, c) = (i+1)&sum;<sub>j</sub> c<sub>j</sub>
+ n<sub>v</sub>(i, c, j) = (i+1)&sum;<sub>j</sub> c<sub>j</sub>
 
 This is possible due to the following assumptions:
 
