@@ -146,15 +146,21 @@ intentions:
 ### CPT Values
 In the default approach of creating a CPT(Conditional Probability Table) you would need to determine
 
- n<sub>v</sub>(i, c) = &sum;<sub>j</sub> c<sub>j</sub> + i * &prod;<sub>j</sub> c<sub>j</sub>
+ n<sub>v</sub>(i, c, j) = &sum;<sub>j</sub> c<sub>j</sub> + i * &prod;<sub>i</sub> n<sub>i</sub> &prod;<sub>j</sub> c<sub>j</sub>
 
 
- values. Where n<sub>v</sub> is the number of values which needs to be determined, c is the number of possible instantiations for a context and i is the number of intentions.
+ values. Where n<sub>v</sub> is the number of values which needs to be determined, c is the number of possible instantiations for a context i is the number of intentions and n is the number of possible instantiations for Intentions.
 
  While in the optimized version the product is replaced with a sum resulting in the following:
 
  n<sub>v</sub>(i, c) = (i+1)&sum;<sub>j</sub> c<sub>j</sub>
 
+This is possible due to the following assumptions:
+
+- **Intentions are binary**: we just need to care about the positive case and the negative case can be assumed as counterposibility.
+- **Context has a meaning on its own for intentions**: Therefor we set a percentage influence value v<sub>i, j, n</sub> for every context-intention-tuple (C<sub>i,j</sub>, I<sub>n</sub>) and calculate the conditional probabilities of the conditional probability tables(CPTs) as the average of all influence values for the given context.
+
+This is the optimal case. The second assumption may not be true for every intention.
 
 ## Run tests
 Tests are implemented with [unittest](https://docs.python.org/3/library/unittest.html) and can be executed with:
