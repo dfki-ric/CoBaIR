@@ -17,27 +17,33 @@ contexts:
 # List of intentions. Intentions are always binary(either present or not)
 # For every intention the context variables and their influence on the intention is given
 # [very high, high, medium, low, very low, no] => [5, 4, 3, 2, 1, 0]
-intentions: 
- pick up tool:
-  speech commands:
-    pickup : 5
-    handover : 0
-    other : 0
-  human holding object:
-    true : 1
-    false : 4
-  human activity:
-    idle : 4
-    working : 3
- hand over tool:
-  speech commands:
-    pickup : 0
-    handover : 5
-    other : 0
-  human holding object:
-    true : 1
-    false : 4
-  human activity:
-    idle : 4
-    working : 1
-
+intentions:
+  hand over tool:
+    human activity:
+      idle: 4
+      working: 1
+    human holding object:
+      false: 4
+      true: 1
+    speech commands:
+      handover: 5
+      other: 0
+      pickup: 0
+  pick up tool:
+    speech commands:
+      handover: 0
+      other: 0
+      pickup: 5
+    human holding object:
+      false: 4
+      true: 1
+    human activity:
+      idle: 4
+      working: 3
+    ? !!python/tuple
+    - speech commands
+    - human holding object
+    : ? !!python/tuple
+      - pickup
+      - true
+      : 5

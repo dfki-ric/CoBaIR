@@ -21,6 +21,18 @@ from .random_base_count import Counter
 # end file header
 __author__ = 'Adrian Lubitz'
 
+# https://stackoverflow.com/questions/9169025/how-can-i-add-a-python-tuple-to-a-yaml-file-using-pyyaml
+
+
+class PrettySafeLoader(yaml.SafeLoader):
+    def construct_python_tuple(self, node):
+        return tuple(self.construct_sequence(node))
+
+
+PrettySafeLoader.add_constructor(
+    u'tag:yaml.org,2002:python/tuple',
+    PrettySafeLoader.construct_python_tuple)
+
 
 class BayesNet():
     def __init__(self, config: dict = None, merge_config: bool = False, bn_verbosity: int = 0) -> None:
@@ -616,7 +628,7 @@ def load_config(path):
             a defaultdict containing the config
     """
     with open(path) as stream:
-        return config_to_default_dict(yaml.safe_load(stream))
+        return config_to_default_dict(yaml.load(stream, Loader=PrettySafeLoader))
 
 # https://stackoverflow.com/questions/26496831/how-to-convert-defaultdict-of-defaultdicts-of-defaultdicts-to-dict-of-dicts-o
 
