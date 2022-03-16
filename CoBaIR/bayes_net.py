@@ -300,8 +300,10 @@ class BayesNet():
         # Intentions need to have influence values for all contexts and their possible instantiations
         for intention, context_influences in self.config['intentions'].items():
             for context, influences in context_influences.items():
-                assert context in self.config[
-                    'contexts'], f'Context influence {context} cannot be found in the defined contexts!'
+                if isinstance(context, str):
+                    assert context in self.config[
+                        'contexts'], f'Context influence {context} cannot be found in the defined contexts!'
+                # TODO: only for the single influences
                 assert influences.keys() == self.config['contexts'][context].keys(
                 ), f'An influence needs to be defined for all instantiations! {intention}.{context} does not fit the defined instantiations for {context}'
                 for instantiation, influence in influences.items():
