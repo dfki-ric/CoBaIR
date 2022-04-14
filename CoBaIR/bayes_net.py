@@ -5,7 +5,8 @@ This module provides a class for a two-layer bayes net for context based intenti
 # System imports
 from __future__ import annotations
 import itertools
-from collections import defaultdict, Hashable
+from collections import defaultdict
+from collections.abc import Hashable
 from copy import deepcopy
 import warnings
 
