@@ -143,6 +143,7 @@ class BayesNet():
                 len(self.config['contexts'][evidence_variable]))
 
     def _calculate_probability_values(self, context_influence: dict) -> list:
+        # TODO: adjust example to use tuples
         '''
         Calculates the probability values with the given context_influence from the config.
 
@@ -170,10 +171,14 @@ class BayesNet():
              [0.583, 0.5, 0.816, 0.733, 0.266, 0.183, 0.5, 0.416, 0.266, 0.183, 0.5, 0.416]]
         '''
         # For every intention calculate the average of their influencing contexts
+        # TODO: here I need to incoperate the dependend values! It becomes a weighted sum now!
         pos_values = []
         for count in Counter(self.evidence_card):
             # Here I need to average over all the values that are in the config at position count
             average = 0
+            # TODO: how do I average? P(int | speech = other, hum hol obj = False, hum act = working) = ('0' + '4' + '3') / 3 = (0.0 + 0.75 + 0.5) / 3 = 0.416
+            # TODO: die ganzen counter sind dafür, dass es sicher in der Reihenfolge bleibt, weil dicts das nicht hergeben.
+            # TODO: jetzt müsste ich immer testen, ob es für den bestimmten average, den ich gerade bilde einen corner case gibt(ein tuple) und dann das zu (len(tuple)-len(self.evidence))/len(self.evidence)? - also auf jeden Fall zu einem Teil.
             for i in range(len(self.evidence_card)):
                 average += self.value_to_prob[context_influence[self.evidence[i]
                                                                 ][self.card_to_value[self.evidence[i]][count[i]]]]
@@ -300,15 +305,18 @@ class BayesNet():
         # Intentions need to have influence values for all contexts and their possible instantiations
         for intention, context_influences in self.config['intentions'].items():
             for context, influences in context_influences.items():
+
                 if isinstance(context, str):
                     assert context in self.config[
                         'contexts'], f'Context influence {context} cannot be found in the defined contexts!'
-                # TODO: only for the single influences
-                assert influences.keys() == self.config['contexts'][context].keys(
-                ), f'An influence needs to be defined for all instantiations! {intention}.{context} does not fit the defined instantiations for {context}'
+                # assert influences.keys() == self.config['contexts'][context].keys(
+                # ), f'An influence needs to be defined for all instantiations! {intention}.{context} does not fit the defined instantiations for {context}'
                 for instantiation, influence in influences.items():
-                    assert 5 >= influence >= 0 and isinstance(
-                        influence, int), f'Influence Value for {intention}.{context}.{instantiation} must be an integer between 0 and 5! Is {influence}'
+                    if type(instantiation) is not tuple:
+                        assert 5 >= influence >= 0 and isinstance(
+                            influence, int), f'Influence Value for {intention}.{context}.{instantiation} must be an integer between 0 and 5! Is {influence}'
+                        assert instantiation in self.config['contexts'][context].keys(
+                        ), f'An influence needs to be defined for all instantiations! {intention}.{context}.{instantiation} does not fit the defined instantiations for {context}'
         # Probabilities need to sum up to 1
         for context, instantiations in self.config['contexts'].items():
             assert sum(instantiations.values(
