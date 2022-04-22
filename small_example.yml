@@ -37,6 +37,13 @@ intentions:
     human holding object:
       false: 4
       true: 1
+    ? !!python/tuple
+    - speech commands
+    - human activity
+    : ? !!python/tuple
+      - pickup
+      - working
+      : 5
     human activity:
       idle: 4
       working: 3
