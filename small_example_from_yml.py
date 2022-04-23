@@ -22,6 +22,14 @@ __author__ = 'Adrian Lubitz'
 config = load_config("small_example.yml")
 net = BayesNet(config)
 # %%
+# add combined influence value
+net.add_combined_influence(
+    'hand over tool', ('human activity', 'speech commands'), ('working', 'handover'), 5)
+# %%
+# del combined context influence
+net.del_combined_influence(
+    'pick up tool', ('speech commands', 'human holding object'), ('pickup', True))
+# %%
 # define discetazaion functio
 
 
