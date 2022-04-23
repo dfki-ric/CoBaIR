@@ -53,4 +53,4 @@ intentions:
     : ? !!python/tuple
       - pickup
       - true
-      : 5
+      : 4
