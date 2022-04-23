@@ -22,6 +22,18 @@ from .random_base_count import Counter
 # end file header
 __author__ = 'Adrian Lubitz'
 
+# https://stackoverflow.com/questions/9169025/how-can-i-add-a-python-tuple-to-a-yaml-file-using-pyyaml
+
+
+class PrettySafeLoader(yaml.SafeLoader):
+    def construct_python_tuple(self, node):
+        return tuple(self.construct_sequence(node))
+
+
+PrettySafeLoader.add_constructor(
+    u'tag:yaml.org,2002:python/tuple',
+    PrettySafeLoader.construct_python_tuple)
+
 
 class BayesNet():
     def __init__(self, config: dict = None, merge_config: bool = False, bn_verbosity: int = 0) -> None:
@@ -93,9 +105,9 @@ class BayesNet():
         Initializes the backtranslation dict for the context values to card numbers for bnlearn
         '''
         self.card_to_value = defaultdict(dict)
-        for intention, values in self.value_to_card.items():
+        for context, values in self.value_to_card.items():
             for name, num in values.items():
-                self.card_to_value[intention][num] = name
+                self.card_to_value[context][num] = name
 
     def _create_context_cpts(self):
         '''
@@ -131,7 +143,100 @@ class BayesNet():
             self.evidence_card.append(
                 len(self.config['contexts'][evidence_variable]))
 
+    # def _context_to_card_index(self, context: str) -> int:
+    #     """
+    #     returns the card index for a specific context
+
+    #     Args:
+    #         context: A context name
+
+    #     Returns:
+    #         int: index of the context in the card
+    #     """
+    #     return self.evidence.index(context)
+
+    def _create_combined_context(self, context_influence: dict) -> dict:
+        # TODO: adjust example to use tuples
+        """
+        Creates a dict with the combined contexts in card index format from context_influence.
+
+        Args:
+            context_influence:
+                A dict with the influence values for contexts.
+                Example: {'speech commands':
+                            {'pickup': 5, 'handover': 0, 'other': 0},
+                          'human holding object':
+                            {True: 1, False: 4},
+                          'human activity':
+                            {'idle': 4, 'working': 3}
+                          }
+
+        Returns:
+            dict: A dict with the combined contexts
+            Example: {(0, 2): {('pickup', 'working'): 5}), (0, 1): {('pickup', True): 5})}
+
+        """
+        combined_context = {}
+        for context in context_influence:
+            if isinstance(context, tuple):
+                combined_context[tuple(map(self.evidence.index, context))
+                                 ] = context_influence[context]
+        return combined_context
+
+    def _alter_combined_context(self, count: Counter, context_influence: dict, combined_context: dict) -> dict:
+        # TODO: adjust example to use tuples
+        """
+        Overwrites the influence values for the cases of combined influence.
+
+        Args:
+            count: A counter that indicates for which combination of context the average is calculated
+            context_influence: 
+                A dict with the influence values for contexts.
+                Example: {'speech commands':
+                            {'pickup': 5, 'handover': 0, 'other': 0},
+                          'human holding object':
+                            {True: 1, False: 4},
+                          'human activity':
+                            {'idle': 4, 'working': 3}
+                          }
+            combined_context:
+                A dict with the combined contexts
+                Example: {(0, 2): {('pickup', 'working'): 5}), (0, 1): {('pickup', True): 5})}
+
+        Returns:
+            dict:
+                A dict with the adjusted influence values for contexts.
+                Example: {'speech commands':
+                            {'pickup': 5, 'handover': 0, 'other': 0},
+                          'human holding object':
+                            {True: 5, False: 4},
+                          'human activity':
+                            {'idle': 4, 'working': 3}
+                          }
+
+        """
+        active_case = list(
+            map(lambda tup: self.card_to_value[self.evidence[tup[0]]][tup[1]], enumerate(count)))
+
+        altered_context_influence = deepcopy(context_influence)
+
+        for context_tuple, values in combined_context.items():
+            combined_case = True
+            # There should always be only one key
+            value_tuple = list(values.keys())[0]
+            for i, context_index in enumerate(context_tuple):
+                if active_case[context_index] != value_tuple[i]:
+                    combined_case = False
+                    break
+            if combined_case:
+                for i, index in enumerate(context_tuple):
+                    altered_context_influence[self.evidence[index]][value_tuple[i]
+                                                                    ] = combined_context[context_tuple][value_tuple]
+                break
+        return altered_context_influence
+
     def _calculate_probability_values(self, context_influence: dict) -> list:
+        # TODO: adjust example to use tuples
         '''
         Calculates the probability values with the given context_influence from the config.
 
@@ -142,30 +247,39 @@ class BayesNet():
         Args:
             context_influence:
                 A dict with the influence values for contexts.
-                Example: {'speech commands': 
-                            {'pickup': 5, 'handover': 0, 'other': 0}, 
-                          'human holding object': 
-                            {True: 1, False: 4}, 
-                          'human activity': 
+                Example: {'speech commands':
+                            {'pickup': 5, 'handover': 0, 'other': 0},
+                          'human holding object':
+                            {True: 1, False: 4},
+                          'human activity':
                             {'idle': 4, 'working': 3}
                           }
         Returns:
             list:
             A list of lists containing the probability values for the negative and positive respectively.
-            Example: 
+            Example:
 
-            [[0.416, 0.5, 0.183, 0.266, 0.733, 0.816, 0.5, 0.583, 0.733, 0.816, 0.5, 0.583], 
+            [[0.416, 0.5, 0.183, 0.266, 0.733, 0.816, 0.5, 0.583, 0.733, 0.816, 0.5, 0.583],
 
              [0.583, 0.5, 0.816, 0.733, 0.266, 0.183, 0.5, 0.416, 0.266, 0.183, 0.5, 0.416]]
         '''
         # For every intention calculate the average of their influencing contexts
         pos_values = []
+        combined_context = self._create_combined_context(context_influence)
+
         for count in Counter(self.evidence_card):
             # Here I need to average over all the values that are in the config at position count
             average = 0
+
+            # alternate context_influence
+            altered_context_influence = self._alter_combined_context(
+                count, context_influence, combined_context)
+
+            ####
+
             for i in range(len(self.evidence_card)):
-                average += self.value_to_prob[context_influence[self.evidence[i]
-                                                                ][self.card_to_value[self.evidence[i]][count[i]]]]
+                average += self.value_to_prob[altered_context_influence[self.evidence[i]
+                                                                        ][self.card_to_value[self.evidence[i]][count[i]]]]
             average /= len(self.evidence)
             pos_values.append(average)
         # create neg_values
@@ -182,7 +296,7 @@ class BayesNet():
             instantiation: an instantiation of the context
         Returns:
             tuple[bool, str]:
-            A tuple of bool to indicate validity and str for error message 
+            A tuple of bool to indicate validity and str for error message
         """
         if context not in self.config['contexts'] or instantiation is None:
             return False, 'ignore'  # ignoring unrelated contexts and Nonetype
@@ -210,7 +324,7 @@ class BayesNet():
         infers the probabilities for the intentions with given evidence.
 
         Args:
-            evidence: 
+            evidence:
                 Evidence to infer the probabilities of all intentions.
                 Evidence can contain context which is not in the config as well as it must not contain all possible contexts.
                 Example:
@@ -258,7 +372,7 @@ class BayesNet():
         '''
         Normalizes the inference to a proper probability distribution.
 
-        Inference which is not normalized will just be normalized for one intention being True or False, 
+        Inference which is not normalized will just be normalized for one intention being True or False,
         which leads to uninterpretable results for inference of multiple intentions.
 
         Args:
@@ -289,13 +403,18 @@ class BayesNet():
         # Intentions need to have influence values for all contexts and their possible instantiations
         for intention, context_influences in self.config['intentions'].items():
             for context, influences in context_influences.items():
-                assert context in self.config[
-                    'contexts'], f'Context influence {context} cannot be found in the defined contexts!'
-                assert influences.keys() == self.config['contexts'][context].keys(
-                ), f'An influence needs to be defined for all instantiations! {intention}.{context} does not fit the defined instantiations for {context}'
+
+                if isinstance(context, str):
+                    assert context in self.config[
+                        'contexts'], f'Context influence {context} cannot be found in the defined contexts!'
+                # assert influences.keys() == self.config['contexts'][context].keys(
+                # ), f'An influence needs to be defined for all instantiations! {intention}.{context} does not fit the defined instantiations for {context}'
                 for instantiation, influence in influences.items():
-                    assert 5 >= influence >= 0 and isinstance(
-                        influence, int), f'Influence Value for {intention}.{context}.{instantiation} must be an integer between 0 and 5! Is {influence}'
+                    if type(instantiation) is not tuple:
+                        assert 5 >= influence >= 0 and isinstance(
+                            influence, int), f'Influence Value for {intention}.{context}.{instantiation} must be an integer between 0 and 5! Is {influence}'
+                        assert instantiation in self.config['contexts'][context].keys(
+                        ), f'An influence needs to be defined for all instantiations! {intention}.{context}.{instantiation} does not fit the defined instantiations for {context}'
         # Probabilities need to sum up to 1
         for context, instantiations in self.config['contexts'].items():
             assert sum(instantiations.values(
@@ -331,7 +450,7 @@ class BayesNet():
 
         Args:
             context: a new context for the config
-            instantiations: 
+            instantiations:
                 a dict of the instantiations and their corresponding apriori probabilities
                 Example:
                     {True: 0.6, False:0.4}
@@ -497,7 +616,7 @@ class BayesNet():
         Args:
             path: path to the file the config is saved in
         Raises:
-            AssertionError: An AssertionError is raised if the resulting config is not valid.        
+            AssertionError: An AssertionError is raised if the resulting config is not valid.
         """
         config = load_config(path)
         # reinizialize with config
@@ -547,7 +666,7 @@ class BayesNet():
 
     def _transport_context_into_intentions(self):
         """
-        Transports contexts and their instantiations defined in the config['contexts'] into config['intentions'] as influencing context if not present. 
+        Transports contexts and their instantiations defined in the config['contexts'] into config['intentions'] as influencing context if not present.
         """
         for context in self.config['contexts']:
             for instantiation in self.config['contexts'][context]:
@@ -617,7 +736,7 @@ def load_config(path):
             a defaultdict containing the config
     """
     with open(path) as stream:
-        return config_to_default_dict(yaml.safe_load(stream))
+        return config_to_default_dict(yaml.load(stream, Loader=PrettySafeLoader))
 
 # https://stackoverflow.com/questions/26496831/how-to-convert-defaultdict-of-defaultdicts-of-defaultdicts-to-dict-of-dicts-o
 
