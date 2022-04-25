@@ -12,6 +12,7 @@ from threading import Timer
 from copy import deepcopy
 import traceback
 from types import FunctionType as function
+from matplotlib.style import available, context
 from pyparsing import col
 
 import yaml
@@ -80,6 +81,176 @@ class NewIntentionDialog(Dialog):
         self.result = self.intention_entry.get()
 
 
+class NewCombinedContextDialog(Dialog):
+    """Dialog Window for new combined Context influence"""
+
+    def __init__(self, parent, title: str = ..., intentions: dict = None) -> None:
+        """
+        Extends the Constructor of Dialog to make config available.
+
+        Args:
+            intentions:
+                The intentions part of the config
+                Example:
+                    {hand over tool:
+                        human activity:
+                            idle: 4
+                            working: 1
+                        speech commands:
+                            handover: 5
+                            other: 0
+                            pickup: 0
+                    pick up tool:
+                        speech commands:
+                            handover: 0
+                            other: 0
+                            pickup: 5
+                        ? !!python/tuple
+                        - speech commands
+                        - human activity
+                            : ? !!python/tuple
+                            - pickup
+                            - working
+                                : 5
+                        human activity:
+                            idle: 4
+                            working: 3
+                    }
+        """
+        self.intentions = deepcopy(intentions)
+        self.original_instantiations = defaultdict(dict)
+        super().__init__(parent, title)
+
+    def body(self, master):
+        """
+        Sets the Layout.
+
+        Args:
+            master: the master window this dialog belongs to
+        """
+        # intention
+        intention_frame = tk.Frame(master)
+        intention_frame.grid(row=0)
+        tk.Label(intention_frame, text='Intention:').grid(row=0, column=0)
+        values = list(self.intentions.keys())
+        self.intention_selection = tk.StringVar(
+            intention_frame, values[0])
+        tk.OptionMenu(
+            intention_frame, self.intention_selection, *values).grid(row=0, column=1)
+
+        # Value:
+        value_frame = tk.Frame(master)
+        value_frame.grid(row=2)
+        tk.Label(value_frame, text='Influence value:').grid(row=0, column=0)
+        self.value_selection = tk.StringVar(value_frame, 0)
+        tk.OptionMenu(
+            value_frame, self.value_selection, *[0, 1, 2, 3, 4, 5]).grid(row=0, column=1)
+
+        # Button
+        button_frame = tk.Frame(master)
+        button_frame.grid(row=3)
+        tk.Button(button_frame, command=self.new_instantiation,
+                  text='additional context').grid()
+        self.error_label = tk.Label(button_frame, fg='#f00')
+        self.error_label.grid(row=1)
+
+        # contexts
+        self.contexts = {}
+        for context, instantiations in list(self.intentions.values())[0].items():
+            if not isinstance(context, tuple):
+                self.contexts[context] = instantiations
+        self.context_frame = tk.Frame(master)
+        self.context_frame.grid(row=1)
+        tk.Label(self.context_frame, text='Context').grid(row=0, column=0)
+        tk.Label(self.context_frame, text='Instantiation').grid(
+            row=0, column=1)
+        self.context_selections = []
+        self.context_menus = []
+        self.instantiation_selections = []
+        self.instantiation_menus = []
+        for i in range(2):
+            self.new_instantiation()
+
+    def context_selected(self, context: str, i: int):
+        """
+        Callback for context selection in dropdown
+
+        Args:
+            context: A context name
+            i: the position of the dropdown menu
+        """
+        self.instantiation_menus[i].grid_remove()
+        self.instantiation_menus[i].destroy()
+        for inst in self.contexts[context]:
+            self.original_instantiations[context][str(inst)] = inst
+        instantiations = list(self.original_instantiations[context].keys())
+        self.instantiation_menus[i] = tk.OptionMenu(
+            self.context_frame, self.instantiation_selections[i], *instantiations)
+        self.instantiation_menus[i].grid(row=i+1, column=1)
+        self.instantiation_selections[i].set(
+            str(list(self.contexts[context].keys())[0]))
+        # available context -> every dropdown should only have available + selected
+        available_context = self._eval_available_context()
+        for i_m, menu in enumerate(self.context_menus):
+            menu.grid_remove()
+            menu.destroy()
+            contexts = [self.context_selections[i_m].get()] + available_context
+            self.context_menus[i_m] = tk.OptionMenu(
+                self.context_frame, self.context_selections[i_m], *contexts, command=lambda x, i=i_m: self.context_selected(x, i))
+            self.context_menus[i_m].grid(row=i_m+1, column=0)
+
+    def _eval_available_context(self):
+        """
+        evaluate which contexts are available for the dropdown
+
+        Returns:
+            list:
+                A list of available contexts
+        """
+        available_context = list(self.contexts.keys())
+        for selection in self.context_selections:
+            available_context.remove(selection.get())
+        return available_context
+
+    def new_instantiation(self):
+        """
+        Creates new Entries to input more context instantiations
+        """
+        available_context = self._eval_available_context()
+        i = len(self.context_selections)
+        if not available_context:
+            self.error_label['text'] = 'No more context available'
+            return
+        self.context_selections.append(tk.StringVar(
+            self.context_frame, available_context[0]))
+        self.instantiation_selections.append(
+            tk.StringVar(self.context_frame, list(self.contexts[available_context[0]].keys())[0]))
+        self.context_menus.append(tk.OptionMenu(
+            self.context_frame, self.context_selections[-1], *available_context, command=lambda x, i=i: self.context_selected(x, i)))
+        self.context_menus[-1].grid(row=i+1, column=0)
+        instantiations = list(self.contexts[available_context[0]].keys())
+        self.instantiation_menus.append(tk.OptionMenu(
+            self.context_frame, self.instantiation_selections[-1], *instantiations))
+        self.instantiation_menus[-1].grid(row=i+1, column=1)
+        self.context_selected(self.context_selections[-1].get(), i)
+
+    def apply(self):
+        """
+        Applies the result to hand it over to the master
+        """
+        intention = self.intention_selection.get()
+        value = self.value_selection.get()
+        contexts = []
+        instantiations = []
+        for i, context_selection in enumerate(self.context_selections):
+            contexts.append(context_selection.get())
+            instantiations.append(
+                self.original_instantiations[context_selection.get()][self.instantiation_selections[i].get()])
+        # intention: str, contexts: tuple, instantiations: tuple, value: int
+        self.result = {'intention': intention, 'value': int(value), 'contexts': tuple(
+            contexts), 'instantiations': tuple(instantiations)}
+
+
 class NewContextDialog(Dialog):
     """Dialog Window for new Context"""
 
@@ -95,7 +266,6 @@ class NewContextDialog(Dialog):
                 Example: {'speech commands': {
                     'pickup': 0.2, 'handover': 0.2, 'other': 0.6}}
         """
-        print("predefined_context: ", predefined_context)
         self.predefined_context = deepcopy(predefined_context)
         super().__init__(parent, title)
 
@@ -119,7 +289,7 @@ class NewContextDialog(Dialog):
         self.instantiations_frame = tk.Frame(master)
         self.instantiations_frame.grid(row=1)
         tk.Label(self.instantiations_frame,
-                 text="Instantiation Name").grid(row=0)
+                 text="Instantiation Name").grid(row=0, column=0)
         tk.Label(self.instantiations_frame,
                  text="Apriori Probability").grid(row=0, column=1)
         self.instantiations = []
@@ -147,8 +317,8 @@ class NewContextDialog(Dialog):
                 probability_entry.insert(0, value)
                 # del entry
                 del(instantiations[name])
-            name_entry.grid(row=self.shown_instantiations, column=0)
-            probability_entry.grid(row=self.shown_instantiations, column=1)
+            name_entry.grid(row=self.shown_instantiations + 1, column=0)
+            probability_entry.grid(row=self.shown_instantiations + 1, column=1)
             self.instantiations.append((name_entry, probability_entry))
             self.shown_instantiations += 1
 
@@ -401,7 +571,16 @@ class Configurator(tk.Tk):
         """
         Callback for the button
         """
-        pass
+        self.error_label['text'] = f""
+        dialog = NewCombinedContextDialog(
+            self, title="New combined Context influence", intentions=self.bayesNet.config['intentions'])
+        if dialog.result:
+            try:
+                self.bayesNet.add_combined_influence(
+                    intention=dialog.result['intention'], contexts=dialog.result['contexts'], instantiations=dialog.result['instantiations'], value=dialog.result['value'])
+            except ValueError as e:
+                self.error_label['text'] = f"{e}"
+            self.create_fields()
 
     def fill_advanced_table(self):
         '''
@@ -641,8 +820,11 @@ class Configurator(tk.Tk):
                 for widget in widgets:
                     try:
                         widget.destroy()
+                    except AttributeError:
+                        pass  # can not destroy StringVars
                     except Exception as e:
-                        print(f"couldn't destroy: {e}")  # TODO: better logging
+                        # TODO: better logging
+                        print(f"couldn't destroy: {e}")
 
         self.context_instantiations = defaultdict(dict)
         row = 0
@@ -682,6 +864,8 @@ class Configurator(tk.Tk):
                     for widget in widgets:
                         try:
                             widget.destroy()
+                        except AttributeError:
+                            pass  # can not destroy StringVars
                         except Exception as e:
                             # TODO: better logging
                             print(f"couldn't destroy: {e}")
