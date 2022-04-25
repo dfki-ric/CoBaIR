@@ -7,9 +7,9 @@ is created from a config file.
 # System imports
 
 # 3rd party imports
-import yaml
+
 # local imports
-from CoBaIR.bayes_net import BayesNet
+from CoBaIR.bayes_net import BayesNet, load_config
 from CoBaIR.default_discretizer import binary_decision
 
 # end file header
@@ -18,9 +18,17 @@ __author__ = 'Adrian Lubitz'
 
 # %%
 # Load config from file
-with open("small_example.yml") as stream:
-    config = yaml.safe_load(stream)
+
+config = load_config("small_example.yml")
 net = BayesNet(config)
+# %%
+# add combined influence value
+net.add_combined_influence(
+    'hand over tool', ('human activity', 'speech commands'), ('working', 'handover'), 5)
+# %%
+# del combined context influence
+net.del_combined_influence(
+    'pick up tool', ('speech commands', 'human holding object'), ('pickup', True))
 # %%
 # define discetazaion functio
 
