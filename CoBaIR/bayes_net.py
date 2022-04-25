@@ -592,7 +592,7 @@ class BayesNet():
         # reinizialize
         self.__init__(self.config, merge_config=False)
 
-    def save(self, path: str, save_invalid: bool = True):
+    def save(self, path: str, save_invalid: bool = False):
         """
         saves the config of the bayesNet to a yml file.
 
@@ -663,6 +663,43 @@ class BayesNet():
         else:
             raise ValueError(
                 'change_influence_value can only change values that exist already')
+
+    def add_combined_influence(self, intention: str, contexts: tuple, instantiations: tuple, value: int):
+        """
+        Adds an influence value for a combination of context instantiations.
+
+        Args:
+            intention: Name of the intention
+            contexts: tuple containing the names of the contexts
+            instantiations: tuple of context instantiations for which the influence value should be set
+            value: influence value. Can be one out of [0, 1, 2, 3, 4, 5]
+        Raises:
+            ValueError: Raises a ValueError if the instantiation does not exists in the config
+            AssertionError: An AssertionError is raised if the resulting config is not valid.
+        """
+        for i, instantiation in enumerate(instantiations):
+            if instantiation not in self.config['intentions'][intention][contexts[i]]:
+                raise ValueError(
+                    'add_combined_influence can only combine context instantiations that already exist')
+        self.config['intentions'][intention][contexts][instantiations] = value
+        self.__init__(self.config, merge_config=False)
+
+    def del_combined_influence(self, intention: str, contexts: tuple, instantiations: tuple):
+        """
+        Adds an influence value for a combination of context instantiations.
+
+        Args:
+            intention: Name of the intention
+            contexts: tuple containing the names of the contexts
+            instantiations: tuple of context instantiations
+        Raises:
+            ValueError: Raises a ValueError if the instantiation does not exists in the config
+            AssertionError: An AssertionError is raised if the resulting config is not valid.
+        """
+        if instantiations not in self.config['intentions'][intention][contexts]:
+            raise ValueError(
+                'remove_combined_influence can only remove combined context instantiations that already exist')
+        del(self.config['intentions'][intention][contexts])
 
     def _transport_context_into_intentions(self):
         """
