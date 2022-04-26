@@ -333,8 +333,8 @@ class NewContextDialog(Dialog):
         """
         name_entry = tk.Entry(self.instantiations_frame)
         probability_entry = tk.Entry(self.instantiations_frame)
-        name_entry.grid(row=self.shown_instantiations, column=0)
-        probability_entry.grid(row=self.shown_instantiations, column=1)
+        name_entry.grid(row=self.shown_instantiations+1, column=0)
+        probability_entry.grid(row=self.shown_instantiations+1, column=1)
         self.instantiations.append((name_entry, probability_entry))
         self.shown_instantiations += 1
 
