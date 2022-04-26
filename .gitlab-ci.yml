@@ -35,7 +35,9 @@ build_docu:
       - site
 
 upload_docu:
-  image: ubuntu:latest
+  image: 
+    name: ubuntu:latest
+    entrypoint: [ '/bin/sh', '-c' ]
   stage: deploy
   script:
     - rm -rf /home/www/htdocs/apis/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/latest
