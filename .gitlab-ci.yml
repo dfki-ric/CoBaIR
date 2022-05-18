@@ -35,7 +35,7 @@ build_docu:
       - site
 
 upload_docu:
-  image: ubuntu:latest
+  image: debian:latest
   stage: deploy
   script:
     - echo "Uploading docu"
