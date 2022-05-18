@@ -35,12 +35,12 @@ build_docu:
       - site
 
 upload_docu:
-  image: 
-    name: ubuntu:latest
-    entrypoint: [ '/bin/sh', '-c' ]
+  image: debian:latest
   stage: deploy
   script:
+    - echo "Uploading docu"
     - rm -rf /home/www/htdocs/apis/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/latest
+    - rm -rf /home/www/htdocs/apis/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$CI_COMMIT_TAG
     - mkdir -p /home/www/htdocs/apis/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$CI_COMMIT_TAG
     - mkdir -p /home/www/htdocs/apis/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/latest
     - cp -R site/* /home/www/htdocs/apis/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$CI_COMMIT_TAG
