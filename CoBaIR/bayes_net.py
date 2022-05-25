@@ -299,7 +299,7 @@ class BayesNet():
             A tuple of bool to indicate validity and str for error message
         """
         if context not in self.config['contexts'] or instantiation is None:
-            return False, 'ignore'  # ignoring unrelated contexts and Nonetype
+            return False, 'ignore'  # ignoring unrelated contexts and Nonetype # TODO: if I ignore it anyways then I can as well say it is valid
         if not isinstance(instantiation, Hashable) or not instantiation in self.config['contexts'][context].keys():
             return False, f'{instantiation} is not a valid instantiation for {context}. Must be one of {list(self.config["contexts"][context].keys())}'
         else:
@@ -350,7 +350,8 @@ class BayesNet():
                 if valid:
                     card_evidence[context] = self.value_to_card[context][discrete_instantiation]
                 else:
-                    raise ValueError(err_msg)
+                    if not err_msg == 'ignore': # A discretizer function should still be able to output None
+                        raise ValueError(err_msg)
             else:
                 if not err_msg == 'ignore':
                     raise ValueError(err_msg)
