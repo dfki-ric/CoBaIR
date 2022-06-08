@@ -183,3 +183,6 @@ Build the docu with
 mkdocs build
 ```
 The documentation will be in the `site` folder.
+
+# Authors
+Adrian Lubitz & Arunima Gopikrishnan
