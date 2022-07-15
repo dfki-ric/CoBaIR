@@ -10,8 +10,9 @@ run_tests_3.8:
   stage: test
   script:
     - pip install --upgrade pip
+    - pip install -r test_requirements.txt
     - pip install .
-    - python -m unittest discover -s tests
+    - python -m pytest tests/
 
 ## No need for python3.6 support
 # run_tests_3.6:
