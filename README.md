@@ -1,3 +1,7 @@
+[![pipeline status](https://git.hb.dfki.de/kimmi_sf/implementation/CoBaIR/badges/develop/pipeline.svg)](https://git.hb.dfki.de/kimmi_sf/implementation/CoBaIR/-/commits/develop)
+[![coverage report](https://git.hb.dfki.de/kimmi_sf/implementation/CoBaIR/badges/develop/coverage.svg)](https://git.hb.dfki.de/kimmi_sf/implementation/CoBaIR/-/commits/develop)
+[![Latest Release](https://git.hb.dfki.de/kimmi_sf/implementation/CoBaIR/-/badges/release.svg)](https://git.hb.dfki.de/kimmi_sf/implementation/CoBaIR/-/releases)
+
 # CoBaIR
 
 CoBaIR is a python lib for **Co**ntext **Ba**sed **I**ntention **R**ecognition.
