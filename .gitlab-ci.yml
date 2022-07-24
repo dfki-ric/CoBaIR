@@ -22,7 +22,7 @@ run_tests_3.8:
       coverage_report:
         coverage_format: cobertura
         path: coverage.xml
-    path:
+    paths:
       - htmlcov
 
 ## No need for python3.6 support
