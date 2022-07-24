@@ -177,6 +177,8 @@ Then you can run
 ```bash
 python -m pytest tests/
 ```
+You can as well see the test report for a specific commit in gitlab under [pipeline->Tests](hhttps://git.hb.dfki.de/kimmi_sf/implementation/CoBaIR/-/pipelines/39889/test_report)
+
 ### Coverage
 If you want to see coverage for the tests you can run
 
