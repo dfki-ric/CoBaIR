@@ -12,7 +12,7 @@ run_tests_3.8:
     - pip install --upgrade pip
     - pip install -r test_requirements.txt
     - pip install .
-    - coverage run -m pytest tests/
+    - coverage run -m pytest tests/ --html=test_report/report.html
     - coverage report
     - coverage xml
     - coverage html
@@ -24,6 +24,8 @@ run_tests_3.8:
         path: coverage.xml
     paths:
       - htmlcov
+      - test_report
+
 
 ## No need for python3.6 support
 # run_tests_3.6:

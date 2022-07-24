@@ -196,6 +196,8 @@ or
 coverage html
 ```
 
+You can as well see the coverage for a specific job in gitlab under [jobs](https://git.hb.dfki.de/kimmi_sf/implementation/CoBaIR/-/jobs)
+
 To show results of the coverage analysis.
 ## Build docu
 Documentation is implemented with the [material theme](https://squidfunk.github.io/mkdocs-material/) for [mkdocs](https://www.mkdocs.org/).
