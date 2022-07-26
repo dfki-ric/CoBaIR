@@ -167,12 +167,40 @@ This is possible due to the following assumptions:
 This is the optimal case. The second assumption may not be true for every intention.
 
 ## Run tests
-Tests are implemented with [unittest](https://docs.python.org/3/library/unittest.html) and can be executed with:
+Tests are implemented with [pytest](https://docs.pytest.org/en/7.1.x/).
+To install test dependencies you need to run 
 
 ```bash
-python -m unittest discover -s tests
+pip install -r test_requirements.txt
+```
+Then you can run 
+```bash
+python -m pytest tests/
+```
+You can as well see the test report for a specific commit in gitlab under [pipeline->Tests](hhttps://git.hb.dfki.de/kimmi_sf/implementation/CoBaIR/-/pipelines/39889/test_report)
+
+### Coverage
+If you want to see coverage for the tests you can run
+
+```bash
+coverage run -m pytest tests/
 ```
 
+Use 
+
+```bash
+coverage report
+```
+or 
+
+
+```bash
+coverage html
+```
+
+You can as well see the coverage for a specific job in gitlab under [jobs](https://git.hb.dfki.de/kimmi_sf/implementation/CoBaIR/-/jobs)
+
+To show results of the coverage analysis.
 ## Build docu
 Documentation is implemented with the [material theme](https://squidfunk.github.io/mkdocs-material/) for [mkdocs](https://www.mkdocs.org/).
 

@@ -12,15 +12,21 @@ run_tests_3.8:
     - pip install --upgrade pip
     - pip install -r test_requirements.txt
     - pip install .
-    - coverage run -m pytest tests/
+    - coverage run -m pytest tests/ --html=test_report/report.html --junitxml=report.xml
     - coverage report
     - coverage xml
+    - coverage html
   coverage: '/(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
   artifacts:
     reports:
+      junit: report.xml
       coverage_report:
         coverage_format: cobertura
         path: coverage.xml
+    paths:
+      - htmlcov
+      - test_report
+
 
 ## No need for python3.6 support
 # run_tests_3.6:
@@ -57,3 +63,12 @@ upload_docu:
   rules:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/'
 
+
+# This is not so easy because the badge cannot be linked to a commit dependend link - So I could maybe link to the latest on develop but thats not good. 
+# upload_reports:
+#   image: debian:latest
+#   stage: deploy
+#   script:
+#     - echo "Uploading reports"
+#     - mkdir -p /home/www/htdocs/apis/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/reports/CI_COMMIT_SHA
+#     - cp -R htmlcov/* /home/www/htdocs/apis/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME/$CI_COMMIT_TAG
