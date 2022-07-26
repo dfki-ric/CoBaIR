@@ -36,7 +36,7 @@ PrettySafeLoader.add_constructor(
 
 
 class BayesNet():
-    def __init__(self, config: dict = None, merge_config: bool = False, bn_verbosity: int = 0) -> None:
+    def __init__(self, config: dict = None, merge_config: bool = False, bn_verbosity: int = 0, validate: bool = True) -> None:
         '''
         Initializes the BayesNet with the given config.
 
@@ -44,6 +44,7 @@ class BayesNet():
             config: A dict with a config following the config format.
             merge_config: Flag if the given config should be merged. Was used internally and is DEPRECATED
             bn_verbosity: sets the verbose flag for bnlearn. See [bnlearn API](https://erdogant.github.io/bnlearn/pages/html/bnlearn.bnlearn.html?highlight=verbose#bnlearn.bnlearn.make_DAG) for more information
+            validate: Flag if the given config should be validated or not. This is necessary to load invalid configs
         '''
         self.valid = False
         self.bn_verbosity = bn_verbosity
@@ -65,7 +66,8 @@ class BayesNet():
             #                deepcopy(self.config_to_default_dict(config))}
             self.config = {**self.config, **deepcopy(config)}
 
-        self.validate_config()
+        if validate:  # this is needed to load invalid configs
+            self.validate_config()
         # Translation dicts for context to card number in bnlearn and vice versa
         self._create_value_to_card()
         self._create_card_to_value()
@@ -83,11 +85,9 @@ class BayesNet():
         self.cpts = []
         self._create_context_cpts()
         self._create_intention_cpts()
-        self.DAG = bn.make_DAG(self.edges, CPD=self.cpts,
-                               verbose=self.bn_verbosity)
-        # This is the config of the currently running BayesNet
-        self.valid_config = deepcopy(self.config)
-        self.valid = True
+        if self.valid:
+            self.DAG = bn.make_DAG(self.edges, CPD=self.cpts,
+                                   verbose=self.bn_verbosity)
 
     def _create_value_to_card(self):
         '''
@@ -299,7 +299,8 @@ class BayesNet():
             A tuple of bool to indicate validity and str for error message
         """
         if context not in self.config['contexts'] or instantiation is None:
-            return False, 'ignore'  # ignoring unrelated contexts and Nonetype # TODO: if I ignore it anyways then I can as well say it is valid
+            # ignoring unrelated contexts and Nonetype # TODO: if I ignore it anyways then I can as well say it is valid
+            return False, 'ignore'
         if not isinstance(instantiation, Hashable) or not instantiation in self.config['contexts'][context].keys():
             return False, f'{instantiation} is not a valid instantiation for {context}. Must be one of {list(self.config["contexts"][context].keys())}'
         else:
@@ -350,7 +351,7 @@ class BayesNet():
                 if valid:
                     card_evidence[context] = self.value_to_card[context][discrete_instantiation]
                 else:
-                    if not err_msg == 'ignore': # A discretizer function should still be able to output None
+                    if not err_msg == 'ignore':  # A discretizer function should still be able to output None
                         raise ValueError(err_msg)
             else:
                 if not err_msg == 'ignore':
@@ -420,6 +421,9 @@ class BayesNet():
         for context, instantiations in self.config['contexts'].items():
             assert sum(instantiations.values(
             )) == 1.0, f'The sum of probabilities for context instantiations must be 1 - For {context} it is {sum(instantiations.values())}!'
+            # This is the config of the currently running BayesNet
+        self.valid_config = deepcopy(self.config)
+        self.valid = True
 
     def _create_zero_influence_dict(self, context_with_instantiations: dict) -> defaultdict:
         """
