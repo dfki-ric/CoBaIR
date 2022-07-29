@@ -4,7 +4,13 @@
 
 # CoBaIR
 
-CoBaIR is a python lib for **Co**ntext **Ba**sed **I**ntention **R**ecognition.
+CoBaIR is a python lib for **Co**ntext **Ba**sed **I**ntention **R**ecognition. 
+It provides the means to infer an intention from given context. 
+An intention is a binary value e.g. `repair pipe` that can either be present or not. Only one intention can be present at a time.
+Context on the otherhand is can have multiple discrete instantiations e.g. `weather:sunny|cloudy|raining`.
+If context values are continuous, discretizer functions can be used to create discrete values.
+From the infered intention in a HRI scenario the robot can perform corresponding actions to help the human with a specific task.
+
 
 ## Documentation
 The Documentation can be accessed via the VPN on http://bob.dfki.uni-bremen.de/apis/kimmi_sf/implementation/CoBaIR/latest
