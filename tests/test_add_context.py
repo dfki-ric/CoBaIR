@@ -74,18 +74,18 @@ def test_add_to_existing(config=None, counter=0):
     assert default_to_regular(bn.config) == default_to_regular(config)
 
 
+# @pytest.mark.timeout(N)
+# def test_add_n_to_existing(n=N):
+#     """
+#     Test adding n contexts to an existing config
+#     """
+#     config = load_config('small_example.yml')
+#     for i in range(n):
+#         print('START')
+#         test_add_to_existing(config=config, counter=i)
+#         print(f'{config=}')
+
 @pytest.mark.timeout(N)
-def test_add_n_to_existing(n=N):
-    """
-    Test adding n contexts to an existing config
-    """
-    config = load_config('small_example.yml')
-    for i in range(n):
-        print('START')
-        test_add_to_existing(config=config, counter=i)
-        print(f'{config=}')
-
-
 def test_add_to_existing_loaded(config=None, counter=0):
     """
     Test adding a context to an existing config - with empty init and load
