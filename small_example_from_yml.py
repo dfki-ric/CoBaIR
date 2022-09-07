@@ -55,3 +55,7 @@ normalized_inference = net.infer(evidence)
 print(normalized_inference)
 
 # %%
+max_intention = max(normalized_inference, key=normalized_inference.get)
+print(max_intention)
+
+# %%

@@ -36,7 +36,7 @@ PrettySafeLoader.add_constructor(
 
 
 class BayesNet():
-    def __init__(self, config: dict = None, merge_config: bool = False, bn_verbosity: int = 0, validate: bool = True) -> None:
+    def __init__(self, config: dict = None, decision_threshold=0, merge_config: bool = False, bn_verbosity: int = 0, validate: bool = True) -> None:
         '''
         Initializes the BayesNet with the given config.
 
@@ -49,6 +49,7 @@ class BayesNet():
         self.valid = False
         self.bn_verbosity = bn_verbosity
         self.discretization_functions = {}
+        self.decision_threshold = decision_threshold
 
         # config = deepcopy(config)
         config = config_to_default_dict(config)
@@ -320,7 +321,7 @@ class BayesNet():
                 f'Cannot bind discretization function to {context}. Context does not exist!')
         self.discretization_functions[context] = discretization_function
 
-    def infer(self, evidence, normalized=True) -> dict:
+    def infer(self, evidence, normalized=True, decision_threshold=None) -> dict:
         '''
         infers the probabilities for the intentions with given evidence.
 
@@ -332,12 +333,15 @@ class BayesNet():
                     {'speech commands': 'pickup',
                      'human holding object': True,
                      'human activity': 'idle'}
+            decision_threshold: a threshold for picking the most likely intention. Must be between 0 and 1. If not given the decision_threshold defined on initialization is taken. 
             normalized: Flag if the returned inference is normalized to sum up to 1.
         Returns:
-            dict:
-            A dictionary of intentions and the corresponding probabilities.
+            tuple:
+            Returns the highest ranking intention (or None if decision_threshold is not reached) and a dictionary of intentions and the corresponding probabilities.
         '''
         # check if evidence values are in instantiations and create a card form of bnlearn
+        if decision_threshold is None:
+            decision_threshold = self.decision_threshold
         card_evidence = {}
         for context, instantiation in evidence.items():
             valid, err_msg = self.valid_evidence(context, instantiation)
@@ -363,10 +367,12 @@ class BayesNet():
                 # only True values of binary intentions will be saved
                 inference[intention] = bn.inference.fit(
                     self.DAG, variables=[intention], evidence=card_evidence, verbose=self.bn_verbosity).values[1]
+            max_intention = max(inference, key=inference.get)
+            max_intention = max_intention if inference[max_intention] > decision_threshold else None
             if normalized:
-                return self.normalize_inference(inference)
+                return max_intention, self.normalize_inference(inference)
             else:
-                return inference
+                return max_intention, inference
         else:
             raise Exception('Configuration is invalid')
 
