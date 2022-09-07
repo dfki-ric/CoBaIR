@@ -51,11 +51,11 @@ evidence = {
     'human activity': 'idle',
     'invalid context': 'does not matter in evidence'
 }
-normalized_inference = net.infer(evidence)
+max_intention, normalized_inference = net.infer(
+    evidence, decision_threshold=0.7)
 print(normalized_inference)
 
 # %%
-max_intention = max(normalized_inference, key=normalized_inference.get)
 print(max_intention)
 
 # %%
