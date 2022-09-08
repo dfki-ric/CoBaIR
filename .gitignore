@@ -5,6 +5,7 @@ settings.json
 .ipynb_checkpoints
 bnlearn_model.pkl
 .dev*
+test_report
 
 
 # Byte-compiled / optimized / DLL files

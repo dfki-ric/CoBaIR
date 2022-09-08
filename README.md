@@ -1,6 +1,16 @@
+[![pipeline status](https://git.hb.dfki.de/kimmi_sf/implementation/CoBaIR/badges/develop/pipeline.svg)](https://git.hb.dfki.de/kimmi_sf/implementation/CoBaIR/-/commits/develop)
+[![coverage report](https://git.hb.dfki.de/kimmi_sf/implementation/CoBaIR/badges/develop/coverage.svg)](https://git.hb.dfki.de/kimmi_sf/implementation/CoBaIR/-/commits/develop)
+[![Latest Release](https://git.hb.dfki.de/kimmi_sf/implementation/CoBaIR/-/badges/release.svg)](https://git.hb.dfki.de/kimmi_sf/implementation/CoBaIR/-/releases)
+
 # CoBaIR
 
-CoBaIR is a python lib for **Co**ntext **Ba**sed **I**ntention **R**ecognition.
+CoBaIR is a python lib for **Co**ntext **Ba**sed **I**ntention **R**ecognition. 
+It provides the means to infer an intention from given context. 
+An intention is a binary value e.g. `repair pipe` that can either be present or not. Only one intention can be present at a time.
+Context on the otherhand is can have multiple discrete instantiations e.g. `weather:sunny|cloudy|raining`.
+If context values are continuous, discretizer functions can be used to create discrete values.
+From the infered intention in a HRI scenario the robot can perform corresponding actions to help the human with a specific task.
+
 
 ## Documentation
 The Documentation can be accessed via the VPN on http://bob.dfki.uni-bremen.de/apis/kimmi_sf/implementation/CoBaIR/latest
@@ -163,12 +173,40 @@ This is possible due to the following assumptions:
 This is the optimal case. The second assumption may not be true for every intention.
 
 ## Run tests
-Tests are implemented with [unittest](https://docs.python.org/3/library/unittest.html) and can be executed with:
+Tests are implemented with [pytest](https://docs.pytest.org/en/7.1.x/).
+To install test dependencies you need to run 
 
 ```bash
-python -m unittest discover -s tests
+pip install -r test_requirements.txt
+```
+Then you can run 
+```bash
+python -m pytest tests/
+```
+You can as well see the test report for a specific commit in gitlab under [pipeline->Tests](hhttps://git.hb.dfki.de/kimmi_sf/implementation/CoBaIR/-/pipelines/39889/test_report)
+
+### Coverage
+If you want to see coverage for the tests you can run
+
+```bash
+coverage run -m pytest tests/
 ```
 
+Use 
+
+```bash
+coverage report
+```
+or 
+
+
+```bash
+coverage html
+```
+
+You can as well see the coverage for a specific job in gitlab under [jobs](https://git.hb.dfki.de/kimmi_sf/implementation/CoBaIR/-/jobs)
+
+To show results of the coverage analysis.
 ## Build docu
 Documentation is implemented with the [material theme](https://squidfunk.github.io/mkdocs-material/) for [mkdocs](https://www.mkdocs.org/).
 
@@ -183,3 +221,6 @@ Build the docu with
 mkdocs build
 ```
 The documentation will be in the `site` folder.
+
+# Authors
+Adrian Lubitz & Arunima Gopikrishnan
