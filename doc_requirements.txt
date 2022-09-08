@@ -1,4 +1,4 @@
 mkdocs
 mkdocs-material
-mkdocstrings
+mkdocstrings < 0.19
 mkdocs-include-markdown-plugin

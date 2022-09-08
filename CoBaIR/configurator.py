@@ -599,27 +599,38 @@ class Configurator(tk.Tk):
             row=0, column=4)
         row = 1
         for intention, context_influence in self.bayesNet.config['intentions'].items():
+            # print(context_influence)
             for context in context_influence:
+                # print(context)                
                 if isinstance(context, tuple):
-                    # For every combined case make a label and a button
-                    tk.Label(self.advanced_table, text=f'{intention}').grid(
-                        row=row, column=0)
-                    tk.Label(self.advanced_table, text='|').grid(
-                        row=row, column=1)
-                    # build context String
-                    context_string = ""
-                    for i, _context in enumerate(context):
-                        context_string += f'{_context}={str(list(context_influence[context].keys())[0][i])}, '
-                    context_string = context_string[:-2]
-                    tk.Label(self.advanced_table, text=context_string).grid(
-                        row=row, column=2)
-                    tk.Label(self.advanced_table, text='|').grid(
-                        row=row, column=3)
-                    tk.Label(self.advanced_table, text=f'{list(context_influence[context].values())[0]}').grid(
-                        row=row, column=4)
-                    tk.Button(self.advanced_table, text='remove', command=lambda intention=intention, contexts=context, instantiations=list(context_influence[context].keys())[0]: self.remove_combined_influence(
-                        intention, contexts, instantiations)).grid(row=row, column=5)
-                    row += 1
+                    # print(len(list(context_influence[context])))
+                    for j in range(len(list(context_influence[context]))):
+                        key = (list(context_influence[context])[j])
+                        # For every combined case make a label and a button
+                        tk.Label(self.advanced_table, text=f'{intention}').grid(
+                            row=row, column=0)
+                        tk.Label(self.advanced_table, text='|').grid(
+                            row=row, column=1)
+                        # build context String
+                        context_string = ""
+                        for i, _context in enumerate(context):
+                            # print(key[i])                        
+                            context_string += f'{_context}={str(key[i])}, '
+                        context_string = context_string[:-2]
+                        # print(_context)
+                        # print(context_string)
+                        tk.Label(self.advanced_table, text=context_string).grid(
+                            row=row, column=2)
+                        tk.Label(self.advanced_table, text='|').grid(
+                            row=row, column=3)
+                        tk.Label(self.advanced_table, text=f'{list(context_influence[context].values())[0]}').grid(
+                            row=row, column=4)
+                        tk.Button(self.advanced_table, text='remove', command=lambda intention=intention, contexts=context, instantiations=list(context_influence[context].keys())[0]: self.remove_combined_influence(
+                            intention, contexts, instantiations)).grid(row=row, column=5)
+                        row += 1
+                        # print(self.advanced_new_button)
+                        # print("test")
+                        # print(context_string)
 
     def remove_combined_influence(self, intention: str, contexts: tuple, instantiations: tuple):
         self.bayesNet.del_combined_influence(
