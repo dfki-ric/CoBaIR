@@ -53,9 +53,12 @@ evidence = {
     'invalid context': 'does not matter in evidence'
 }
 max_intention, normalized_inference = net.infer(
-    evidence)
+    evidence, decision_threshold=0.7)
 print(normalized_inference)
 print(max_intention)
 
+
+# %%
+print(max_intention)
 
 # %%

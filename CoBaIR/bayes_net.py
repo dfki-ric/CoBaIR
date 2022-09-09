@@ -48,6 +48,7 @@ class BayesNet():
         self.valid = False
         self.bn_verbosity = bn_verbosity
         self.discretization_functions = {}
+        self.decision_threshold = decision_threshold
 
         # config = deepcopy(config)
         config = config_to_default_dict(config)
