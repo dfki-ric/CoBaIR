@@ -348,12 +348,11 @@ class BayesNet():
                 # only True values of binary intentions will be saved
                 inference[intention] = bn.inference.fit(
                     self.DAG, variables=[intention], evidence=card_evidence, verbose=self.bn_verbosity).values[1]
+            if normalized:
+                inference = self.normalize_inference(inference)
             max_intention = max(inference, key=inference.get)
             max_intention = max_intention if inference[max_intention] > decision_threshold else None
-            if normalized:
-                return max_intention, self.normalize_inference(inference)
-            else:
-                return max_intention, inference
+            return max_intention, inference
         else:
             raise Exception('Configuration is invalid')
 
