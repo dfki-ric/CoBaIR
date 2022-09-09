@@ -9,13 +9,12 @@ from collections import defaultdict
 
 # local imports
 from tests import N
-from CoBaIR.bayes_net import BayesNet, load_config
+from CoBaIR.bayes_net import BayesNet, config_to_default_dict, default_to_regular, load_config
 
 # end file header
 __author__ = 'Adrian Lubitz'
 
 # TODO: add more negative cases
-
 
 
 def test_add_to_empty():
@@ -32,7 +31,8 @@ def test_add_to_empty():
     with pytest.raises(AssertionError):
         bn.add_intention('some intention')
     # Making sure tmp_config will be maintained
-    assert bn.config == config
+    assert config_to_default_dict(bn.config) == config_to_default_dict(config)
+
 
 def test_add_n_to_empty(n=N):
     """
@@ -48,7 +48,8 @@ def test_add_n_to_empty(n=N):
         with pytest.raises(AssertionError):
             bn.add_intention(f'{intention}_{i}')
     # Making sure tmp_config will be maintained
-    assert bn.config == config
+    assert config_to_default_dict(bn.config) == config_to_default_dict(config)
+
 
 def test_add_to_existing():
     """
@@ -57,6 +58,7 @@ def test_add_to_existing():
     config = load_config('small_example.yml')
     bn = BayesNet(config)
     bn.add_intention('some intention')
+
 
 def test_add_n_to_existing(n=N):
     """
@@ -67,6 +69,7 @@ def test_add_n_to_existing(n=N):
     for i in range(n):
         bn.add_intention(f'intention_{i}')
 
+
 def test_add_to_existing_loaded():
     """
     Test adding an intention to an existing config
@@ -74,6 +77,7 @@ def test_add_to_existing_loaded():
     bn = BayesNet()
     bn.load('small_example.yml')
     bn.add_intention('some intention')
+
 
 def test_add_n_to_existing_loaded(n=N):
     """
@@ -83,5 +87,3 @@ def test_add_n_to_existing_loaded(n=N):
     bn.load('small_example.yml')
     for i in range(n):
         bn.add_intention(f'intention_{i}')
-
-
