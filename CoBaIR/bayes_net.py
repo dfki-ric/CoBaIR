@@ -36,20 +36,18 @@ PrettySafeLoader.add_constructor(
 
 
 class BayesNet():
-    def __init__(self, config: dict = None, decision_threshold=0, merge_config: bool = False, bn_verbosity: int = 0, validate: bool = True) -> None:
+    def __init__(self, config: dict = None, bn_verbosity: int = 0, validate: bool = True) -> None:
         '''
         Initializes the BayesNet with the given config.
 
         Args:
             config: A dict with a config following the config format.
-            merge_config: Flag if the given config should be merged. Was used internally and is DEPRECATED
             bn_verbosity: sets the verbose flag for bnlearn. See [bnlearn API](https://erdogant.github.io/bnlearn/pages/html/bnlearn.bnlearn.html?highlight=verbose#bnlearn.bnlearn.make_DAG) for more information
             validate: Flag if the given config should be validated or not. This is necessary to load invalid configs
         '''
         self.valid = False
         self.bn_verbosity = bn_verbosity
         self.discretization_functions = {}
-        self.decision_threshold = decision_threshold
 
         # config = deepcopy(config)
         config = config_to_default_dict(config)
@@ -59,13 +57,7 @@ class BayesNet():
                 lambda: defaultdict(int))), 'contexts': defaultdict(lambda: defaultdict(float))}
             return
 
-        if not merge_config:
-            # self.config = deepcopy(self.config_to_default_dict(config))
-            self.config = deepcopy(config)
-        else:
-            # self.config = {**self.config, **
-            #                deepcopy(self.config_to_default_dict(config))}
-            self.config = {**self.config, **deepcopy(config)}
+        self.config = deepcopy(config)
 
         if validate:  # this is needed to load invalid configs
             self.validate_config()
@@ -143,18 +135,6 @@ class BayesNet():
         for evidence_variable in self.evidence:
             self.evidence_card.append(
                 len(self.config['contexts'][evidence_variable]))
-
-    # def _context_to_card_index(self, context: str) -> int:
-    #     """
-    #     returns the card index for a specific context
-
-    #     Args:
-    #         context: A context name
-
-    #     Returns:
-    #         int: index of the context in the card
-    #     """
-    #     return self.evidence.index(context)
 
     def _create_combined_context(self, context_influence: dict) -> dict:
         # TODO: adjust example to use tuples
@@ -341,7 +321,7 @@ class BayesNet():
         '''
         # check if evidence values are in instantiations and create a card form of bnlearn
         if decision_threshold is None:
-            decision_threshold = self.decision_threshold
+            decision_threshold = self.config['decision_threshold']
         card_evidence = {}
         for context, instantiation in evidence.items():
             valid, err_msg = self.valid_evidence(context, instantiation)
@@ -402,6 +382,8 @@ class BayesNet():
         Raises:
             AssertionError: An AssertionError is raised if the config is not valid.
         '''
+        # TODO: add validation that decision_threshold is a float
+        # TODO: add validation that apriorio values are float
         # contexts and intentions need to be defined
         assert 'contexts' in self.config, 'Field "contexts" must be defined in the config'
         assert 'intentions' in self.config, 'Field "intentions" must be defined in the config'
@@ -425,8 +407,11 @@ class BayesNet():
                         ), f'An influence needs to be defined for all instantiations! {intention}.{context}.{instantiation} does not fit the defined instantiations for {context}'
         # Probabilities need to sum up to 1
         for context, instantiations in self.config['contexts'].items():
+            for instantiation, value in instantiations.items():
+                assert isinstance(
+                    value, float), f'Apriori probability of context "{context}.{instantiation}" is not a number'
             assert sum(instantiations.values(
-            )) == 1.0, f'The sum of probabilities for context instantiations must be 1 - For {context} it is {sum(instantiations.values())}!'
+            )) == 1.0, f'The sum of probabilities for context instantiations must be 1 - For "{context}" it is {sum(instantiations.values())}!'
             # This is the config of the currently running BayesNet
         self.valid_config = deepcopy(self.config)
         self.valid = True
@@ -481,7 +466,7 @@ class BayesNet():
         #         {context: instantiations})}
         self._transport_context_into_intentions()
         # reinizialize
-        self.__init__(self.config, merge_config=False)
+        self.__init__(self.config)
 
     def add_intention(self, intention: str):
         """
@@ -507,7 +492,7 @@ class BayesNet():
         #         {context: instantiations_with_values})
         #     self.config['intentions'][intention][context] = zeros[context]
         # reinizialize
-        self.__init__(self.config, merge_config=False)
+        self.__init__(self.config)
 
     def edit_context(self, context: str, instantiations: dict, new_name: str = None):
         """
@@ -546,7 +531,7 @@ class BayesNet():
         self._remove_context_from_intentions()
         self._transport_context_into_intentions()
         # reinizialize
-        self.__init__(self.config, merge_config=False)
+        self.__init__(self.config)
 
     def edit_intention(self, intention: str, new_name: str):
         """
@@ -571,7 +556,7 @@ class BayesNet():
         del(self.config['intentions'][intention])
         self.config['intentions'][new_name] = old_values
         # reinizialize
-        self.__init__(self.config, merge_config=False)
+        self.__init__(self.config)
 
     def del_context(self, context: str):
         """
@@ -587,7 +572,7 @@ class BayesNet():
         self._remove_context_from_intentions()
         self._transport_context_into_intentions()
         # reinizialize
-        self.__init__(self.config, merge_config=False)
+        self.__init__(self.config)
 
     def del_intention(self, intention):
         """
@@ -601,7 +586,7 @@ class BayesNet():
         """
         del(self.config['intentions'][intention])
         # reinizialize
-        self.__init__(self.config, merge_config=False)
+        self.__init__(self.config)
 
     def save(self, path: str, save_invalid: bool = False):
         """
@@ -649,7 +634,7 @@ class BayesNet():
         if instantiation in self.config['contexts'][context]:
             self.config['contexts'][context][instantiation] = value
             # reinizialize
-            self.__init__(self.config, merge_config=False)
+            self.__init__(self.config)
         else:
             raise ValueError(
                 'change_context_apriori_value can only change values that exist already')
@@ -670,7 +655,7 @@ class BayesNet():
         # check if this value already exists because I'm using defaultdict - otherwise you can just add values
         if instantiation in self.config['intentions'][intention][context]:
             self.config['intentions'][intention][context][instantiation] = value
-            self.__init__(self.config, merge_config=False)
+            self.__init__(self.config)
         else:
             raise ValueError(
                 'change_influence_value can only change values that exist already')
@@ -693,7 +678,7 @@ class BayesNet():
                 raise ValueError(
                     'add_combined_influence can only combine context instantiations that already exist')
         self.config['intentions'][intention][contexts][instantiations] = value
-        self.__init__(self.config, merge_config=False)
+        self.__init__(self.config)
 
     def del_combined_influence(self, intention: str, contexts: tuple, instantiations: tuple):
         """
@@ -745,6 +730,17 @@ class BayesNet():
         for intention, context, instantiation in context_instantiations_to_remove_from_intentions:
             del(self.config['intentions'][intention][context][instantiation])
 
+    def change_decision_threshold(self, decision_threshold):
+        """
+        Changes the decision threshold in the config.
+        Args:
+            decision_threshold: The new decision threshold.
+        Raises:
+            AssertionError: An AssertionError is raised if the resulting config is not valid.
+        """
+        self.config['decision_threshold'] = decision_threshold
+        self.__init__(self.config)
+
 
 def config_to_default_dict(config: dict):
     """
@@ -770,6 +766,11 @@ def config_to_default_dict(config: dict):
         for context in config['intentions'][intention]:
             for instantiation, value in config['intentions'][intention][context].items():
                 new_config['intentions'][intention][context][instantiation] = value
+    if 'decision_threshold' in config:
+        new_config['decision_threshold'] = config['decision_threshold']
+    else:
+        new_config['decision_threshold'] = 0
+
     return new_config
 
 
