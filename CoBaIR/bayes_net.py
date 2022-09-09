@@ -51,7 +51,6 @@ class BayesNet():
 
         # config = deepcopy(config)
         config = config_to_default_dict(config)
-        self.decision_threshold = config['decision_threshold']
 
         if not config:
             self.config = {'intentions': defaultdict(lambda: defaultdict(
@@ -59,6 +58,7 @@ class BayesNet():
             return
 
         self.config = deepcopy(config)
+        self.decision_threshold = self.config['decision_threshold']
 
         if validate:  # this is needed to load invalid configs
             self.validate_config()
