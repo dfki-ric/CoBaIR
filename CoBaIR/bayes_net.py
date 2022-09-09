@@ -48,10 +48,10 @@ class BayesNet():
         self.valid = False
         self.bn_verbosity = bn_verbosity
         self.discretization_functions = {}
-        self.decision_threshold = decision_threshold
 
         # config = deepcopy(config)
         config = config_to_default_dict(config)
+        self.decision_threshold = config['decision_threshold']
 
         if not config:
             self.config = {'intentions': defaultdict(lambda: defaultdict(
