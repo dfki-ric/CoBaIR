@@ -40,7 +40,7 @@ def test_add_to_empty(config=None, counter=0):
     with pytest.raises(AssertionError):
         bn.add_context(context, instantiations)
     # Making sure tmp_config will be maintained
-    assert default_to_regular(bn.config) == default_to_regular(config)
+    assert config_to_default_dict(bn.config) == config_to_default_dict(config)
 
 
 def test_add_n_to_empty(n=N):

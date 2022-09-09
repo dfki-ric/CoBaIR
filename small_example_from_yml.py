@@ -21,6 +21,7 @@ __author__ = 'Adrian Lubitz'
 
 config = load_config("small_example.yml")
 net = BayesNet(config)
+
 # %%
 # add combined influence value
 net.add_combined_influence(
@@ -30,7 +31,7 @@ net.add_combined_influence(
 net.del_combined_influence(
     'pick up tool', ('speech commands', 'human holding object'), ('pickup', True))
 # %%
-# define discetazaion functio
+# define discetazaion function
 
 
 def invalid_discretization_function(a):
@@ -52,10 +53,9 @@ evidence = {
     'invalid context': 'does not matter in evidence'
 }
 max_intention, normalized_inference = net.infer(
-    evidence, decision_threshold=0.7)
+    evidence)
 print(normalized_inference)
-
-# %%
 print(max_intention)
+
 
 # %%

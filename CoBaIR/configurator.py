@@ -5,21 +5,17 @@ This module is a GUI configurator to create configurations for context based int
 # System imports
 from collections import defaultdict
 import tkinter as tk
-from tkinter import StringVar, filedialog as fd
+from tkinter import filedialog as fd
 from tkinter.simpledialog import Dialog
 from tkinter import ttk
-from threading import Timer
 from copy import deepcopy
-import traceback
 from types import FunctionType as function
-from matplotlib.style import available, context
-from pyparsing import col
 
 import yaml
 # 3rd party imports
 
 # local imports
-from .bayes_net import BayesNet, load_config
+from .bayes_net import BayesNet
 
 # end file header
 __author__ = 'Adrian Lubitz'
@@ -411,7 +407,15 @@ class Configurator(tk.Tk):
 
         self.set_intention_dropdown(self.bayesNet.config['intentions'].keys())
         self.adjust_button_visibility()
+        self.set_decision_threshold()
         self.fill_advanced_table()
+
+    def set_decision_threshold(self):
+        """
+        This sets value in the decision threshold entry from the config
+        """
+        self.decision_string_value.set(
+            self.bayesNet.config['decision_threshold'])
 
     def adjust_button_visibility(self):
         """
@@ -601,7 +605,7 @@ class Configurator(tk.Tk):
         for intention, context_influence in self.bayesNet.config['intentions'].items():
             # print(context_influence)
             for context in context_influence:
-                # print(context)                
+                # print(context)
                 if isinstance(context, tuple):
                     # print(len(list(context_influence[context])))
                     for j in range(len(list(context_influence[context]))):
@@ -614,7 +618,7 @@ class Configurator(tk.Tk):
                         # build context String
                         context_string = ""
                         for i, _context in enumerate(context):
-                            # print(key[i])                        
+                            # print(key[i])
                             context_string += f'{_context}={str(key[i])}, '
                         context_string = context_string[:-2]
                         # print(_context)
@@ -704,9 +708,23 @@ class Configurator(tk.Tk):
         self.intention_frame.grid(row=3, column=0)
         self.intention_instantiations = defaultdict(lambda: defaultdict(dict))
 
+        ### Decision Threshold ###
+        self.decision_frame = tk.Frame(self)
+        self.decision_frame.grid(row=4, column=0)
+        decision_label = tk.Label(
+            self.decision_frame, text='Decision Threshold: ')
+        self.decision_string_value = tk.StringVar(
+            self.decision_frame)
+        self.decision_string_value.trace_add(
+            mode="write", callback=lambda *args: self.decision_threshold_changed(*args))
+        self.decision_entry = tk.Entry(
+            self.decision_frame, textvariable=self.decision_string_value)
+        decision_label.grid(row=0, column=0)
+        self.decision_entry.grid(row=0, column=1)
+
         #### Advanced ####
         self.advanced_frame = tk.Frame(self)
-        self.advanced_frame.grid(row=4, column=0)
+        self.advanced_frame.grid(row=5, column=0)
         self.advanced_label = tk.Label(
             self.advanced_frame, text=u'advanced \u25BC')
         self.advanced_folded = True
@@ -714,12 +732,6 @@ class Configurator(tk.Tk):
         self.advanced_label.bind("<Button-1>", self.onclicked_advanced)
         self.advanced_hidden_frame = tk.Frame(self.advanced_frame)
         self.advanced_hidden_frame.grid(row=1, column=0)
-        # self.advanced_table = ttk.Treeview(self.advanced_hidden_frame)
-        # self.advanced_table['columns'] = ('contexts', 'value')
-        # self.advanced_table.heading('#0', text='Intention')
-        # self.advanced_table.heading('contexts', text='Contexts')
-        # self.advanced_table.heading('value', text='Influence value')
-        # self.advanced_table.grid(row=0, column=0)
         self.advanced_table = tk.Frame(self.advanced_hidden_frame)
         self.advanced_table.grid(row=0, column=0)
 
@@ -743,6 +755,19 @@ class Configurator(tk.Tk):
         self.error_frame.grid(row=6, column=0)
         self.error_label = tk.Label(self.error_frame, fg='#f00')
         self.error_label.pack()
+
+    def decision_threshold_changed(self, *args):
+        """
+        Callback for change of the decision threshold.
+        """
+        self.error_label['text'] = f""
+        try:
+            self.bayesNet.change_decision_threshold(
+                float(self.decision_string_value.get()))
+        except AssertionError as e:
+            self.error_label['text'] = f"{e}"
+        except ValueError as e:
+            self.error_label['text'] = f'Decision Threshold must be a number'
 
     def set_context_dropdown(self, options: list, command: function = None):
         '''
@@ -959,6 +984,8 @@ class Configurator(tk.Tk):
                 self.context_instantiations[context][instantiation][2].get()))
         except AssertionError as e:
             self.error_label['text'] = f"{e}"
+        except ValueError as e:
+            self.error_label['text'] = f'Apriori probability of context "{context}.{instantiation}" is not a number'
 
     def influence_values_changed(self, value, context, intention, instantiation):
         """
