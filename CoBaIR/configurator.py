@@ -288,9 +288,9 @@ class NewContextDialog(Dialog):
                  text="Instantiation Name").grid(row=0, column=0)
         tk.Label(self.instantiations_frame,
                  text="Apriori Probability").grid(row=0, column=1)
-        self.instantiations = []
+        self.instantiations = []  # This holds the GUI elements for the instantiations
         self.shown_instantiations = 0
-        # TODO: Fill the entries here if predefined_context is given!
+        # Fill the entries here if predefined_context is given!
         if self.predefined_context:
             # it's always only one new context
             context = list(self.predefined_context.keys())[0]
@@ -303,6 +303,8 @@ class NewContextDialog(Dialog):
             #          text=f"Instantiation {self.shown_instantiations}:").grid(row=self.shown_instantiations)
             name_entry = tk.Entry(self.instantiations_frame)
             probability_entry = tk.Entry(self.instantiations_frame)
+            remove_button = tk.Button(
+                self.instantiations_frame, command=lambda x=self.shown_instantiations: self.remove_instantiation(x), text='-')
             if instantiations:
                 # get name
                 name = list(instantiations.keys())[0]
@@ -315,13 +317,33 @@ class NewContextDialog(Dialog):
                 del(instantiations[name])
             name_entry.grid(row=self.shown_instantiations + 1, column=0)
             probability_entry.grid(row=self.shown_instantiations + 1, column=1)
-            self.instantiations.append((name_entry, probability_entry))
+            remove_button.grid(row=self.shown_instantiations + 1, column=2)
+            self.instantiations.append(
+                (name_entry, probability_entry, remove_button))
             self.shown_instantiations += 1
 
         tk.Button(master, command=self.new_instantiation,
                   text='More').grid(row=2)
 
         return self.context_entry  # initial focus
+
+    def remove_instantiation(self, index):
+        """
+        Callback for the remove_button
+        Args:
+            index: the index in self.instantiations
+        """
+        for element in self.instantiations[index]:
+            element.grid_forget()
+            element.destroy()
+        self.shown_instantiations -= 1
+        # TODO: that is problematic because it shifts indexes!!!
+        # Or I need to redraw the whole thing like I always do...
+        self.instantiations.pop(index)
+        for index, instantiation in enumerate(self.instantiations):
+            # or I just need to rebind callback with correct index works with configure(command=...)
+            instantiation[2].configure(
+                command=lambda x=index: self.remove_instantiation(x))
 
     def new_instantiation(self):
         """
@@ -331,7 +353,11 @@ class NewContextDialog(Dialog):
         probability_entry = tk.Entry(self.instantiations_frame)
         name_entry.grid(row=self.shown_instantiations+1, column=0)
         probability_entry.grid(row=self.shown_instantiations+1, column=1)
-        self.instantiations.append((name_entry, probability_entry))
+        remove_button = tk.Button(
+            self.instantiations_frame, command=lambda x=self.shown_instantiations: self.remove_instantiation(x), text='-')
+        remove_button.grid(row=self.shown_instantiations+1, column=2)
+        self.instantiations.append(
+            (name_entry, probability_entry, remove_button))
         self.shown_instantiations += 1
 
     def validate(self):
@@ -342,26 +368,42 @@ class NewContextDialog(Dialog):
             bool:
                 True if the entries are not empty
         """
+
         # TODO: entries cannot be the same (len(entries) must be the same as len(set(entries.get())))
+
+        valid = True
+        instantiation_names = []
+        # more than 1 entry is needed!!!
+        if len(self.instantiations) < 2:
+            valid = False
+            # TODO: point out why not valid
         empty_entries = []
         self.context_entry.configure(highlightbackground='black',
-                                     selectbackground='black', highlightcolor='black')
+                                     selectbackground='black', highlightcolor='black')  # TODO: Too much I only want the text to be black/normal...
         if not self.context_entry.get():
             empty_entries.append(self.context_entry)
-        for instantiation in self.instantiations:
-            for entry in instantiation:
+        for i, instantiation in enumerate(self.instantiations):
+            # Only setting colors for the entry fields
+            for entry in instantiation[0:2]:
                 entry.configure(highlightbackground='black',
                                 selectbackground='black', highlightcolor='black')
                 if not entry.get():
                     empty_entries.append(entry)
+            name = instantiation[0].get()
+            if name in instantiation_names:
+                # mark red
+                print('mark red')
+                instantiation[0].configure(highlightbackground='red',
+                                           selectbackground='red', highlightcolor='red')
+                valid = False
+            instantiation_names.append(name)
         if empty_entries:
             # mark red
             for entry in empty_entries:
                 entry.configure(highlightbackground='red',
                                 selectbackground='red', highlightcolor='red')
-            return False
-        else:
-            return True
+            valid = False
+        return valid
 
     def apply(self):
         """
