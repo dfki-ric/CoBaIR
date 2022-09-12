@@ -742,7 +742,7 @@ class Configurator(tk.Tk):
 
         #### Load & Save #####
         self.load_save_frame = tk.Frame(self)
-        self.load_save_frame.grid(row=5, column=0)
+        self.load_save_frame.grid(row=6, column=0)
         self.load_button = tk.Button(self.load_save_frame,
                                      command=self.load, text='Load')
         self.load_button.grid(row=0, column=0)
@@ -752,7 +752,7 @@ class Configurator(tk.Tk):
 
         #### Error Area #######
         self.error_frame = tk.Frame(self)
-        self.error_frame.grid(row=6, column=0)
+        self.error_frame.grid(row=7, column=0)
         self.error_label = tk.Label(self.error_frame, fg='#f00')
         self.error_label.pack()
 
