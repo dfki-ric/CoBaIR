@@ -45,17 +45,19 @@ class BayesNet():
             bn_verbosity: sets the verbose flag for bnlearn. See [bnlearn API](https://erdogant.github.io/bnlearn/pages/html/bnlearn.bnlearn.html?highlight=verbose#bnlearn.bnlearn.make_DAG) for more information
             validate: Flag if the given config should be validated or not. This is necessary to load invalid configs
         '''
+
         self.valid = False
         self.bn_verbosity = bn_verbosity
         self.discretization_functions = {}
 
-        # config = deepcopy(config)
+        if config is None:
+            validate = False
         config = config_to_default_dict(config)
 
-        if not config:
-            self.config = {'intentions': defaultdict(lambda: defaultdict(
-                lambda: defaultdict(int))), 'contexts': defaultdict(lambda: defaultdict(float))}
-            return
+        # if not config:
+        #     self.config = {'intentions': defaultdict(lambda: defaultdict(
+        #         lambda: defaultdict(int))), 'contexts': defaultdict(lambda: defaultdict(float))}
+        #     return
 
         self.config = deepcopy(config)
         self.decision_threshold = self.config['decision_threshold']
@@ -752,20 +754,22 @@ def config_to_default_dict(config: dict):
         defaultdict:
             a defaultdict containing the config
     """
-    if config == None:
-        return None
+    if not config:
+        config = {}
     new_config = {'intentions': defaultdict(lambda: defaultdict(
         lambda: defaultdict(int))), 'contexts': defaultdict(lambda: defaultdict(float))}
-    for context in config['contexts']:
-        for instantiation, value in config['contexts'][context].items():
-            new_config['contexts'][context][instantiation] = value
-    for intention in config['intentions']:
-        # HERE: there is the chance that there is no context yet - write intention once
-        new_config['intentions'][intention] = defaultdict(
-            lambda: defaultdict(int))
-        for context in config['intentions'][intention]:
-            for instantiation, value in config['intentions'][intention][context].items():
-                new_config['intentions'][intention][context][instantiation] = value
+    if 'contexts' in config:
+        for context in config['contexts']:
+            for instantiation, value in config['contexts'][context].items():
+                new_config['contexts'][context][instantiation] = value
+    if 'intentions' in config:
+        for intention in config['intentions']:
+            # HERE: there is the chance that there is no context yet - write intention once
+            new_config['intentions'][intention] = defaultdict(
+                lambda: defaultdict(int))
+            for context in config['intentions'][intention]:
+                for instantiation, value in config['intentions'][intention][context].items():
+                    new_config['intentions'][intention][context][instantiation] = value
     if 'decision_threshold' in config:
         new_config['decision_threshold'] = config['decision_threshold']
     else:
