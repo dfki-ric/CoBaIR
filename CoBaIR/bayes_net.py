@@ -9,7 +9,7 @@ from collections import defaultdict
 from collections.abc import Hashable
 from copy import deepcopy
 import warnings
-
+import os
 
 # 3rd party imports
 import bnlearn as bn
@@ -569,7 +569,12 @@ class BayesNet():
 
         Raises:
             AssertionError: An AssertionError is raised if the resulting config is not valid.
+            ValueError: An ValueError is raised if the context is not in self.config.
         """
+        # check if context exists already - only then I can edit
+        if context not in self.config['contexts']:
+            raise ValueError(
+                'Cannot delete non existing context - use add_context to add a new context')
         del(self.config['contexts'][context])
         self._remove_context_from_intentions()
         self._transport_context_into_intentions()
@@ -585,7 +590,11 @@ class BayesNet():
 
         Raises:
             AssertionError: An AssertionError is raised if the resulting config is not valid.
+            ValueError: An ValueError is raised if the intention is not in self.config.
         """
+        if intention not in self.config['intentions']:
+            raise ValueError(
+                'Cannot delete non existing intention - use add_intention to add a new intention')
         del(self.config['intentions'][intention])
         # reinizialize
         self.__init__(self.config)
@@ -744,7 +753,7 @@ class BayesNet():
         self.__init__(self.config)
 
 
-def config_to_default_dict(config: dict):
+def config_to_default_dict(config: dict = None):
     """
     This casts a config given as dict into a defaultdict.
 
@@ -788,6 +797,10 @@ def load_config(path):
         defaultdict:
             a defaultdict containing the config
     """
+
+    # if os.path.splitext(path)[-1] != ".yml":
+    #     raise TypeError(
+    #         'Invalid format file - only supporting yml files')
     with open(path) as stream:
         return config_to_default_dict(yaml.load(stream, Loader=PrettySafeLoader))
 
