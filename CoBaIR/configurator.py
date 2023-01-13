@@ -929,6 +929,12 @@ class Configurator(tk.Tk):
             )
             row += 1
 
+    def set_slider_color(self, slider, value):
+        
+        color = 'red' if int(value) == 1 else 'orange' if int(value) == 2 else 'yellow' if int(value) == 3 else 'light green' if int(value) == 4 else 'green' if int(value) == 5 else 'gray'
+        self.slider.config(activebackground=color)
+
+
     def influencing_context_selected(self, context_or_intention: str):
         """
         Callback for click on context in influencing context dropdown.
@@ -959,9 +965,11 @@ class Configurator(tk.Tk):
                                            text=f'Influence of {context}:{instantiation} on {intention}: LOW ')
             instantiation_label.grid(row=row, column=0)
 
-            slider = tk.Scale(self.intention_frame, from_=0, to=5, tickinterval=1, variable=tk.IntVar(self.intention_frame, value),
-                              orient=tk.HORIZONTAL, command=lambda value, context=context, intention=intention, instantiation=instantiation: self.influence_values_changed(value, context, intention, instantiation))
-            slider.grid(row=row, column=1)
+            self.slider = tk.Scale(self.intention_frame, from_=0, to=5, tickinterval=1, variable=tk.IntVar(self.intention_frame, value),
+                      orient=tk.HORIZONTAL, command=lambda value, context=context, intention=intention, instantiation=instantiation: self.influence_values_changed(value, context, intention, instantiation))
+            self.set_slider_color(self.slider, value)
+            self.slider.grid(row=row, column=1)
+
 
             high_label = tk.Label(self.intention_frame,
                                   text=f' HIGH')
@@ -969,7 +977,7 @@ class Configurator(tk.Tk):
 
             self.intention_instantiations[intention][context][instantiation] = (
                 instantiation_label,
-                slider,
+                self.slider,
                 high_label,
             )
             row += 1
@@ -1043,5 +1051,9 @@ class Configurator(tk.Tk):
         try:
             self.bayesNet.change_influence_value(
                 intention=intention, context=context, instantiation=instantiation, value=int(value))
+
+            self.slider = self.intention_instantiations[intention][context][instantiation][1]
+            self.set_slider_color(self.slider, value)
+
         except AssertionError as e:
             self.error_label['text'] = f"{e}"
