@@ -20,8 +20,9 @@ In the bayesian approach CoBaIR uses a two-layer Bayesian Net of the following s
 ![two-layer Bayesian Net](docs/images/2layerbayesian.svg)
 
 
-## Install dependencies
-You need to install all dependencies from the `requirements.txt` with `pip install -r requirements.txt`.
+## Install 
+You can install the library from your local copy after cloning this repo with pip using `pip install .`
+<!-- TODO: add pip install from PyPi later -->
 
 
 
@@ -177,7 +178,7 @@ Tests are implemented with [pytest](https://docs.pytest.org/en/7.1.x/).
 To install test dependencies you need to run 
 
 ```bash
-pip install -r test_requirements.txt
+pip install -r requirements/test_requirements.txt
 ```
 Then you can run 
 ```bash
@@ -213,7 +214,7 @@ Documentation is implemented with the [material theme](https://squidfunk.github.
 ### Dependencies
 Install all dependencies for building the docu with 
 ```bash
-pip install -r doc_requirements.txt
+pip install -r requirements/doc_requirements.txt
 ```
 ### Build
 Build the docu with 
