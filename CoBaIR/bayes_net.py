@@ -391,6 +391,8 @@ class BayesNet():
         assert 'intentions' in self.config, 'Field "intentions" must be defined in the config'
         assert len(self.config['contexts']), 'No contexts defined'
         assert len(self.config['intentions']), 'No intentions defined'
+        assert isinstance(self.config['decision_threshold'], float) and self.config['decision_threshold'] >= 0 and self.config[
+            'decision_threshold'] < 1, 'Decision threshold must be a number between 0 and 1'
 
         # Intentions need to have influence values for all contexts and their possible instantiations
         for intention, context_influences in self.config['intentions'].items():
@@ -520,12 +522,12 @@ class BayesNet():
             raise ValueError(
                 'Cannot edit non existing context - use add_context to add a new context')
         if new_name:  # del old names context
-            del(self.config['contexts'][context])
+            del (self.config['contexts'][context])
             # rename all occurences in intentions
             for intention in self.config['intentions']:
                 old_instantiations = deepcopy(
                     self.config['intentions'][intention][context])
-                del(self.config['intentions'][intention][context])
+                del (self.config['intentions'][intention][context])
                 self.config['intentions'][intention][new_name] = old_instantiations
             context = new_name
 
@@ -555,7 +557,7 @@ class BayesNet():
             raise ValueError(
                 f'{new_name} exists - cannot be given as the new name for {intention}')
         old_values = deepcopy(self.config['intentions'][intention])
-        del(self.config['intentions'][intention])
+        del (self.config['intentions'][intention])
         self.config['intentions'][new_name] = old_values
         # reinizialize
         self.__init__(self.config)
@@ -575,7 +577,7 @@ class BayesNet():
         if context not in self.config['contexts']:
             raise ValueError(
                 'Cannot delete non existing context - use add_context to add a new context')
-        del(self.config['contexts'][context])
+        del (self.config['contexts'][context])
         self._remove_context_from_intentions()
         self._transport_context_into_intentions()
         # reinizialize
@@ -595,7 +597,7 @@ class BayesNet():
         if intention not in self.config['intentions']:
             raise ValueError(
                 'Cannot delete non existing intention - use add_intention to add a new intention')
-        del(self.config['intentions'][intention])
+        del (self.config['intentions'][intention])
         # reinizialize
         self.__init__(self.config)
 
@@ -706,7 +708,7 @@ class BayesNet():
         if instantiations not in self.config['intentions'][intention][contexts]:
             raise ValueError(
                 'remove_combined_influence can only remove combined context instantiations that already exist')
-        del(self.config['intentions'][intention][contexts])
+        del (self.config['intentions'][intention][contexts])
 
     def _transport_context_into_intentions(self):
         """
@@ -737,9 +739,9 @@ class BayesNet():
                             context_instantiations_to_remove_from_intentions.append(
                                 (intention, context, instantiation))
         for intention, context in contexts_to_remove_from_intentions:
-            del(self.config['intentions'][intention][context])
+            del (self.config['intentions'][intention][context])
         for intention, context, instantiation in context_instantiations_to_remove_from_intentions:
-            del(self.config['intentions'][intention][context][instantiation])
+            del (self.config['intentions'][intention][context][instantiation])
 
     def change_decision_threshold(self, decision_threshold):
         """

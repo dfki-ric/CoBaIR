@@ -278,7 +278,7 @@
      <cstring>lineEdit</cstring>
     </property>
    </widget>
-   <widget class="QLineEdit" name="lineEdit_2">
+   <widget class="QLineEdit" name="decision_threshold_entry">
     <property name="geometry">
      <rect>
       <x>410</x>
@@ -286,6 +286,11 @@
       <width>171</width>
       <height>25</height>
      </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>11</pointsize>
+     </font>
     </property>
     <property name="text">
      <string/>
@@ -554,7 +559,7 @@
      <x>0</x>
      <y>0</y>
      <width>822</width>
-     <height>9</height>
+     <height>7</height>
     </rect>
    </property>
   </widget>
