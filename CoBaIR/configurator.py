@@ -18,6 +18,7 @@ import yaml
 from .bayes_net import BayesNet
 from PyQt5 import QtWidgets, uic
 from PyQt5.QtWidgets import QFileDialog
+from PyQt5.QtCore import Qt
 
 # end file header
 __author__ = 'Adrian Lubitz'
@@ -435,9 +436,15 @@ class Configurator(QtWidgets.QMainWindow):
         self.setup_layout()
         self.bayesNet = BayesNet(config)
         # self.create_fields() #TODO: uncomment!
-        self.load_button.clicked.connect(self.load)
-        self.error_label = self.findChild(QtWidgets.QLabel, 'error_label')
+
         self.show()  # Show the GUI
+
+    def set_error_label_red(self):
+        """
+        setting the alignment and color of the error label
+        """
+        self.error_label.setAlignment(Qt.AlignCenter)
+        self.error_label.setStyleSheet("color: red")
 
     def create_fields(self):
         """
@@ -693,6 +700,9 @@ class Configurator(QtWidgets.QMainWindow):
         Setting up the layout of the GUI.
         """
         uic.loadUi('configpyqt5.ui', self)
+        self.load_button.clicked.connect(self.load)
+        self.error_label = self.findChild(QtWidgets.QLabel, 'error_label')
+        self.set_error_label_red()
         self.error_label.setText("")
 
     def decision_threshold_changed(self, *args):
