@@ -8,7 +8,7 @@ import argparse
 import yaml
 
 # local imports
-from CoBaIR.configurator import Ui
+from CoBaIR.configurator import Configurator
 from CoBaIR.bayes_net import load_config
 
 
@@ -27,6 +27,6 @@ if config_path:
     config = load_config(config_path)
 else:
     config = None
-configurator = Ui(config)
-configurator.mainloop()
 
+configurator = Configurator(config)
+configurator.app.exec_()

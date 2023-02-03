@@ -416,19 +416,10 @@ class NewContextDialog(Dialog):
             )][instantiation[0].get()] = float(instantiation[1].get())
 
 
-class Ui(QtWidgets.QMainWindow):
-    def __init__(self):
-        super(Ui, self).__init__() # Call the inherited classes __init__ method
-        uic.loadUi('configpyqt5.ui', self) # Load the .ui file
-        self.show() # Show the GUI
 
 
-app = QtWidgets.QApplication(sys.argv) # Create an instance of QtWidgets.QApplication
-window = Ui() # Create an instance of our class
-app.exec_() # Start the application
 
-
-class Configurator(tk.Tk):
+class Configurator(QtWidgets.QMainWindow):
     '''
     GUI configurator to create configurations for context based intention recognition.
     It can as well be used in a live mode to test the configuration
@@ -441,11 +432,11 @@ class Configurator(tk.Tk):
         Args:
             config: A dict with a config following the config format.
         '''
-        tk.Tk.__init__(self, *args, **kwargs)
+        self.app = QtWidgets.QApplication(sys.argv)
+        QtWidgets.QMainWindow.__init__(self, *args, **kwargs) 
         self.setup_layout()
         self.bayesNet = BayesNet(config)
-        self.create_fields()
-        self.title("Context Based Intention Recognition Configurator")
+        # self.create_fields()
 
     def create_fields(self):
         """
@@ -700,116 +691,119 @@ class Configurator(tk.Tk):
         """
         Setting up the layout of the GUI.
         """
-        ###### Context ######
-        self.context_label_frame = tk.Frame(self)
-        self.context_label_frame.grid(row=0, column=0)
-        tk.Label(self.context_label_frame,
-                 text='Apriori Probability for ').grid(row=0, column=0)
-        self.context_selection = tk.StringVar(
-            self.context_label_frame, 'Context')
-        values = []
-        self.context_dropdown = tk.OptionMenu(
-            self.context_label_frame, self.context_selection, *values, command=self.context_selected, value=self.context_selection.get())
-        self.context_dropdown.grid(row=0, column=1)
+        uic.loadUi('configpyqt5.ui', self) 
+        self.show() # Show the GUI
 
-        self.edit_context_button = tk.Button(self.context_label_frame,
-                                             command=self.edit_context, text='Edit')
-        self.edit_context_button.grid(row=0, column=2)
+        # ###### Context ######
+        # self.context_label_frame = tk.Frame(self)
+        # self.context_label_frame.grid(row=0, column=0)
+        # tk.Label(self.context_label_frame,
+        #          text='Apriori Probability for ').grid(row=0, column=0)
+        # self.context_selection = tk.StringVar(
+        #     self.context_label_frame, 'Context')
+        # values = []
+        # self.context_dropdown = tk.OptionMenu(
+        #     self.context_label_frame, self.context_selection, *values, command=self.context_selected, value=self.context_selection.get())
+        # self.context_dropdown.grid(row=0, column=1)
 
-        self.delete_context_button = tk.Button(self.context_label_frame,
-                                               command=self.delete_context, text='Delete')
-        self.delete_context_button.grid(row=0, column=3)
+        # self.edit_context_button = tk.Button(self.context_label_frame,
+        #                                      command=self.edit_context, text='Edit')
+        # self.edit_context_button.grid(row=0, column=2)
 
-        self.new_context_button = tk.Button(self.context_label_frame,
-                                            command=self.new_context, text='New Context')
-        self.new_context_button.grid(row=0, column=4)
+        # self.delete_context_button = tk.Button(self.context_label_frame,
+        #                                        command=self.delete_context, text='Delete')
+        # self.delete_context_button.grid(row=0, column=3)
 
-        self.context_frame = tk.Frame(self)
-        self.context_frame.grid(row=1, column=0, columnspan=3)
-        self.context_instantiations = defaultdict(dict)
+        # self.new_context_button = tk.Button(self.context_label_frame,
+        #                                     command=self.new_context, text='New Context')
+        # self.new_context_button.grid(row=0, column=4)
 
-        ##### Intention ####
-        self.intention_label_frame = tk.Frame(self)
-        self.intention_label_frame.grid(row=2, column=0)
-        tk.Label(self.intention_label_frame,
-                 text='Influence of ').grid(row=0, column=0)
-        self.influencing_context_selection = tk.StringVar(
-            self.intention_label_frame, 'Context')
-        values = []
-        self.influencing_context_dropdown = tk.OptionMenu(
-            self.intention_label_frame, self.influencing_context_selection, *values, command=self.influencing_context_selected, value=self.influencing_context_selection.get())
-        self.influencing_context_dropdown.grid(row=0, column=1)
+        # self.context_frame = tk.Frame(self)
+        # self.context_frame.grid(row=1, column=0, columnspan=3)
+        # self.context_instantiations = defaultdict(dict)
 
-        tk.Label(self.intention_label_frame, text=' on ').grid(row=0, column=2)
-        self.intention_selection = tk.StringVar(
-            self.intention_label_frame, 'Intention')
-        values = []
-        self.intention_dropdown = tk.OptionMenu(
-            self.intention_label_frame, self.intention_selection, *values, command=self.influencing_context_selected, value=self.intention_selection.get())
-        self.intention_dropdown.grid(row=0, column=3)
+        # ##### Intention ####
+        # self.intention_label_frame = tk.Frame(self)
+        # self.intention_label_frame.grid(row=2, column=0)
+        # tk.Label(self.intention_label_frame,
+        #          text='Influence of ').grid(row=0, column=0)
+        # self.influencing_context_selection = tk.StringVar(
+        #     self.intention_label_frame, 'Context')
+        # values = []
+        # self.influencing_context_dropdown = tk.OptionMenu(
+        #     self.intention_label_frame, self.influencing_context_selection, *values, command=self.influencing_context_selected, value=self.influencing_context_selection.get())
+        # self.influencing_context_dropdown.grid(row=0, column=1)
 
-        self.edit_intention_button = tk.Button(self.intention_label_frame,
-                                               command=self.edit_intention, text='Edit')
-        self.edit_intention_button.grid(row=0, column=4)
+        # tk.Label(self.intention_label_frame, text=' on ').grid(row=0, column=2)
+        # self.intention_selection = tk.StringVar(
+        #     self.intention_label_frame, 'Intention')
+        # values = []
+        # self.intention_dropdown = tk.OptionMenu(
+        #     self.intention_label_frame, self.intention_selection, *values, command=self.influencing_context_selected, value=self.intention_selection.get())
+        # self.intention_dropdown.grid(row=0, column=3)
 
-        self.delete_intention_button = tk.Button(self.intention_label_frame,
-                                                 command=self.delete_intention, text='Delete')
-        self.delete_intention_button.grid(row=0, column=5)
+        # self.edit_intention_button = tk.Button(self.intention_label_frame,
+        #                                        command=self.edit_intention, text='Edit')
+        # self.edit_intention_button.grid(row=0, column=4)
 
-        self.new_intention_button = tk.Button(self.intention_label_frame,
-                                              command=self.new_intention, text='New Intention')
-        self.new_intention_button.grid(row=0, column=6)
-        self.intention_frame = tk.Frame(self)
-        self.intention_frame.grid(row=3, column=0)
-        self.intention_instantiations = defaultdict(lambda: defaultdict(dict))
+        # self.delete_intention_button = tk.Button(self.intention_label_frame,
+        #                                          command=self.delete_intention, text='Delete')
+        # self.delete_intention_button.grid(row=0, column=5)
 
-        ### Decision Threshold ###
-        self.decision_frame = tk.Frame(self)
-        self.decision_frame.grid(row=4, column=0)
-        decision_label = tk.Label(
-            self.decision_frame, text='Decision Threshold: ')
-        self.decision_string_value = tk.StringVar(
-            self.decision_frame)
-        self.decision_string_value.trace_add(
-            mode="write", callback=lambda *args: self.decision_threshold_changed(*args))
-        self.decision_entry = tk.Entry(
-            self.decision_frame, textvariable=self.decision_string_value)
-        decision_label.grid(row=0, column=0)
-        self.decision_entry.grid(row=0, column=1)
+        # self.new_intention_button = tk.Button(self.intention_label_frame,
+        #                                       command=self.new_intention, text='New Intention')
+        # self.new_intention_button.grid(row=0, column=6)
+        # self.intention_frame = tk.Frame(self)
+        # self.intention_frame.grid(row=3, column=0)
+        # self.intention_instantiations = defaultdict(lambda: defaultdict(dict))
 
-        #### Advanced ####
-        self.advanced_frame = tk.Frame(self)
-        self.advanced_frame.grid(row=5, column=0)
-        self.advanced_label = tk.Label(
-            self.advanced_frame, text=u'advanced \u25BC')
-        self.advanced_folded = True
-        self.advanced_label.grid(row=0, column=0)
-        self.advanced_label.bind("<Button-1>", self.onclicked_advanced)
-        self.advanced_hidden_frame = tk.Frame(self.advanced_frame)
-        self.advanced_hidden_frame.grid(row=1, column=0)
-        self.advanced_table = tk.Frame(self.advanced_hidden_frame)
-        self.advanced_table.grid(row=0, column=0)
+        # ### Decision Threshold ###
+        # self.decision_frame = tk.Frame(self)
+        # self.decision_frame.grid(row=4, column=0)
+        # decision_label = tk.Label(
+        #     self.decision_frame, text='Decision Threshold: ')
+        # self.decision_string_value = tk.StringVar(
+        #     self.decision_frame)
+        # self.decision_string_value.trace_add(
+        #     mode="write", callback=lambda *args: self.decision_threshold_changed(*args))
+        # self.decision_entry = tk.Entry(
+        #     self.decision_frame, textvariable=self.decision_string_value)
+        # decision_label.grid(row=0, column=0)
+        # self.decision_entry.grid(row=0, column=1)
 
-        self.advanced_new_button = tk.Button(
-            self.advanced_hidden_frame, command=self.new_combined_influence, text='new combined context influence')
-        self.advanced_new_button.grid(row=1, column=0)
-        self.advanced_hidden_frame.grid_forget()
+        # #### Advanced ####
+        # self.advanced_frame = tk.Frame(self)
+        # self.advanced_frame.grid(row=5, column=0)
+        # self.advanced_label = tk.Label(
+        #     self.advanced_frame, text=u'advanced \u25BC')
+        # self.advanced_folded = True
+        # self.advanced_label.grid(row=0, column=0)
+        # self.advanced_label.bind("<Button-1>", self.onclicked_advanced)
+        # self.advanced_hidden_frame = tk.Frame(self.advanced_frame)
+        # self.advanced_hidden_frame.grid(row=1, column=0)
+        # self.advanced_table = tk.Frame(self.advanced_hidden_frame)
+        # self.advanced_table.grid(row=0, column=0)
 
-        #### Load & Save #####
-        self.load_save_frame = tk.Frame(self)
-        self.load_save_frame.grid(row=6, column=0)
-        self.load_button = tk.Button(self.load_save_frame,
-                                     command=self.load, text='Load')
-        self.load_button.grid(row=0, column=0)
-        self.save_button = tk.Button(self.load_save_frame,
-                                     command=self.save, text='Save')
-        self.save_button.grid(row=0, column=1)
+        # self.advanced_new_button = tk.Button(
+        #     self.advanced_hidden_frame, command=self.new_combined_influence, text='new combined context influence')
+        # self.advanced_new_button.grid(row=1, column=0)
+        # self.advanced_hidden_frame.grid_forget()
 
-        #### Error Area #######
-        self.error_frame = tk.Frame(self)
-        self.error_frame.grid(row=7, column=0)
-        self.error_label = tk.Label(self.error_frame, fg='#f00')
-        self.error_label.pack()
+        # #### Load & Save #####
+        # self.load_save_frame = tk.Frame(self)
+        # self.load_save_frame.grid(row=6, column=0)
+        # self.load_button = tk.Button(self.load_save_frame,
+        #                              command=self.load, text='Load')
+        # self.load_button.grid(row=0, column=0)
+        # self.save_button = tk.Button(self.load_save_frame,
+        #                              command=self.save, text='Save')
+        # self.save_button.grid(row=0, column=1)
+
+        # #### Error Area #######
+        # self.error_frame = tk.Frame(self)
+        # self.error_frame.grid(row=7, column=0)
+        # self.error_label = tk.Label(self.error_frame, fg='#f00')
+        # self.error_label.pack()
 
     def decision_threshold_changed(self, *args):
         """
