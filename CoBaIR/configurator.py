@@ -437,8 +437,7 @@ class Configurator(QtWidgets.QMainWindow):
         QtWidgets.QMainWindow.__init__(self, *args, **kwargs)
         self.setup_layout()
         self.bayesNet = BayesNet(config)
-        # self.create_fields() #TODO: uncomment!
-
+        self.create_fields()
         self.show()  # Show the GUI
 
     def set_error_label_red(self):
@@ -455,23 +454,24 @@ class Configurator(QtWidgets.QMainWindow):
         This should be used whenever the config is changed.
         It reads all values from the config and adjusts the GUI accordingly.
         """
+        # TODO: uncomment!!
+        # self.set_context_dropdown(self.bayesNet.config['contexts'].keys())
 
-        self.set_context_dropdown(self.bayesNet.config['contexts'].keys())
+        # self.set_influencing_context_dropdown(
+        #     self.bayesNet.config['contexts'].keys())
 
-        self.set_influencing_context_dropdown(
-            self.bayesNet.config['contexts'].keys())
-
-        self.set_intention_dropdown(self.bayesNet.config['intentions'].keys())
-        self.adjust_button_visibility()
+        # self.set_intention_dropdown(self.bayesNet.config['intentions'].keys())
+        # self.adjust_button_visibility()
         self.set_decision_threshold()
-        self.fill_advanced_table()
+        # TODO: uncomment!!
+        # self.fill_advanced_table()
 
     def set_decision_threshold(self):
         """
         This sets value in the decision threshold entry from the config
         """
-        self.decision_string_value.set(
-            self.bayesNet.config['decision_threshold'])
+        self.decision_threshold_entry.setText(
+            str(self.bayesNet.config['decision_threshold']))
 
     def adjust_button_visibility(self):
         """
