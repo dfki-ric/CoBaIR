@@ -703,6 +703,7 @@ class Configurator(QtWidgets.QMainWindow):
         """
         uic.loadUi(Path(Path(__file__).parent, 'configurator.ui'), self)
         self.load_button.clicked.connect(self.load)
+        self.save_button.clicked.connect(self.save)
         self.decision_threshold_entry.textChanged.connect(
             self.decision_threshold_changed)
         self.error_label = self.findChild(QtWidgets.QLabel, 'error_label')
@@ -914,15 +915,10 @@ class Configurator(QtWidgets.QMainWindow):
         """
         opens a asksaveasfilename dialog to save a config
         """
-        filetypes = (
-            ('yaml files', '*.yml'),
-            ('All files', '*.*')
-        )
-        # try:
-        save_filepath = fd.asksaveasfilename(
-            title='Save Config', defaultextension='.yml', filetypes=filetypes)
+        filetypes = "Yaml files (*.yml);;All Files (*)"
+        save_filepath, _ = QFileDialog.getSaveFileName(
+            None, "Save Config", "", filetypes)
         if save_filepath:
-            # TODO. how to handle saving invalid config?
             self.bayesNet.save(save_filepath)
 
     def apriori_values_changed(self, *args, context, instantiation):
