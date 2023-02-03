@@ -17,6 +17,7 @@ import yaml
 # local imports
 from .bayes_net import BayesNet
 from PyQt5 import QtWidgets, uic
+from PyQt5.QtWidgets import QFileDialog
 
 # end file header
 __author__ = 'Adrian Lubitz'
@@ -434,6 +435,8 @@ class Configurator(QtWidgets.QMainWindow):
         self.setup_layout()
         self.bayesNet = BayesNet(config)
         # self.create_fields() #TODO: uncomment!
+        self.load_button.clicked.connect(self.load)
+        self.error_label = self.findChild(QtWidgets.QLabel, 'error_label')
         self.show()  # Show the GUI
 
     def create_fields(self):
@@ -690,6 +693,7 @@ class Configurator(QtWidgets.QMainWindow):
         Setting up the layout of the GUI.
         """
         uic.loadUi('configpyqt5.ui', self)
+        self.error_label.setText("")
 
     def decision_threshold_changed(self, *args):
         """
@@ -878,23 +882,19 @@ class Configurator(QtWidgets.QMainWindow):
         """
         opens a askopenfilename dialog to load a config
         """
-        # open file selector
-        filetypes = (
-            ('yaml files', '*.yml'),
-            ('All files', '*.*')
-        )
-        filename = fd.askopenfilename(title='Choose Config',
-                                      filetypes=filetypes)
-        # set config
-        # try-except to write error if config not valid
-        try:
-            self.error_label['text'] = 'loading BayesNet...'
-            self.bayesNet.load(filename)
-            self.error_label['text'] = ''
-        except AssertionError as e:
-            # show Exception text in designated area
-            self.error_label['text'] = f"couldn't load {filename}:\n{e}"
-        self.create_fields()
+        options = QFileDialog.Options()
+        options |= QFileDialog.ReadOnly
+        fileName, _ = QFileDialog.getOpenFileName(
+            None, "Choose Config", "", "Yaml files (*.yml);;All Files (*)", options=options)
+        if fileName:
+            try:
+                self.error_label.setText("loading BayesNet...")
+                self.bayesNet.load(fileName)
+                self.error_label.setText("")
+            except AssertionError as e:
+                self.error_label.setText(str(e))
+            except Exception as e:
+                self.error_label.setText(str(e))
 
     def save(self):
         """
