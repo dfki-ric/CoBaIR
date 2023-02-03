@@ -12,19 +12,27 @@ If context values are continuous, discretizer functions can be used to create di
 From the infered intention in a HRI scenario the robot can perform corresponding actions to help the human with a specific task.
 
 
-## Documentation
-The Documentation can be accessed via the VPN on http://bob.dfki.uni-bremen.de/apis/kimmi_sf/implementation/CoBaIR/latest
 
-## Bayesian Approach
-In the bayesian approach CoBaIR uses a two-layer Bayesian Net of the following structure.
-![two-layer Bayesian Net](docs/images/2layerbayesian.svg)
 
 
 ## Install 
 You can install the library from your local copy after cloning this repo with pip using `pip install .`
 <!-- TODO: add pip install from PyPi later -->
 
+## Use the Graphical User Interface
+To make the configuration of a scenario easier we provide a Graphical User Interface(GUI). The GUI can be started with
+```bash
+python start_configurator.py
+```
+### Known Issues
+On some Linux Distros there seems to be a problem with a shared library. [This Solutions](https://stackoverflow.com/questions/71010343/cannot-load-swrast-and-iris-drivers-in-fedora-35/72200748#72200748) suggests to `export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6
+` which works on Ubuntu 22.04.
+## Documentation
+The Documentation can be accessed via the VPN on http://bob.dfki.uni-bremen.de/apis/kimmi_sf/implementation/CoBaIR/latest
 
+## Bayesian Approach
+In the bayesian approach CoBaIR uses a two-layer Bayesian Net of the following structure.
+![two-layer Bayesian Net](docs/images/2layerbayesian.svg)
 
 ## Config Format
 Configs will be saved in yml files. For convenience the is a configurator which can be started with
