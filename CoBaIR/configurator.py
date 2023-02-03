@@ -436,9 +436,7 @@ class Configurator(QtWidgets.QMainWindow):
         self.setup_layout()
         self.bayesNet = BayesNet(config)
         # self.create_fields() #TODO: uncomment!
-        self.load_button.clicked.connect(self.load)
-        self.error_label = self.findChild(QtWidgets.QLabel, 'error_label')
-        self.set_error_label_red()
+
         self.show()  # Show the GUI
 
     def set_error_label_red(self):
@@ -702,6 +700,9 @@ class Configurator(QtWidgets.QMainWindow):
         Setting up the layout of the GUI.
         """
         uic.loadUi('configpyqt5.ui', self)
+        self.load_button.clicked.connect(self.load)
+        self.error_label = self.findChild(QtWidgets.QLabel, 'error_label')
+        self.set_error_label_red()
         self.error_label.setText("")
 
     def decision_threshold_changed(self, *args):
