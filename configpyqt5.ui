@@ -466,7 +466,7 @@
      </property>
     </item>
    </widget>
-   <widget class="QPushButton" name="save_button_2">
+   <widget class="QPushButton" name="save_button">
     <property name="geometry">
      <rect>
       <x>398</x>
@@ -563,7 +563,7 @@
  <tabstops>
   <tabstop>edit_context_button</tabstop>
   <tabstop>delete_context_button</tabstop>
-  <tabstop>save_button_2</tabstop>
+  <tabstop>save_button</tabstop>
   <tabstop>load_button</tabstop>
   <tabstop>new_context_button</tabstop>
   <tabstop>pushButton_3</tabstop>

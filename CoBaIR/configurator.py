@@ -700,10 +700,14 @@ class Configurator(QtWidgets.QMainWindow):
         Setting up the layout of the GUI.
         """
         uic.loadUi('configpyqt5.ui', self)
+
         self.load_button.clicked.connect(self.load)
         self.error_label = self.findChild(QtWidgets.QLabel, 'error_label')
         self.set_error_label_red()
         self.error_label.setText("")
+
+        self.save_button.clicked.connect(self.save)
+
 
     def decision_threshold_changed(self, *args):
         """
@@ -910,15 +914,9 @@ class Configurator(QtWidgets.QMainWindow):
         """
         opens a asksaveasfilename dialog to save a config
         """
-        filetypes = (
-            ('yaml files', '*.yml'),
-            ('All files', '*.*')
-        )
-        # try:
-        save_filepath = fd.asksaveasfilename(
-            title='Save Config', defaultextension='.yml', filetypes=filetypes)
+        filetypes = "Yaml files (*.yml);;All Files (*)"
+        save_filepath, _ = QFileDialog.getSaveFileName(None, "Save Config", "", filetypes)
         if save_filepath:
-            # TODO. how to handle saving invalid config?
             self.bayesNet.save(save_filepath)
 
     def apriori_values_changed(self, *args, context, instantiation):
