@@ -1,7 +1,7 @@
 '''
 This module is a GUI configurator to create configurations for context based intention recognition - it can as well be used in a live mode to test the configuration
 '''
-
+import sys
 # System imports
 from collections import defaultdict
 import tkinter as tk
@@ -16,6 +16,7 @@ import yaml
 
 # local imports
 from .bayes_net import BayesNet
+from PyQt5 import QtWidgets, uic
 
 # end file header
 __author__ = 'Adrian Lubitz'
@@ -413,6 +414,18 @@ class NewContextDialog(Dialog):
         for instantiation in self.instantiations:
             self.result[self.context_entry.get(
             )][instantiation[0].get()] = float(instantiation[1].get())
+
+
+class Ui(QtWidgets.QMainWindow):
+    def __init__(self):
+        super(Ui, self).__init__() # Call the inherited classes __init__ method
+        uic.loadUi('configpyqt5.ui', self) # Load the .ui file
+        self.show() # Show the GUI
+
+
+app = QtWidgets.QApplication(sys.argv) # Create an instance of QtWidgets.QApplication
+window = Ui() # Create an instance of our class
+app.exec_() # Start the application
 
 
 class Configurator(tk.Tk):
