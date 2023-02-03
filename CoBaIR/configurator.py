@@ -693,6 +693,7 @@ class Configurator(QtWidgets.QMainWindow):
         Setting up the layout of the GUI.
         """
         uic.loadUi('configpyqt5.ui', self)
+        self.error_label.setText("")
 
     def decision_threshold_changed(self, *args):
         """
@@ -877,21 +878,23 @@ class Configurator(QtWidgets.QMainWindow):
             )
             row += 1
 
-
     def load(self):
         """
         opens a askopenfilename dialog to load a config
         """
         options = QFileDialog.Options()
         options |= QFileDialog.ReadOnly
-        fileName, _ = QFileDialog.getOpenFileName(None, "Choose Config", "", "Yaml files (*.yml);;All Files (*)", options=options)
+        fileName, _ = QFileDialog.getOpenFileName(
+            None, "Choose Config", "", "Yaml files (*.yml);;All Files (*)", options=options)
         if fileName:
             try:
                 self.error_label.setText("loading BayesNet...")
                 self.bayesNet.load(fileName)
                 self.error_label.setText("")
             except AssertionError as e:
-                self.error_label.setText("couldn't load {}:\n{}".format(fileName, e))
+                self.error_label.setText(str(e))
+            except Exception as e:
+                self.error_label.setText(str(e))
 
     def save(self):
         """
