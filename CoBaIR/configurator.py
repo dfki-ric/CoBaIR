@@ -1,8 +1,9 @@
 '''
 This module is a GUI configurator to create configurations for context based intention recognition - it can as well be used in a live mode to test the configuration
 '''
-import sys
+
 # System imports
+import sys
 from collections import defaultdict
 import tkinter as tk
 from tkinter import filedialog as fd
@@ -10,6 +11,7 @@ from tkinter.simpledialog import Dialog
 from tkinter import ttk
 from copy import deepcopy
 from types import FunctionType as function
+from pathlib import Path
 
 import yaml
 # 3rd party imports
@@ -699,24 +701,26 @@ class Configurator(QtWidgets.QMainWindow):
         """
         Setting up the layout of the GUI.
         """
-        uic.loadUi('configpyqt5.ui', self)
+        uic.loadUi(Path(Path(__file__).parent, 'configurator.ui'), self)
         self.load_button.clicked.connect(self.load)
+        self.decision_threshold_entry.textChanged.connect(
+            self.decision_threshold_changed)
         self.error_label = self.findChild(QtWidgets.QLabel, 'error_label')
         self.set_error_label_red()
         self.error_label.setText("")
 
-    def decision_threshold_changed(self, *args):
+    def decision_threshold_changed(self, value):
         """
         Callback for change of the decision threshold.
         """
-        self.error_label['text'] = f""
+        self.error_label.setText("")
         try:
             self.bayesNet.change_decision_threshold(
-                float(self.decision_string_value.get()))
+                float(value))
         except AssertionError as e:
-            self.error_label['text'] = f"{e}"
+            self.error_label.setText(f"{e}")
         except ValueError as e:
-            self.error_label['text'] = f'Decision Threshold must be a number'
+            self.error_label.setText(f'Decision Threshold must be a number')
 
     def set_context_dropdown(self, options: list, command: function = None):
         '''
