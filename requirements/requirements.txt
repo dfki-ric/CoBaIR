@@ -1,3 +1,4 @@
 pgmpy>=0.1.13
 bnlearn
 pyyaml
+PyQt5
