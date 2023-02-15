@@ -1,8 +1,9 @@
 '''
 This module is a GUI configurator to create configurations for context based intention recognition - it can as well be used in a live mode to test the configuration
 '''
-import sys
+
 # System imports
+import sys
 from collections import defaultdict
 import tkinter as tk
 from tkinter import filedialog as fd
@@ -10,6 +11,7 @@ from tkinter.simpledialog import Dialog
 from tkinter import ttk
 from copy import deepcopy
 from types import FunctionType as function
+from pathlib import Path
 
 import yaml
 # 3rd party imports
@@ -17,8 +19,9 @@ import yaml
 # local imports
 from .bayes_net import BayesNet
 from PyQt5 import QtWidgets, uic
-from PyQt5.QtWidgets import QFileDialog
+from PyQt5.QtWidgets import QFileDialog, QComboBox, QLabel, QFrame, QHBoxLayout, QLineEdit
 from PyQt5.QtCore import Qt
+ 
 
 # end file header
 __author__ = 'Adrian Lubitz'
@@ -435,8 +438,7 @@ class Configurator(QtWidgets.QMainWindow):
         QtWidgets.QMainWindow.__init__(self, *args, **kwargs)
         self.setup_layout()
         self.bayesNet = BayesNet(config)
-        # self.create_fields() #TODO: uncomment!
-
+        self.create_fields()
         self.show()  # Show the GUI
 
     def set_error_label_red(self):
@@ -453,23 +455,24 @@ class Configurator(QtWidgets.QMainWindow):
         This should be used whenever the config is changed.
         It reads all values from the config and adjusts the GUI accordingly.
         """
-
+        # TODO: uncomment!!
         self.set_context_dropdown(self.bayesNet.config['contexts'].keys())
 
-        self.set_influencing_context_dropdown(
-            self.bayesNet.config['contexts'].keys())
+        # self.set_influencing_context_dropdown(
+        #     self.bayesNet.config['contexts'].keys())
 
-        self.set_intention_dropdown(self.bayesNet.config['intentions'].keys())
-        self.adjust_button_visibility()
+        # self.set_intention_dropdown(self.bayesNet.config['intentions'].keys())
+        # self.adjust_button_visibility()
         self.set_decision_threshold()
-        self.fill_advanced_table()
+        # TODO: uncomment!!
+        # self.fill_advanced_table()
 
     def set_decision_threshold(self):
         """
         This sets value in the decision threshold entry from the config
         """
-        self.decision_string_value.set(
-            self.bayesNet.config['decision_threshold'])
+        self.decision_threshold_entry.setText(
+            str(self.bayesNet.config['decision_threshold']))
 
     def adjust_button_visibility(self):
         """
@@ -699,24 +702,35 @@ class Configurator(QtWidgets.QMainWindow):
         """
         Setting up the layout of the GUI.
         """
-        uic.loadUi('configpyqt5.ui', self)
+        uic.loadUi(Path(Path(__file__).parent, 'configurator.ui'), self)
         self.load_button.clicked.connect(self.load)
+        self.save_button.clicked.connect(self.save)
+        self.decision_threshold_entry.textChanged.connect(
+            self.decision_threshold_changed)
         self.error_label = self.findChild(QtWidgets.QLabel, 'error_label')
         self.set_error_label_red()
         self.error_label.setText("")
 
-    def decision_threshold_changed(self, *args):
+        self.context_selection = self.findChild(QComboBox, 'context_selection')
+        self.context_selection.currentIndexChanged.connect(self.set_context_dropdown)
+
+        self.context_instantiations = defaultdict(dict)
+        self.context_instantiations_2 = self.findChild(QLabel, 'contexts')
+
+        self.lineEdit = self.findChild(QLineEdit,'lineEdit')
+
+    def decision_threshold_changed(self, value):
         """
         Callback for change of the decision threshold.
         """
-        self.error_label['text'] = f""
+        self.error_label.setText("")
         try:
             self.bayesNet.change_decision_threshold(
-                float(self.decision_string_value.get()))
+                float(value))
         except AssertionError as e:
-            self.error_label['text'] = f"{e}"
+            self.error_label.setText(f"{e}")
         except ValueError as e:
-            self.error_label['text'] = f'Decision Threshold must be a number'
+            self.error_label.setText(f'Decision Threshold must be a number')
 
     def set_context_dropdown(self, options: list, command: function = None):
         '''
@@ -728,20 +742,20 @@ class Configurator(QtWidgets.QMainWindow):
         '''
         if not command:
             command = self.context_selected
-        self.context_dropdown.destroy()
+        self.context_selection.destroy()
+
         if options:
-            self.context_selection.set(
-                list(options)[0] if options else 'Context')
-            self.context_dropdown = tk.OptionMenu(
-                self.context_label_frame, self.context_selection, *options, command=command)
+            self.context_selection.addItems(options)
+            self.context_selection.setCurrentIndex(0) if options else self.context_selection.addItem('Context')
+            self.context_selection.currentIndexChanged.connect(command)
+
         else:  # clear
-            self.context_selection = tk.StringVar(
-                self.context_label_frame, 'Context')
             values = []
-            self.context_dropdown = tk.OptionMenu(
-                self.context_label_frame, self.context_selection, *values, command=command, value=self.context_selection.get())
-        self.context_dropdown.grid(row=0, column=1)
-        command(self.context_selection.get())
+            self.context_selection.addItems(values)
+            self.context_selection.currentIndexChanged.connect(command)
+            self.context_selection.setCurrentText('Context')
+        command(self.context_selection.currentText())
+        
 
     def set_influencing_context_dropdown(self, options: list, command: function = None):
         '''
@@ -804,7 +818,7 @@ class Configurator(QtWidgets.QMainWindow):
             for instantiation, widgets in instantiations.items():
                 for widget in widgets:
                     try:
-                        widget.destroy()
+                        widget.deleteLater()
                     except AttributeError:
                         pass  # can not destroy StringVars
                     except Exception as e:
@@ -817,21 +831,19 @@ class Configurator(QtWidgets.QMainWindow):
             return
         config = self.bayesNet.config
         for instantiation, value in config['contexts'][context].items():
-            instantiation_label = tk.Label(self.context_frame,
-                                           text=f'{instantiation}: ')
-            instantiation_label.grid(row=row, column=0)
+            #TODO: update row
+            self.context_instantiations_2.setText(f'{instantiation}: ')
 
-            string_value = tk.StringVar(
-                self.context_frame, value=str(value))
-            string_value.trace_add(mode="write", callback=lambda *args, context=context,
-                                   instantiation=instantiation: self.apriori_values_changed(*args, context=context, instantiation=instantiation))
+            string_value = str(value)
+            string_value_changed = lambda *args, context=context, instantiation=instantiation: self.apriori_values_changed(*args, context=context, instantiation=instantiation)
+            
+            self.lineEdit.setText(string_value)
+            self.lineEdit.textChanged.connect(string_value_changed)
 
-            entry = tk.Entry(self.context_frame, textvariable=string_value)
-            entry.grid(row=row, column=1)
 
             self.context_instantiations[context][instantiation] = (
-                instantiation_label,
-                entry,
+                self.context_instantiations_2,
+                self.lineEdit,
                 string_value
             )
             row += 1
@@ -910,15 +922,10 @@ class Configurator(QtWidgets.QMainWindow):
         """
         opens a asksaveasfilename dialog to save a config
         """
-        filetypes = (
-            ('yaml files', '*.yml'),
-            ('All files', '*.*')
-        )
-        # try:
-        save_filepath = fd.asksaveasfilename(
-            title='Save Config', defaultextension='.yml', filetypes=filetypes)
+        filetypes = "Yaml files (*.yml);;All Files (*)"
+        save_filepath, _ = QFileDialog.getSaveFileName(
+            None, "Save Config", "", filetypes)
         if save_filepath:
-            # TODO. how to handle saving invalid config?
             self.bayesNet.save(save_filepath)
 
     def apriori_values_changed(self, *args, context, instantiation):
@@ -930,12 +937,12 @@ class Configurator(QtWidgets.QMainWindow):
             instantiation: name of the corresponding instantiation
         """
         # update config
-        self.error_label['text'] = f""
+        self.error_label.setText("")
         try:
             self.bayesNet.change_context_apriori_value(context=context, instantiation=instantiation, value=float(
                 self.context_instantiations[context][instantiation][2].get()))
         except AssertionError as e:
-            self.error_label['text'] = f"{e}"
+            self.error_label.setText(str(e))
         except ValueError as e:
             self.error_label['text'] = f'Apriori probability of context "{context}.{instantiation}" is not a number'
 
