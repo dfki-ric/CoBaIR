@@ -19,8 +19,9 @@ import yaml
 # local imports
 from .bayes_net import BayesNet
 from PyQt5 import QtWidgets, uic
-from PyQt5.QtWidgets import QFileDialog, QComboBox, QLabel, QFrame, QHBoxLayout, QLineEdit
+from PyQt5.QtWidgets import *
 from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QFont
  
 
 # end file header
@@ -702,7 +703,7 @@ class Configurator(QtWidgets.QMainWindow):
         """
         Setting up the layout of the GUI.
         """
-        uic.loadUi(Path(Path(__file__).parent, 'configurator.ui'), self)
+        uic.loadUi(Path(Path(__file__).parent, 'C:/Users/aruni/OneDrive/Documents/DFKI/Cobair/CoBaIR/configpyqt5.ui'), self)
         self.load_button.clicked.connect(self.load)
         self.save_button.clicked.connect(self.save)
         self.decision_threshold_entry.textChanged.connect(
@@ -711,13 +712,14 @@ class Configurator(QtWidgets.QMainWindow):
         self.set_error_label_red()
         self.error_label.setText("")
 
-        self.context_selection = self.findChild(QComboBox, 'context_selection')
-        self.context_selection.currentIndexChanged.connect(self.set_context_dropdown)
+        self.context_dropdown = self.findChild(QComboBox, 'context_selection')
+        self.context_selection = self.context_dropdown
+        self.context_selection.addItem("Context")
 
         self.context_instantiations = defaultdict(dict)
         self.context_instantiations_2 = self.findChild(QLabel, 'contexts')
 
-        self.lineEdit = self.findChild(QLineEdit,'lineEdit')
+        self.context_selected_widget =self.findChild(QWidget, 'widget')
 
     def decision_threshold_changed(self, value):
         """
@@ -742,18 +744,25 @@ class Configurator(QtWidgets.QMainWindow):
         '''
         if not command:
             command = self.context_selected
-        self.context_selection.destroy()
+        # self.context_dropdown.deleteLater()
 
         if options:
-            self.context_selection.addItems(options)
-            self.context_selection.setCurrentIndex(0) if options else self.context_selection.addItem('Context')
-            self.context_selection.currentIndexChanged.connect(command)
-
+            # if options:
+            #     self.context_selection.addItems(list(options))
+            # else:
+            #     self.context_selection.addItem('Context')
+            self.context_dropdown.addItems(options)
+            self.context_dropdown.setCurrentIndex(0)
+            self.context_dropdown.currentTextChanged.connect(command)
+            # print("test")
+            
         else:  # clear
+            # self.context_selection.addItem("Context")
             values = []
-            self.context_selection.addItems(values)
-            self.context_selection.currentIndexChanged.connect(command)
-            self.context_selection.setCurrentText('Context')
+            for value in values:
+                self.context_dropdown.addItems(value)
+            self.context_dropdown.currentTextChanged.connect(command)   
+            # print("testing")   
         command(self.context_selection.currentText())
         
 
@@ -814,6 +823,7 @@ class Configurator(QtWidgets.QMainWindow):
         Args:
             context: name of the clicked context
         """
+        
         for active_context, instantiations in self.context_instantiations.items():
             for instantiation, widgets in instantiations.items():
                 for widget in widgets:
@@ -830,23 +840,29 @@ class Configurator(QtWidgets.QMainWindow):
         if context not in self.bayesNet.config['contexts']:
             return
         config = self.bayesNet.config
+
+
+        if self.context_selected_widget.layout() is not None:
+            self.context_selected_widget.layout().deleteLater()
+
+        layout = QVBoxLayout(self.context_selected_widget)
+
         for instantiation, value in config['contexts'][context].items():
-            #TODO: update row
-            self.context_instantiations_2.setText(f'{instantiation}: ')
+            instantiation_str = str(instantiation) if isinstance(instantiation, bool) else instantiation
 
-            string_value = str(value)
-            string_value_changed = lambda *args, context=context, instantiation=instantiation: self.apriori_values_changed(*args, context=context, instantiation=instantiation)
-            
-            self.lineEdit.setText(string_value)
-            self.lineEdit.textChanged.connect(string_value_changed)
+            label = QLabel(instantiation_str, self.context_selected_widget)  
+            label.setFont(QFont('Times New Roman', 13))
+            line_edit = QLineEdit(str(value), self.context_selected_widget)   
+            line_edit.setFont(QFont('Times New Roman', 13))
 
+            row_layout = QHBoxLayout()
+            row_layout.addWidget(label)
+            row_layout.addWidget(line_edit)
 
-            self.context_instantiations[context][instantiation] = (
-                self.context_instantiations_2,
-                self.lineEdit,
-                string_value
-            )
-            row += 1
+            layout.addLayout(row_layout)
+
+        self.context_selected_widget.setLayout(layout)
+        self.context_selected_widget.show()
 
     def set_slider_color(self, slider, value):
 
@@ -917,6 +933,8 @@ class Configurator(QtWidgets.QMainWindow):
                 self.error_label.setText(str(e))
             except Exception as e:
                 self.error_label.setText(str(e))
+
+        self.create_fields()
 
     def save(self):
         """

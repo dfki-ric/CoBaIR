@@ -183,9 +183,9 @@
    <widget class="QLabel" name="intention_label_frame_2">
     <property name="geometry">
      <rect>
-      <x>90</x>
+      <x>60</x>
       <y>20</y>
-      <width>221</width>
+      <width>161</width>
       <height>34</height>
      </rect>
     </property>
@@ -221,41 +221,6 @@
      <string>new combined context influence</string>
     </property>
    </widget>
-   <widget class="QLabel" name="context_instantiations_2">
-    <property name="geometry">
-     <rect>
-      <x>210</x>
-      <y>70</y>
-      <width>72</width>
-      <height>25</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <family>Times New Roman</family>
-      <pointsize>13</pointsize>
-     </font>
-    </property>
-    <property name="text">
-     <string>contexts</string>
-    </property>
-    <property name="buddy">
-     <cstring>lineEdit</cstring>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEdit">
-    <property name="geometry">
-     <rect>
-      <x>300</x>
-      <y>70</y>
-      <width>101</width>
-      <height>24</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string/>
-    </property>
-   </widget>
    <widget class="QLabel" name="context_instantiations_3">
     <property name="geometry">
      <rect>
@@ -274,11 +239,8 @@
     <property name="text">
      <string>Decision threshold :</string>
     </property>
-    <property name="buddy">
-     <cstring>lineEdit</cstring>
-    </property>
    </widget>
-   <widget class="QLineEdit" name="lineEdit_2">
+   <widget class="QLineEdit" name="decision_threshold_entry">
     <property name="geometry">
      <rect>
       <x>410</x>
@@ -287,6 +249,11 @@
       <height>25</height>
      </rect>
     </property>
+    <property name="font">
+     <font>
+      <pointsize>12</pointsize>
+     </font>
+    </property>
     <property name="text">
      <string/>
     </property>
@@ -294,9 +261,9 @@
    <widget class="QComboBox" name="context_selection">
     <property name="geometry">
      <rect>
-      <x>297</x>
+      <x>220</x>
       <y>20</y>
-      <width>94</width>
+      <width>171</width>
       <height>30</height>
      </rect>
     </property>
@@ -306,11 +273,6 @@
       <pointsize>13</pointsize>
      </font>
     </property>
-    <item>
-     <property name="text">
-      <string>Context</string>
-     </property>
-    </item>
    </widget>
    <widget class="QPushButton" name="edit_context_button">
     <property name="geometry">
@@ -466,7 +428,7 @@
      </property>
     </item>
    </widget>
-   <widget class="QPushButton" name="save_button_2">
+   <widget class="QPushButton" name="save_button">
     <property name="geometry">
      <rect>
       <x>398</x>
@@ -547,6 +509,16 @@
      </property>
     </item>
    </widget>
+   <widget class="QWidget" name="widget" native="true">
+    <property name="geometry">
+     <rect>
+      <x>160</x>
+      <y>50</y>
+      <width>251</width>
+      <height>80</height>
+     </rect>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
@@ -554,7 +526,7 @@
      <x>0</x>
      <y>0</y>
      <width>822</width>
-     <height>9</height>
+     <height>21</height>
     </rect>
    </property>
   </widget>
@@ -563,7 +535,7 @@
  <tabstops>
   <tabstop>edit_context_button</tabstop>
   <tabstop>delete_context_button</tabstop>
-  <tabstop>save_button_2</tabstop>
+  <tabstop>save_button</tabstop>
   <tabstop>load_button</tabstop>
   <tabstop>new_context_button</tabstop>
   <tabstop>pushButton_3</tabstop>
@@ -577,7 +549,6 @@
   <tabstop>edit_intention_button</tabstop>
   <tabstop>advanced_table</tabstop>
   <tabstop>pushButton</tabstop>
-  <tabstop>lineEdit</tabstop>
  </tabstops>
  <resources/>
  <connections/>
