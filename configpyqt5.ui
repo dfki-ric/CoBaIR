@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>822</width>
-    <height>544</height>
+    <width>834</width>
+    <height>596</height>
    </rect>
   </property>
   <property name="font">
@@ -19,74 +19,11 @@
    <string>Context Based Intention Recognition Configurator</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QLabel" name="instantiation_label_2">
-    <property name="geometry">
-     <rect>
-      <x>60</x>
-      <y>200</y>
-      <width>471</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <family>Microsoft Himalaya</family>
-      <pointsize>20</pointsize>
-     </font>
-    </property>
-    <property name="text">
-     <string>Influence of                                                : LOW</string>
-    </property>
-    <property name="buddy">
-     <cstring>slider</cstring>
-    </property>
-   </widget>
-   <widget class="QSlider" name="slider">
-    <property name="geometry">
-     <rect>
-      <x>540</x>
-      <y>200</y>
-      <width>160</width>
-      <height>22</height>
-     </rect>
-    </property>
-    <property name="maximum">
-     <number>5</number>
-    </property>
-    <property name="orientation">
-     <enum>Qt::Horizontal</enum>
-    </property>
-    <property name="tickPosition">
-     <enum>QSlider::TicksAbove</enum>
-    </property>
-    <property name="tickInterval">
-     <number>1</number>
-    </property>
-   </widget>
-   <widget class="QLabel" name="high_label">
-    <property name="geometry">
-     <rect>
-      <x>720</x>
-      <y>200</y>
-      <width>91</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <family>Times New Roman</family>
-      <pointsize>13</pointsize>
-     </font>
-    </property>
-    <property name="text">
-     <string>HIGH</string>
-    </property>
-   </widget>
    <widget class="QPushButton" name="advanced_label">
     <property name="geometry">
      <rect>
-      <x>310</x>
-      <y>290</y>
+      <x>300</x>
+      <y>330</y>
       <width>121</width>
       <height>31</height>
      </rect>
@@ -107,8 +44,8 @@
    <widget class="QLabel" name="error_label">
     <property name="geometry">
      <rect>
-      <x>110</x>
-      <y>480</y>
+      <x>100</x>
+      <y>520</y>
       <width>581</width>
       <height>31</height>
      </rect>
@@ -126,8 +63,8 @@
    <widget class="QTableWidget" name="advanced_table">
     <property name="geometry">
      <rect>
-      <x>190</x>
-      <y>340</y>
+      <x>180</x>
+      <y>380</y>
       <width>381</width>
       <height>61</height>
      </rect>
@@ -165,8 +102,8 @@
    <widget class="QPushButton" name="pushButton">
     <property name="geometry">
      <rect>
-      <x>580</x>
-      <y>380</y>
+      <x>570</x>
+      <y>420</y>
       <width>81</width>
       <height>21</height>
      </rect>
@@ -205,8 +142,8 @@
    <widget class="QPushButton" name="advanced_new_button">
     <property name="geometry">
      <rect>
-      <x>249</x>
-      <y>408</y>
+      <x>239</x>
+      <y>448</y>
       <width>301</width>
       <height>41</height>
      </rect>
@@ -224,8 +161,8 @@
    <widget class="QLabel" name="context_instantiations_3">
     <property name="geometry">
      <rect>
-      <x>223</x>
-      <y>250</y>
+      <x>213</x>
+      <y>290</y>
       <width>201</width>
       <height>25</height>
      </rect>
@@ -243,8 +180,8 @@
    <widget class="QLineEdit" name="decision_threshold_entry">
     <property name="geometry">
      <rect>
-      <x>410</x>
-      <y>250</y>
+      <x>400</x>
+      <y>290</y>
       <width>171</width>
       <height>25</height>
      </rect>
@@ -273,6 +210,11 @@
       <pointsize>13</pointsize>
      </font>
     </property>
+    <item>
+     <property name="text">
+      <string>Context</string>
+     </property>
+    </item>
    </widget>
    <widget class="QPushButton" name="edit_context_button">
     <property name="geometry">
@@ -334,7 +276,7 @@
    <widget class="QPushButton" name="delete_intention_button">
     <property name="geometry">
      <rect>
-      <x>527</x>
+      <x>551</x>
       <y>140</y>
       <width>93</width>
       <height>34</height>
@@ -353,7 +295,7 @@
    <widget class="QPushButton" name="pushButton_3">
     <property name="geometry">
      <rect>
-      <x>626</x>
+      <x>650</x>
       <y>140</y>
       <width>151</width>
       <height>34</height>
@@ -391,7 +333,7 @@
    <widget class="QPushButton" name="edit_intention_button">
     <property name="geometry">
      <rect>
-      <x>428</x>
+      <x>452</x>
       <y>140</y>
       <width>93</width>
       <height>34</height>
@@ -410,9 +352,9 @@
    <widget class="QComboBox" name="intention_selection">
     <property name="geometry">
      <rect>
-      <x>320</x>
+      <x>314</x>
       <y>140</y>
-      <width>101</width>
+      <width>131</width>
       <height>30</height>
      </rect>
     </property>
@@ -431,8 +373,8 @@
    <widget class="QPushButton" name="save_button">
     <property name="geometry">
      <rect>
-      <x>398</x>
-      <y>450</y>
+      <x>388</x>
+      <y>490</y>
       <width>142</width>
       <height>29</height>
      </rect>
@@ -450,8 +392,8 @@
    <widget class="QPushButton" name="load_button">
     <property name="geometry">
      <rect>
-      <x>250</x>
-      <y>450</y>
+      <x>240</x>
+      <y>490</y>
       <width>142</width>
       <height>29</height>
      </rect>
@@ -469,7 +411,7 @@
    <widget class="QLabel" name="intention_label_frame">
     <property name="geometry">
      <rect>
-      <x>70</x>
+      <x>20</x>
       <y>140</y>
       <width>131</width>
       <height>34</height>
@@ -491,9 +433,9 @@
    <widget class="QComboBox" name="influencing_context_selection">
     <property name="geometry">
      <rect>
-      <x>188</x>
+      <x>111</x>
       <y>140</y>
-      <width>94</width>
+      <width>171</width>
       <height>30</height>
      </rect>
     </property>
@@ -509,14 +451,36 @@
      </property>
     </item>
    </widget>
-   <widget class="QWidget" name="widget" native="true">
+   <widget class="QFrame" name="frame">
+    <property name="geometry">
+     <rect>
+      <x>50</x>
+      <y>180</y>
+      <width>711</width>
+      <height>91</height>
+     </rect>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::StyledPanel</enum>
+    </property>
+    <property name="frameShadow">
+     <enum>QFrame::Raised</enum>
+    </property>
+   </widget>
+   <widget class="QFrame" name="frame_2">
     <property name="geometry">
      <rect>
       <x>160</x>
       <y>50</y>
-      <width>251</width>
+      <width>241</width>
       <height>80</height>
      </rect>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::StyledPanel</enum>
+    </property>
+    <property name="frameShadow">
+     <enum>QFrame::Raised</enum>
     </property>
    </widget>
   </widget>
@@ -525,7 +489,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>822</width>
+     <width>834</width>
      <height>21</height>
     </rect>
    </property>
@@ -539,7 +503,6 @@
   <tabstop>load_button</tabstop>
   <tabstop>new_context_button</tabstop>
   <tabstop>pushButton_3</tabstop>
-  <tabstop>slider</tabstop>
   <tabstop>advanced_label</tabstop>
   <tabstop>advanced_new_button</tabstop>
   <tabstop>context_selection</tabstop>

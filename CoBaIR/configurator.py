@@ -28,398 +28,398 @@ from PyQt5.QtGui import QFont
 __author__ = 'Adrian Lubitz'
 
 
-# class NewIntentionDialog(Dialog):
-#     """Dialog Window for new Intention"""
+class NewIntentionDialog(Dialog):
+    """Dialog Window for new Intention"""
 
-#     def __init__(self, parent, title: str = ..., intention: str = None) -> None:
-#         """
-#         Extends the Constructor of Dialog to use an already existing intention.
+    def __init__(self, parent, title: str = ..., intention: str = None) -> None:
+        """
+        Extends the Constructor of Dialog to use an already existing intention.
 
-#         If an intention is given it will be filled in the corresponding text field.
+        If an intention is given it will be filled in the corresponding text field.
 
-#         Args:
-#             intention: An intention that will be filled in the dialog
-#         """
-#         self.intention = intention
-#         super().__init__(parent, title)
+        Args:
+            intention: An intention that will be filled in the dialog
+        """
+        self.intention = intention
+        super().__init__(parent, title)
 
-#     def body(self, master):
-#         """
-#         Sets the Layout.
+    def body(self, master):
+        """
+        Sets the Layout.
 
-#         Args:
-#             master: the master window this dialog belongs to
-#         Returns:
-#             tk.Entry:
-#                 the initial focus
-#         """
+        Args:
+            master: the master window this dialog belongs to
+        Returns:
+            tk.Entry:
+                the initial focus
+        """
 
-#         tk.Label(master, text="New Intention:").grid(row=0)
-#         self.intention_entry = tk.Entry(master)
-#         if self.intention:
-#             self.intention_entry.insert(0, self.intention)
-#         self.intention_entry.grid(row=1)
-#         return self.intention_entry  # initial focus
+        tk.Label(master, text="New Intention:").grid(row=0)
+        self.intention_entry = tk.Entry(master)
+        if self.intention:
+            self.intention_entry.insert(0, self.intention)
+        self.intention_entry.grid(row=1)
+        return self.intention_entry  # initial focus
 
-#     def validate(self):
-#         """
-#         highlights empty fields
+    def validate(self):
+        """
+        highlights empty fields
 
-#         Returns:
-#             bool:
-#                 True if the entry is not empty
-#         """
-#         if not self.intention_entry.get():
-#             # mark red
-#             self.intention_entry.configure(highlightbackground='red',
-#                                            selectbackground='red', highlightcolor='red')
-#             return False
-#         else:
-#             return True
+        Returns:
+            bool:
+                True if the entry is not empty
+        """
+        if not self.intention_entry.get():
+            # mark red
+            self.intention_entry.configure(highlightbackground='red',
+                                           selectbackground='red', highlightcolor='red')
+            return False
+        else:
+            return True
 
-#     def apply(self):
-#         """
-#         Applies the result to hand it over to the master
-#         """
-#         self.result = self.intention_entry.get()
-
-
-# class NewCombinedContextDialog(Dialog):
-#     """Dialog Window for new combined Context influence"""
-
-#     def __init__(self, parent, title: str = ..., intentions: dict = None) -> None:
-#         """
-#         Extends the Constructor of Dialog to make config available.
-
-#         Args:
-#             intentions:
-#                 The intentions part of the config
-#                 Example:
-#                     {hand over tool:
-#                         human activity:
-#                             idle: 4
-#                             working: 1
-#                         speech commands:
-#                             handover: 5
-#                             other: 0
-#                             pickup: 0
-#                     pick up tool:
-#                         speech commands:
-#                             handover: 0
-#                             other: 0
-#                             pickup: 5
-#                         ? !!python/tuple
-#                         - speech commands
-#                         - human activity
-#                             : ? !!python/tuple
-#                             - pickup
-#                             - working
-#                                 : 5
-#                         human activity:
-#                             idle: 4
-#                             working: 3
-#                     }
-#         """
-#         self.intentions = deepcopy(intentions)
-#         self.original_instantiations = defaultdict(dict)
-#         super().__init__(parent, title)
-
-#     def body(self, master):
-#         """
-#         Sets the Layout.
-
-#         Args:
-#             master: the master window this dialog belongs to
-#         """
-#         # intention
-#         intention_frame = tk.Frame(master)
-#         intention_frame.grid(row=0)
-#         tk.Label(intention_frame, text='Intention:').grid(row=0, column=0)
-#         values = list(self.intentions.keys())
-#         self.intention_selection = tk.StringVar(
-#             intention_frame, values[0])
-#         tk.OptionMenu(
-#             intention_frame, self.intention_selection, *values).grid(row=0, column=1)
-
-#         # Value:
-#         value_frame = tk.Frame(master)
-#         value_frame.grid(row=2)
-#         tk.Label(value_frame, text='Influence value:').grid(row=0, column=0)
-#         self.value_selection = tk.StringVar(value_frame, 0)
-#         tk.OptionMenu(
-#             value_frame, self.value_selection, *[0, 1, 2, 3, 4, 5]).grid(row=0, column=1)
-
-#         # Button
-#         button_frame = tk.Frame(master)
-#         button_frame.grid(row=3)
-#         tk.Button(button_frame, command=self.new_instantiation,
-#                   text='additional context').grid()
-#         self.error_label = tk.Label(button_frame, fg='#f00')
-#         self.error_label.grid(row=1)
-
-#         # contexts
-#         self.contexts = {}
-#         for context, instantiations in list(self.intentions.values())[0].items():
-#             if not isinstance(context, tuple):
-#                 self.contexts[context] = instantiations
-#         self.context_frame = tk.Frame(master)
-#         self.context_frame.grid(row=1)
-#         tk.Label(self.context_frame, text='Context').grid(row=0, column=0)
-#         tk.Label(self.context_frame, text='Instantiation').grid(
-#             row=0, column=1)
-#         self.context_selections = []
-#         self.context_menus = []
-#         self.instantiation_selections = []
-#         self.instantiation_menus = []
-#         for i in range(2):
-#             self.new_instantiation()
-
-#     def context_selected(self, context: str, i: int):
-#         """
-#         Callback for context selection in dropdown
-
-#         Args:
-#             context: A context name
-#             i: the position of the dropdown menu
-#         """
-#         self.instantiation_menus[i].grid_remove()
-#         self.instantiation_menus[i].destroy()
-#         for inst in self.contexts[context]:
-#             self.original_instantiations[context][str(inst)] = inst
-#         instantiations = list(self.original_instantiations[context].keys())
-#         self.instantiation_menus[i] = tk.OptionMenu(
-#             self.context_frame, self.instantiation_selections[i], *instantiations)
-#         self.instantiation_menus[i].grid(row=i+1, column=1)
-#         self.instantiation_selections[i].set(
-#             str(list(self.contexts[context].keys())[0]))
-#         # available context -> every dropdown should only have available + selected
-#         available_context = self._eval_available_context()
-#         for i_m, menu in enumerate(self.context_menus):
-#             menu.grid_remove()
-#             menu.destroy()
-#             contexts = [self.context_selections[i_m].get()] + available_context
-#             self.context_menus[i_m] = tk.OptionMenu(
-#                 self.context_frame, self.context_selections[i_m], *contexts, command=lambda x, i=i_m: self.context_selected(x, i))
-#             self.context_menus[i_m].grid(row=i_m+1, column=0)
-
-#     def _eval_available_context(self):
-#         """
-#         evaluate which contexts are available for the dropdown
-
-#         Returns:
-#             list:
-#                 A list of available contexts
-#         """
-#         available_context = list(self.contexts.keys())
-#         for selection in self.context_selections:
-#             available_context.remove(selection.get())
-#         return available_context
-
-#     def new_instantiation(self):
-#         """
-#         Creates new Entries to input more context instantiations
-#         """
-#         available_context = self._eval_available_context()
-#         i = len(self.context_selections)
-#         if not available_context:
-#             self.error_label['text'] = 'No more context available'
-#             return
-#         self.context_selections.append(tk.StringVar(
-#             self.context_frame, available_context[0]))
-#         self.instantiation_selections.append(
-#             tk.StringVar(self.context_frame, list(self.contexts[available_context[0]].keys())[0]))
-#         self.context_menus.append(tk.OptionMenu(
-#             self.context_frame, self.context_selections[-1], *available_context, command=lambda x, i=i: self.context_selected(x, i)))
-#         self.context_menus[-1].grid(row=i+1, column=0)
-#         instantiations = list(self.contexts[available_context[0]].keys())
-#         self.instantiation_menus.append(tk.OptionMenu(
-#             self.context_frame, self.instantiation_selections[-1], *instantiations))
-#         self.instantiation_menus[-1].grid(row=i+1, column=1)
-#         self.context_selected(self.context_selections[-1].get(), i)
-
-#     def apply(self):
-#         """
-#         Applies the result to hand it over to the master
-#         """
-#         intention = self.intention_selection.get()
-#         value = self.value_selection.get()
-#         contexts = []
-#         instantiations = []
-#         for i, context_selection in enumerate(self.context_selections):
-#             contexts.append(context_selection.get())
-#             instantiations.append(
-#                 self.original_instantiations[context_selection.get()][self.instantiation_selections[i].get()])
-#         # intention: str, contexts: tuple, instantiations: tuple, value: int
-#         self.result = {'intention': intention, 'value': int(value), 'contexts': tuple(
-#             contexts), 'instantiations': tuple(instantiations)}
+    def apply(self):
+        """
+        Applies the result to hand it over to the master
+        """
+        self.result = self.intention_entry.get()
 
 
-# class NewContextDialog(Dialog):
-#     """Dialog Window for new Context"""
+class NewCombinedContextDialog(Dialog):
+    """Dialog Window for new combined Context influence"""
 
-#     def __init__(self, parent, title: str = ..., predefined_context: dict = None) -> None:
-#         """
-#         Extends the Constructor of Dialog to use already existing context and the corresponding instantiations and values.
+    def __init__(self, parent, title: str = ..., intentions: dict = None) -> None:
+        """
+        Extends the Constructor of Dialog to make config available.
 
-#         If context and their corresponding instantiations and values are given it will be filled in the corresponding text fields.
+        Args:
+            intentions:
+                The intentions part of the config
+                Example:
+                    {hand over tool:
+                        human activity:
+                            idle: 4
+                            working: 1
+                        speech commands:
+                            handover: 5
+                            other: 0
+                            pickup: 0
+                    pick up tool:
+                        speech commands:
+                            handover: 0
+                            other: 0
+                            pickup: 5
+                        ? !!python/tuple
+                        - speech commands
+                        - human activity
+                            : ? !!python/tuple
+                            - pickup
+                            - working
+                                : 5
+                        human activity:
+                            idle: 4
+                            working: 3
+                    }
+        """
+        self.intentions = deepcopy(intentions)
+        self.original_instantiations = defaultdict(dict)
+        super().__init__(parent, title)
 
-#         Args:
-#             predefined_context:
-#                 Context with the corresponding instantiations.
-#                 Example: {'speech commands': {
-#                     'pickup': 0.2, 'handover': 0.2, 'other': 0.6}}
-#         """
-#         self.predefined_context = deepcopy(predefined_context)
-#         super().__init__(parent, title)
+    def body(self, master):
+        """
+        Sets the Layout.
 
-#     def body(self, master):
-#         """
-#         Sets the Layout.
+        Args:
+            master: the master window this dialog belongs to
+        """
+        # intention
+        intention_frame = tk.Frame(master)
+        intention_frame.grid(row=0)
+        tk.Label(intention_frame, text='Intention:').grid(row=0, column=0)
+        values = list(self.intentions.keys())
+        self.intention_selection = tk.StringVar(
+            intention_frame, values[0])
+        tk.OptionMenu(
+            intention_frame, self.intention_selection, *values).grid(row=0, column=1)
 
-#         Args:
-#             master: the master window this dialog belongs to
-#         Returns:
-#             tk.Entry:
-#                 the initial focus
-#         """
-#         name_frame = tk.Frame(master)
-#         name_frame.grid(row=0)
-#         tk.Label(name_frame, text="Context:").grid(row=0)
-#         self.context_entry = tk.Entry(name_frame)
-#         self.context_entry.grid(row=0, column=1)
+        # Value:
+        value_frame = tk.Frame(master)
+        value_frame.grid(row=2)
+        tk.Label(value_frame, text='Influence value:').grid(row=0, column=0)
+        self.value_selection = tk.StringVar(value_frame, 0)
+        tk.OptionMenu(
+            value_frame, self.value_selection, *[0, 1, 2, 3, 4, 5]).grid(row=0, column=1)
 
-#         # frame for instantiations
-#         self.instantiations_frame = tk.Frame(master)
-#         self.instantiations_frame.grid(row=1)
-#         tk.Label(self.instantiations_frame,
-#                  text="Instantiation Name").grid(row=0, column=0)
-#         tk.Label(self.instantiations_frame,
-#                  text="Apriori Probability").grid(row=0, column=1)
-#         self.instantiations = []  # This holds the GUI elements for the instantiations
-#         self.shown_instantiations = 0
-#         # Fill the entries here if predefined_context is given!
-#         if self.predefined_context:
-#             # it's always only one new context
-#             context = list(self.predefined_context.keys())[0]
-#             instantiations = self.predefined_context[context]
-#             self.context_entry.insert(0, context)
-#         else:
-#             instantiations = {}
-#         while (self.shown_instantiations < 2 or instantiations):
-#             # tk.Label(self.instantiations_frame,
-#             #          text=f"Instantiation {self.shown_instantiations}:").grid(row=self.shown_instantiations)
-#             name_entry = tk.Entry(self.instantiations_frame)
-#             probability_entry = tk.Entry(self.instantiations_frame)
-#             remove_button = tk.Button(
-#                 self.instantiations_frame, command=lambda x=self.shown_instantiations: self.remove_instantiation(x), text='-')
-#             if instantiations:
-#                 # get name
-#                 name = list(instantiations.keys())[0]
-#                 # get value
-#                 value = instantiations[name]
-#                 # set entries
-#                 name_entry.insert(0, name)
-#                 probability_entry.insert(0, value)
-#                 # del entry
-#                 del (instantiations[name])
-#             name_entry.grid(row=self.shown_instantiations + 1, column=0)
-#             probability_entry.grid(row=self.shown_instantiations + 1, column=1)
-#             remove_button.grid(row=self.shown_instantiations + 1, column=2)
-#             self.instantiations.append(
-#                 (name_entry, probability_entry, remove_button))
-#             self.shown_instantiations += 1
+        # Button
+        button_frame = tk.Frame(master)
+        button_frame.grid(row=3)
+        tk.Button(button_frame, command=self.new_instantiation,
+                  text='additional context').grid()
+        self.error_label = tk.Label(button_frame, fg='#f00')
+        self.error_label.grid(row=1)
 
-#         tk.Button(master, command=self.new_instantiation,
-#                   text='More').grid(row=2)
+        # contexts
+        self.contexts = {}
+        for context, instantiations in list(self.intentions.values())[0].items():
+            if not isinstance(context, tuple):
+                self.contexts[context] = instantiations
+        self.context_frame = tk.Frame(master)
+        self.context_frame.grid(row=1)
+        tk.Label(self.context_frame, text='Context').grid(row=0, column=0)
+        tk.Label(self.context_frame, text='Instantiation').grid(
+            row=0, column=1)
+        self.context_selections = []
+        self.context_menus = []
+        self.instantiation_selections = []
+        self.instantiation_menus = []
+        for i in range(2):
+            self.new_instantiation()
 
-#         return self.context_entry  # initial focus
+    def context_selected(self, context: str, i: int):
+        """
+        Callback for context selection in dropdown
 
-#     def remove_instantiation(self, index):
-#         """
-#         Callback for the remove_button
-#         Args:
-#             index: the index in self.instantiations
-#         """
-#         for element in self.instantiations[index]:
-#             element.grid_forget()
-#             element.destroy()
-#         self.shown_instantiations -= 1
-#         # TODO: that is problematic because it shifts indexes!!!
-#         # Or I need to redraw the whole thing like I always do...
-#         self.instantiations.pop(index)
-#         for index, instantiation in enumerate(self.instantiations):
-#             # or I just need to rebind callback with correct index works with configure(command=...)
-#             instantiation[2].configure(
-#                 command=lambda x=index: self.remove_instantiation(x))
+        Args:
+            context: A context name
+            i: the position of the dropdown menu
+        """
+        self.instantiation_menus[i].grid_remove()
+        self.instantiation_menus[i].destroy()
+        for inst in self.contexts[context]:
+            self.original_instantiations[context][str(inst)] = inst
+        instantiations = list(self.original_instantiations[context].keys())
+        self.instantiation_menus[i] = tk.OptionMenu(
+            self.context_frame, self.instantiation_selections[i], *instantiations)
+        self.instantiation_menus[i].grid(row=i+1, column=1)
+        self.instantiation_selections[i].set(
+            str(list(self.contexts[context].keys())[0]))
+        # available context -> every dropdown should only have available + selected
+        available_context = self._eval_available_context()
+        for i_m, menu in enumerate(self.context_menus):
+            menu.grid_remove()
+            menu.destroy()
+            contexts = [self.context_selections[i_m].get()] + available_context
+            self.context_menus[i_m] = tk.OptionMenu(
+                self.context_frame, self.context_selections[i_m], *contexts, command=lambda x, i=i_m: self.context_selected(x, i))
+            self.context_menus[i_m].grid(row=i_m+1, column=0)
 
-#     def new_instantiation(self):
-#         """
-#         Creates two new Entries to input more instantiations
-#         """
-#         name_entry = tk.Entry(self.instantiations_frame)
-#         probability_entry = tk.Entry(self.instantiations_frame)
-#         name_entry.grid(row=self.shown_instantiations+1, column=0)
-#         probability_entry.grid(row=self.shown_instantiations+1, column=1)
-#         remove_button = tk.Button(
-#             self.instantiations_frame, command=lambda x=self.shown_instantiations: self.remove_instantiation(x), text='-')
-#         remove_button.grid(row=self.shown_instantiations+1, column=2)
-#         self.instantiations.append(
-#             (name_entry, probability_entry, remove_button))
-#         self.shown_instantiations += 1
+    def _eval_available_context(self):
+        """
+        evaluate which contexts are available for the dropdown
 
-#     def validate(self):
-#         """
-#         highlights empty fields
+        Returns:
+            list:
+                A list of available contexts
+        """
+        available_context = list(self.contexts.keys())
+        for selection in self.context_selections:
+            available_context.remove(selection.get())
+        return available_context
 
-#         Returns:
-#             bool:
-#                 True if the entries are not empty
-#         """
+    def new_instantiation(self):
+        """
+        Creates new Entries to input more context instantiations
+        """
+        available_context = self._eval_available_context()
+        i = len(self.context_selections)
+        if not available_context:
+            self.error_label['text'] = 'No more context available'
+            return
+        self.context_selections.append(tk.StringVar(
+            self.context_frame, available_context[0]))
+        self.instantiation_selections.append(
+            tk.StringVar(self.context_frame, list(self.contexts[available_context[0]].keys())[0]))
+        self.context_menus.append(tk.OptionMenu(
+            self.context_frame, self.context_selections[-1], *available_context, command=lambda x, i=i: self.context_selected(x, i)))
+        self.context_menus[-1].grid(row=i+1, column=0)
+        instantiations = list(self.contexts[available_context[0]].keys())
+        self.instantiation_menus.append(tk.OptionMenu(
+            self.context_frame, self.instantiation_selections[-1], *instantiations))
+        self.instantiation_menus[-1].grid(row=i+1, column=1)
+        self.context_selected(self.context_selections[-1].get(), i)
 
-#         # TODO: entries cannot be the same (len(entries) must be the same as len(set(entries.get())))
+    def apply(self):
+        """
+        Applies the result to hand it over to the master
+        """
+        intention = self.intention_selection.get()
+        value = self.value_selection.get()
+        contexts = []
+        instantiations = []
+        for i, context_selection in enumerate(self.context_selections):
+            contexts.append(context_selection.get())
+            instantiations.append(
+                self.original_instantiations[context_selection.get()][self.instantiation_selections[i].get()])
+        # intention: str, contexts: tuple, instantiations: tuple, value: int
+        self.result = {'intention': intention, 'value': int(value), 'contexts': tuple(
+            contexts), 'instantiations': tuple(instantiations)}
 
-#         valid = True
-#         instantiation_names = []
-#         # more than 1 entry is needed!!!
-#         if len(self.instantiations) < 2:
-#             valid = False
-#             # TODO: point out why not valid
-#         empty_entries = []
-#         self.context_entry.configure(highlightbackground='black',
-#                                      selectbackground='black', highlightcolor='black')  # TODO: Too much I only want the text to be black/normal...
-#         if not self.context_entry.get():
-#             empty_entries.append(self.context_entry)
-#         for i, instantiation in enumerate(self.instantiations):
-#             # Only setting colors for the entry fields
-#             for entry in instantiation[0:2]:
-#                 entry.configure(highlightbackground='black',
-#                                 selectbackground='black', highlightcolor='black')
-#                 if not entry.get():
-#                     empty_entries.append(entry)
-#             name = instantiation[0].get()
-#             if name in instantiation_names:
-#                 # mark red
-#                 print('mark red')
-#                 instantiation[0].configure(highlightbackground='red',
-#                                            selectbackground='red', highlightcolor='red')
-#                 valid = False
-#             instantiation_names.append(name)
-#         if empty_entries:
-#             # mark red
-#             for entry in empty_entries:
-#                 entry.configure(highlightbackground='red',
-#                                 selectbackground='red', highlightcolor='red')
-#             valid = False
-#         return valid
 
-#     def apply(self):
-#         """
-#         Applies the result to hand it over to the master
-#         """
-#         self.result = defaultdict(lambda: defaultdict(dict))
-#         for instantiation in self.instantiations:
-#             self.result[self.context_entry.get(
-#             )][instantiation[0].get()] = float(instantiation[1].get())
+class NewContextDialog(Dialog):
+    """Dialog Window for new Context"""
+
+    def __init__(self, parent, title: str = ..., predefined_context: dict = None) -> None:
+        """
+        Extends the Constructor of Dialog to use already existing context and the corresponding instantiations and values.
+
+        If context and their corresponding instantiations and values are given it will be filled in the corresponding text fields.
+
+        Args:
+            predefined_context:
+                Context with the corresponding instantiations.
+                Example: {'speech commands': {
+                    'pickup': 0.2, 'handover': 0.2, 'other': 0.6}}
+        """
+        self.predefined_context = deepcopy(predefined_context)
+        super().__init__(parent, title)
+
+    def body(self, master):
+        """
+        Sets the Layout.
+
+        Args:
+            master: the master window this dialog belongs to
+        Returns:
+            tk.Entry:
+                the initial focus
+        """
+        name_frame = tk.Frame(master)
+        name_frame.grid(row=0)
+        tk.Label(name_frame, text="Context:").grid(row=0)
+        self.context_entry = tk.Entry(name_frame)
+        self.context_entry.grid(row=0, column=1)
+
+        # frame for instantiations
+        self.instantiations_frame = tk.Frame(master)
+        self.instantiations_frame.grid(row=1)
+        tk.Label(self.instantiations_frame,
+                 text="Instantiation Name").grid(row=0, column=0)
+        tk.Label(self.instantiations_frame,
+                 text="Apriori Probability").grid(row=0, column=1)
+        self.instantiations = []  # This holds the GUI elements for the instantiations
+        self.shown_instantiations = 0
+        # Fill the entries here if predefined_context is given!
+        if self.predefined_context:
+            # it's always only one new context
+            context = list(self.predefined_context.keys())[0]
+            instantiations = self.predefined_context[context]
+            self.context_entry.insert(0, context)
+        else:
+            instantiations = {}
+        while (self.shown_instantiations < 2 or instantiations):
+            # tk.Label(self.instantiations_frame,
+            #          text=f"Instantiation {self.shown_instantiations}:").grid(row=self.shown_instantiations)
+            name_entry = tk.Entry(self.instantiations_frame)
+            probability_entry = tk.Entry(self.instantiations_frame)
+            remove_button = tk.Button(
+                self.instantiations_frame, command=lambda x=self.shown_instantiations: self.remove_instantiation(x), text='-')
+            if instantiations:
+                # get name
+                name = list(instantiations.keys())[0]
+                # get value
+                value = instantiations[name]
+                # set entries
+                name_entry.insert(0, name)
+                probability_entry.insert(0, value)
+                # del entry
+                del (instantiations[name])
+            name_entry.grid(row=self.shown_instantiations + 1, column=0)
+            probability_entry.grid(row=self.shown_instantiations + 1, column=1)
+            remove_button.grid(row=self.shown_instantiations + 1, column=2)
+            self.instantiations.append(
+                (name_entry, probability_entry, remove_button))
+            self.shown_instantiations += 1
+
+        tk.Button(master, command=self.new_instantiation,
+                  text='More').grid(row=2)
+
+        return self.context_entry  # initial focus
+
+    def remove_instantiation(self, index):
+        """
+        Callback for the remove_button
+        Args:
+            index: the index in self.instantiations
+        """
+        for element in self.instantiations[index]:
+            element.grid_forget()
+            element.destroy()
+        self.shown_instantiations -= 1
+        # TODO: that is problematic because it shifts indexes!!!
+        # Or I need to redraw the whole thing like I always do...
+        self.instantiations.pop(index)
+        for index, instantiation in enumerate(self.instantiations):
+            # or I just need to rebind callback with correct index works with configure(command=...)
+            instantiation[2].configure(
+                command=lambda x=index: self.remove_instantiation(x))
+
+    def new_instantiation(self):
+        """
+        Creates two new Entries to input more instantiations
+        """
+        name_entry = tk.Entry(self.instantiations_frame)
+        probability_entry = tk.Entry(self.instantiations_frame)
+        name_entry.grid(row=self.shown_instantiations+1, column=0)
+        probability_entry.grid(row=self.shown_instantiations+1, column=1)
+        remove_button = tk.Button(
+            self.instantiations_frame, command=lambda x=self.shown_instantiations: self.remove_instantiation(x), text='-')
+        remove_button.grid(row=self.shown_instantiations+1, column=2)
+        self.instantiations.append(
+            (name_entry, probability_entry, remove_button))
+        self.shown_instantiations += 1
+
+    def validate(self):
+        """
+        highlights empty fields
+
+        Returns:
+            bool:
+                True if the entries are not empty
+        """
+
+        # TODO: entries cannot be the same (len(entries) must be the same as len(set(entries.get())))
+
+        valid = True
+        instantiation_names = []
+        # more than 1 entry is needed!!!
+        if len(self.instantiations) < 2:
+            valid = False
+            # TODO: point out why not valid
+        empty_entries = []
+        self.context_entry.configure(highlightbackground='black',
+                                     selectbackground='black', highlightcolor='black')  # TODO: Too much I only want the text to be black/normal...
+        if not self.context_entry.get():
+            empty_entries.append(self.context_entry)
+        for i, instantiation in enumerate(self.instantiations):
+            # Only setting colors for the entry fields
+            for entry in instantiation[0:2]:
+                entry.configure(highlightbackground='black',
+                                selectbackground='black', highlightcolor='black')
+                if not entry.get():
+                    empty_entries.append(entry)
+            name = instantiation[0].get()
+            if name in instantiation_names:
+                # mark red
+                print('mark red')
+                instantiation[0].configure(highlightbackground='red',
+                                           selectbackground='red', highlightcolor='red')
+                valid = False
+            instantiation_names.append(name)
+        if empty_entries:
+            # mark red
+            for entry in empty_entries:
+                entry.configure(highlightbackground='red',
+                                selectbackground='red', highlightcolor='red')
+            valid = False
+        return valid
+
+    def apply(self):
+        """
+        Applies the result to hand it over to the master
+        """
+        self.result = defaultdict(lambda: defaultdict(dict))
+        for instantiation in self.instantiations:
+            self.result[self.context_entry.get(
+            )][instantiation[0].get()] = float(instantiation[1].get())
 
 
 class Configurator(QtWidgets.QMainWindow):
@@ -459,10 +459,10 @@ class Configurator(QtWidgets.QMainWindow):
         # TODO: uncomment!!
         self.set_context_dropdown(self.bayesNet.config['contexts'].keys())
 
-        # self.set_influencing_context_dropdown(
-        #     self.bayesNet.config['contexts'].keys())
+        self.set_influencing_context_dropdown(
+            self.bayesNet.config['contexts'].keys())
 
-        # self.set_intention_dropdown(self.bayesNet.config['intentions'].keys())
+        self.set_intention_dropdown(self.bayesNet.config['intentions'].keys())
         # self.adjust_button_visibility()
         # self.set_decision_threshold()
         # TODO: uncomment!!
@@ -475,229 +475,229 @@ class Configurator(QtWidgets.QMainWindow):
         self.decision_threshold_entry.setText(
             str(self.bayesNet.config['decision_threshold']))
 
-    # def adjust_button_visibility(self):
-    #     """
-    #     Adjusts if buttons are visible or not.
+    def adjust_button_visibility(self):
+        """
+        Adjusts if buttons are visible or not.
 
-    #     Buttons for edit and delete will only be visible if there is a corresponding intention or context already created.
-    #     """
-    #     if self.bayesNet.config['contexts']:
-    #         # set visible
-    #         self.edit_context_button.grid()
-    #         self.delete_context_button.grid()
-    #     else:
-    #         self.edit_context_button.grid_remove()
-    #         self.delete_context_button.grid_remove()
-    #     if self.bayesNet.config['intentions']:
-    #         # set visible
-    #         self.edit_intention_button.grid()
-    #         self.delete_intention_button.grid()
-    #     else:
-    #         self.edit_intention_button.grid_remove()
-    #         self.delete_intention_button.grid_remove()
+        Buttons for edit and delete will only be visible if there is a corresponding intention or context already created.
+        """
+        if self.bayesNet.config['contexts']:
+            # set visible
+            self.edit_context_button.grid()
+            self.delete_context_button.grid()
+        else:
+            self.edit_context_button.grid_remove()
+            self.delete_context_button.grid_remove()
+        if self.bayesNet.config['intentions']:
+            # set visible
+            self.edit_intention_button.grid()
+            self.delete_intention_button.grid()
+        else:
+            self.edit_intention_button.grid_remove()
+            self.delete_intention_button.grid_remove()
 
-    # def new_context(self):
-    #     """
-    #     Open a new Dialog to create new contexts.
-    #     """
-    #     # remove errorText
-    #     self.error_label['text'] = f""
-    #     # open small dialog to create context
-    #     dialog = NewContextDialog(self, title="New Context")
-    #     if dialog.result:
-    #         # check if context already exists!
-    #         # it's always only one new context
-    #         new_context = list(dialog.result.keys())[0]
-    #         try:
-    #             self.bayesNet.add_context(
-    #                 new_context, dialog.result[new_context])
-    #         except AssertionError as e:
-    #             self.error_label['text'] = f"{e}"
-    #         # update view!
-    #         self.create_fields()
-    #         self.context_selection.set(new_context)
-    #         # Explicit call is neccessary because set seems not to trigger the callback
-    #         self.context_selected(new_context)
+    def new_context(self):
+        """
+        Open a new Dialog to create new contexts.
+        """
+        # remove errorText
+        self.error_label['text'] = f""
+        # open small dialog to create context
+        dialog = NewContextDialog(self, title="New Context")
+        if dialog.result:
+            # check if context already exists!
+            # it's always only one new context
+            new_context = list(dialog.result.keys())[0]
+            try:
+                self.bayesNet.add_context(
+                    new_context, dialog.result[new_context])
+            except AssertionError as e:
+                self.error_label['text'] = f"{e}"
+            # update view!
+            self.create_fields()
+            self.context_selection.set(new_context)
+            # Explicit call is neccessary because set seems not to trigger the callback
+            self.context_selected(new_context)
 
-    # def edit_context(self):
-    #     """
-    #     Edit the currently selected context.
+    def edit_context(self):
+        """
+        Edit the currently selected context.
 
-    #     !!! note
-    #     Changing the name of an instantiation will always set the influence value of this instantiation to zero for all intentions!
+        !!! note
+        Changing the name of an instantiation will always set the influence value of this instantiation to zero for all intentions!
 
-    #     !!! note
-    #     The GUI can only handle strings for now. This means every instantiation name will be casted to a string upon editing.
-    #     """
-    #     # TODO: renaming instantiations should not neccesarily put influence values to zero - check cases
-    #     # TODO: this will always set the instantiations as Strings
-    #     # Open the new Context dialog with prefilled values
-    #     # remove errorText
-    #     self.error_label['text'] = f""
-    #     # open small dialog to create context
-    #     context = self.context_selection.get()
-    #     instantiations = self.bayesNet.config['contexts'][context]
-    #     dialog = NewContextDialog(self, title="Edit Context", predefined_context={
-    #                               context: instantiations})
+        !!! note
+        The GUI can only handle strings for now. This means every instantiation name will be casted to a string upon editing.
+        """
+        # TODO: renaming instantiations should not neccesarily put influence values to zero - check cases
+        # TODO: this will always set the instantiations as Strings
+        # Open the new Context dialog with prefilled values
+        # remove errorText
+        self.error_label['text'] = f""
+        # open small dialog to create context
+        context = self.context_selection.get()
+        instantiations = self.bayesNet.config['contexts'][context]
+        dialog = NewContextDialog(self, title="Edit Context", predefined_context={
+                                  context: instantiations})
 
-    #     if dialog.result:
-    #         try:
-    #             # it's always only one new context
-    #             new_context_name = list(dialog.result.keys())[0]
-    #             new_instantiations = dialog.result[new_context_name]
-    #             self.bayesNet.edit_context(
-    #                 context, new_instantiations, new_context_name)
-    #         except AssertionError as e:
-    #             self.error_label['text'] = f"{e}"
-    #         self.create_fields()
-    #         self.context_selection.set(new_context_name)
-    #         # Explicit call is neccessary because set seems not to trigger the callback
-    #         self.context_selected(new_context_name)
+        if dialog.result:
+            try:
+                # it's always only one new context
+                new_context_name = list(dialog.result.keys())[0]
+                new_instantiations = dialog.result[new_context_name]
+                self.bayesNet.edit_context(
+                    context, new_instantiations, new_context_name)
+            except AssertionError as e:
+                self.error_label['text'] = f"{e}"
+            self.create_fields()
+            self.context_selection.set(new_context_name)
+            # Explicit call is neccessary because set seems not to trigger the callback
+            self.context_selected(new_context_name)
 
-    # def delete_context(self):
-    #     """"
-    #     Deletes the currently selected context.
-    #     """
-    #     self.error_label['text'] = f""
-    #     context = self.context_selection.get()
-    #     try:
-    #         self.bayesNet.del_context(context)
-    #     except AssertionError as e:
-    #         self.error_label['text'] = f"{e}"
-    #     self.create_fields()
+    def delete_context(self):
+        """"
+        Deletes the currently selected context.
+        """
+        self.error_label['text'] = f""
+        context = self.context_selection.get()
+        try:
+            self.bayesNet.del_context(context)
+        except AssertionError as e:
+            self.error_label['text'] = f"{e}"
+        self.create_fields()
 
-    # def new_intention(self):
-    #     """
-    #     Open a new Dialog to create new intentions.
-    #     """
-    #     # remove errorText
-    #     self.error_label['text'] = f""
-    #     dialog = NewIntentionDialog(self, title="New Intention")
-    #     if dialog.result:
-    #         try:
-    #             self.bayesNet.add_intention(dialog.result)
-    #         except AssertionError as e:
-    #             self.error_label['text'] = f"{e}"
-    #         # update view!
-    #         self.create_fields()
-    #         self.intention_selection.set(dialog.result)
-    #         # Explicit call is neccessary because set seems not to trigger the callback
-    #         self.influencing_context_selected(dialog.result)
+    def new_intention(self):
+        """
+        Open a new Dialog to create new intentions.
+        """
+        # remove errorText
+        self.error_label['text'] = f""
+        dialog = NewIntentionDialog(self, title="New Intention")
+        if dialog.result:
+            try:
+                self.bayesNet.add_intention(dialog.result)
+            except AssertionError as e:
+                self.error_label['text'] = f"{e}"
+            # update view!
+            self.create_fields()
+            self.intention_selection.set(dialog.result)
+            # Explicit call is neccessary because set seems not to trigger the callback
+            self.influencing_context_selected(dialog.result)
 
-    # def edit_intention(self):
-    #     """
-    #     Edit the name of the currently selected intention
-    #     """
+    def edit_intention(self):
+        """
+        Edit the name of the currently selected intention
+        """
 
-    #     self.error_label['text'] = f""
-    #     # open small dialog to create context
-    #     intention = self.intention_selection.get()
-    #     dialog = NewIntentionDialog(self,
-    #                                 title="Edit Intention", intention=intention)
-    #     if dialog.result:
-    #         try:
-    #             self.bayesNet.edit_intention(intention, dialog.result)
-    #         except AssertionError as e:
-    #             self.error_label['text'] = f"{e}"
-    #         self.create_fields()
-    #         self.intention_selection.set(dialog.result)
-    #         # Explicit call is neccessary because set seems not to trigger the callback
-    #         self.influencing_context_selected(dialog.result)
+        self.error_label['text'] = f""
+        # open small dialog to create context
+        intention = self.intention_selection.get()
+        dialog = NewIntentionDialog(self,
+                                    title="Edit Intention", intention=intention)
+        if dialog.result:
+            try:
+                self.bayesNet.edit_intention(intention, dialog.result)
+            except AssertionError as e:
+                self.error_label['text'] = f"{e}"
+            self.create_fields()
+            self.intention_selection.set(dialog.result)
+            # Explicit call is neccessary because set seems not to trigger the callback
+            self.influencing_context_selected(dialog.result)
 
-    # def delete_intention(self):
-    #     """
-    #     Delete the currently selected intention
-    #     """
-    #     self.error_label['text'] = f""
-    #     intention = self.intention_selection.get()
-    #     try:
-    #         self.bayesNet.del_intention(intention)
-    #     except AssertionError as e:
-    #         self.error_label['text'] = f"{e}"
-    #     self.create_fields()
+    def delete_intention(self):
+        """
+        Delete the currently selected intention
+        """
+        self.error_label['text'] = f""
+        intention = self.intention_selection.get()
+        try:
+            self.bayesNet.del_intention(intention)
+        except AssertionError as e:
+            self.error_label['text'] = f"{e}"
+        self.create_fields()
 
-    # def onclicked_advanced(self, e):
-    #     """
-    #     Un/folds the advanced section
-    #     """
-    #     if self.advanced_folded:
-    #         self.advanced_label.config(text=u'advanced \u25B2')
-    #         self.advanced_folded = False
-    #         self.advanced_hidden_frame.grid()
-    #     else:
-    #         self.advanced_label.config(text=u'advanced \u25BC')
-    #         self.advanced_folded = True
-    #         self.advanced_hidden_frame.grid_forget()
+    def onclicked_advanced(self, e):
+        """
+        Un/folds the advanced section
+        """
+        if self.advanced_folded:
+            self.advanced_label.config(text=u'advanced \u25B2')
+            self.advanced_folded = False
+            self.advanced_hidden_frame.grid()
+        else:
+            self.advanced_label.config(text=u'advanced \u25BC')
+            self.advanced_folded = True
+            self.advanced_hidden_frame.grid_forget()
 
-    # def new_combined_influence(self):
-    #     """
-    #     Callback for the button
-    #     """
-    #     self.error_label['text'] = f""
-    #     dialog = NewCombinedContextDialog(
-    #         self, title="New combined Context influence", intentions=self.bayesNet.config['intentions'])
-    #     if dialog.result:
-    #         try:
-    #             self.bayesNet.add_combined_influence(
-    #                 intention=dialog.result['intention'], contexts=dialog.result['contexts'], instantiations=dialog.result['instantiations'], value=dialog.result['value'])
-    #         except ValueError as e:
-    #             self.error_label['text'] = f"{e}"
-    #         self.create_fields()
+    def new_combined_influence(self):
+        """
+        Callback for the button
+        """
+        self.error_label['text'] = f""
+        dialog = NewCombinedContextDialog(
+            self, title="New combined Context influence", intentions=self.bayesNet.config['intentions'])
+        if dialog.result:
+            try:
+                self.bayesNet.add_combined_influence(
+                    intention=dialog.result['intention'], contexts=dialog.result['contexts'], instantiations=dialog.result['instantiations'], value=dialog.result['value'])
+            except ValueError as e:
+                self.error_label['text'] = f"{e}"
+            self.create_fields()
 
-    # def fill_advanced_table(self):
-    #     '''
-    #     Fill the content of the table containing combined influence values
-    #     '''
-    #     self.advanced_table.grid_forget()
-    #     self.advanced_table.destroy()
+    def fill_advanced_table(self):
+        '''
+        Fill the content of the table containing combined influence values
+        '''
+        self.advanced_table.grid_forget()
+        self.advanced_table.destroy()
 
-    #     self.advanced_table = tk.Frame(self.advanced_hidden_frame)
-    #     self.advanced_table.grid(row=0, column=0)
-    #     tk.Label(self.advanced_table, text='Intention').grid(row=0, column=0)
-    #     tk.Label(self.advanced_table, text='|').grid(row=0, column=1)
-    #     tk.Label(self.advanced_table, text='Contexts').grid(row=0, column=2)
-    #     tk.Label(self.advanced_table, text='|').grid(row=0, column=3)
-    #     tk.Label(self.advanced_table, text='Influence Value').grid(
-    #         row=0, column=4)
-    #     row = 1
-    #     for intention, context_influence in self.bayesNet.config['intentions'].items():
-    #         # print(context_influence)
-    #         for context in context_influence:
-    #             # print(context)
-    #             if isinstance(context, tuple):
-    #                 # print(len(list(context_influence[context])))
-    #                 for j in range(len(list(context_influence[context]))):
-    #                     key = (list(context_influence[context])[j])
-    #                     # For every combined case make a label and a button
-    #                     tk.Label(self.advanced_table, text=f'{intention}').grid(
-    #                         row=row, column=0)
-    #                     tk.Label(self.advanced_table, text='|').grid(
-    #                         row=row, column=1)
-    #                     # build context String
-    #                     context_string = ""
-    #                     for i, _context in enumerate(context):
-    #                         # print(key[i])
-    #                         context_string += f'{_context}={str(key[i])}, '
-    #                     context_string = context_string[:-2]
-    #                     # print(_context)
-    #                     # print(context_string)
-    #                     tk.Label(self.advanced_table, text=context_string).grid(
-    #                         row=row, column=2)
-    #                     tk.Label(self.advanced_table, text='|').grid(
-    #                         row=row, column=3)
-    #                     tk.Label(self.advanced_table, text=f'{list(context_influence[context].values())[0]}').grid(
-    #                         row=row, column=4)
-    #                     tk.Button(self.advanced_table, text='remove', command=lambda intention=intention, contexts=context, instantiations=list(context_influence[context].keys())[0]: self.remove_combined_influence(
-    #                         intention, contexts, instantiations)).grid(row=row, column=5)
-    #                     row += 1
-    #                     # print(self.advanced_new_button)
-    #                     # print("test")
-    #                     # print(context_string)
+        self.advanced_table = tk.Frame(self.advanced_hidden_frame)
+        self.advanced_table.grid(row=0, column=0)
+        tk.Label(self.advanced_table, text='Intention').grid(row=0, column=0)
+        tk.Label(self.advanced_table, text='|').grid(row=0, column=1)
+        tk.Label(self.advanced_table, text='Contexts').grid(row=0, column=2)
+        tk.Label(self.advanced_table, text='|').grid(row=0, column=3)
+        tk.Label(self.advanced_table, text='Influence Value').grid(
+            row=0, column=4)
+        row = 1
+        for intention, context_influence in self.bayesNet.config['intentions'].items():
+            # print(context_influence)
+            for context in context_influence:
+                # print(context)
+                if isinstance(context, tuple):
+                    # print(len(list(context_influence[context])))
+                    for j in range(len(list(context_influence[context]))):
+                        key = (list(context_influence[context])[j])
+                        # For every combined case make a label and a button
+                        tk.Label(self.advanced_table, text=f'{intention}').grid(
+                            row=row, column=0)
+                        tk.Label(self.advanced_table, text='|').grid(
+                            row=row, column=1)
+                        # build context String
+                        context_string = ""
+                        for i, _context in enumerate(context):
+                            # print(key[i])
+                            context_string += f'{_context}={str(key[i])}, '
+                        context_string = context_string[:-2]
+                        # print(_context)
+                        # print(context_string)
+                        tk.Label(self.advanced_table, text=context_string).grid(
+                            row=row, column=2)
+                        tk.Label(self.advanced_table, text='|').grid(
+                            row=row, column=3)
+                        tk.Label(self.advanced_table, text=f'{list(context_influence[context].values())[0]}').grid(
+                            row=row, column=4)
+                        tk.Button(self.advanced_table, text='remove', command=lambda intention=intention, contexts=context, instantiations=list(context_influence[context].keys())[0]: self.remove_combined_influence(
+                            intention, contexts, instantiations)).grid(row=row, column=5)
+                        row += 1
+                        # print(self.advanced_new_button)
+                        # print("test")
+                        # print(context_string)
 
-    # def remove_combined_influence(self, intention: str, contexts: tuple, instantiations: tuple):
-    #     self.bayesNet.del_combined_influence(
-    #         intention, contexts, instantiations)
-    #     self.fill_advanced_table()
+    def remove_combined_influence(self, intention: str, contexts: tuple, instantiations: tuple):
+        self.bayesNet.del_combined_influence(
+            intention, contexts, instantiations)
+        self.fill_advanced_table()
 
     def setup_layout(self):
         """
@@ -714,14 +714,19 @@ class Configurator(QtWidgets.QMainWindow):
         
         self.context_dropdown = self.findChild(QComboBox, 'context_selection')
         self.context_selection = self.context_dropdown
-        self.context_selection.addItem("Context")
+
         self.influencing_context_dropdown = self.findChild(QComboBox, 'influencing_context_selection')
         self.influencing_context_selection = self.influencing_context_dropdown
+        
+
+        self.intention_dropdown = self.findChild(QComboBox, 'intention_selection')
+        self.intention_selection = self.intention_dropdown
 
         self.context_instantiations = defaultdict(dict)
 
 
-        self.context_selected_widget =self.findChild(QWidget, 'widget')
+        self.context_selected_frame =self.findChild(QFrame, 'frame_2')
+        self.influencing_context_frame =self.findChild(QFrame, 'frame')
     
         
         self.instantiation_label = self.findChild(QLabel, 'instantiation_label_2')
@@ -758,80 +763,83 @@ class Configurator(QtWidgets.QMainWindow):
         # self.context_dropdown.deleteLater()
 
         if options:
-            # if options:
-            #     self.context_selection.addItems(list(options))
-            # else:
-            #     self.context_selection.addItem('Context')
+            if options:
+                self.context_selection.addItems(list(options))
+            else:
+                self.context_selection.addItem('Context')
             self.context_dropdown.clear()
             self.context_dropdown.addItems(options)
             self.context_dropdown.setCurrentIndex(0)
             self.context_dropdown.currentTextChanged.connect(command)
-            # print("test")
             
         else:  # clear
-            # self.context_selection.addItem("Context")
-            self.context_dropdown.clear()
+            self.context_selection.addItem("Context")
             values = []
             for value in values:
                 self.context_dropdown.addItems(value)
-            self.context_dropdown.currentTextChanged.connect(command)   
-            # print("testing")   
+            self.context_dropdown.currentTextChanged.connect(command)     
         command(self.context_selection.currentText())
         
 
-    # def set_influencing_context_dropdown(self, options: list, command: function = None):
-    #     '''
-    #     This sets the options for the influencing context optionMenu with the options and the corresponding command.
+    def set_influencing_context_dropdown(self, options: list, command: function = None):
+        '''
+        This sets the options for the influencing context optionMenu with the options and the corresponding command.
 
-    #     Args:
-    #         options: A list containing the options in the influencing context dropdown
-    #         command: a function which will be triggered when clicked on the dropdown option
-    #     '''
-    #     if not command:
-    #         command = self.influencing_context_selected
-    #     # self.influencing_context_dropdown.deleteLater()
-    #     if options:
-    #         # if options:
-    #         #     self.influencing_context_selection.addItems(list(options))
-    #         # else:
-    #         #     self.influencing_context_selection.addItem('Context')
-    #         self.influencing_context_dropdown.addItems(options)
-    #         self.influencing_context_dropdown.setCurrentIndex(0)
-    #         self.influencing_context_dropdown.currentIndexChanged.connect(command)
-    #     else:  # clear
-    #         # self.influencing_context_selection.addItem("Context")
-    #         values = []
-    #         for value in values:
-    #             self.influencing_context_dropdown.addItem(value)
-    #         self.influencing_context_dropdown.currentIndexChanged.connect(command)
-    #     command(self.influencing_context_selection.currentText())
+        Args:
+            options: A list containing the options in the influencing context dropdown
+            command: a function which will be triggered when clicked on the dropdown option
+        '''
+        if not command:
+            command = self.influencing_context_selected
+        # self.influencing_context_dropdown.deleteLater()
+        if options:
+            if options:
+                self.influencing_context_selection.addItems(list(options))
+            else:
+                self.influencing_context_selection.addItem('Context')
+            self.influencing_context_dropdown.clear()
+            self.influencing_context_dropdown.addItems(options)
+            self.influencing_context_dropdown.setCurrentIndex(0)
+            self.influencing_context_dropdown.currentIndexChanged.connect(command)
+        else:  # clear
+            self.influencing_context_selection.addItem("Context")
+            values = []
+            for value in values:
+                self.influencing_context_dropdown.addItem(value)
+            self.influencing_context_dropdown.currentIndexChanged.connect(command)
+        
+        command(self.influencing_context_selection.currentText())
 
-    # def set_intention_dropdown(self, options: list, command: function = None):
-    #     '''
-    #     This sets the options for a intention optionMenu with the options and the corresponding command
+    def set_intention_dropdown(self, options: list, command: function = None):
+        '''
+        This sets the options for a intention optionMenu with the options and the corresponding command
 
-    #     Args:
-    #         options: A list containing the options in the intention dropdown
-    #         command: a function which will be triggered when clicked on the dropdown option
-    #     '''
-    #     if not command:
-    #         command = self.influencing_context_selected
-    #     self.intention_dropdown.destroy()
-    #     if options:
-    #         self.intention_selection.set(
-    #             list(options)[0] if options else 'Intention')
-    #         self.intention_dropdown = tk.OptionMenu(
-    #             self.intention_label_frame, self.intention_selection, *options, command=command)
-    #     else:  # clear
-    #         self.intention_selection = tk.StringVar(
-    #             self.intention_label_frame, 'Intention')
-    #         values = []
-    #         self.intention_dropdown = tk.OptionMenu(
-    #             self.intention_label_frame, self.intention_selection, *values, command=command, value=self.intention_selection.get())
-    #     self.intention_dropdown.grid(row=0, column=3)
-    #     command(self.intention_selection.get())
-
-    
+        Args:
+            options: A list containing the options in the intention dropdown
+            command: a function which will be triggered when clicked on the dropdown option
+        '''
+        if not command:
+            command = self.influencing_context_selected
+        # self.intention_dropdown.deleteLater()
+        if options:
+            if options:
+                self.intention_selection.addItems(list(options))
+            else:
+                self.intention_selection.addItem('Intention')
+            self.intention_dropdown.clear()
+            self.intention_dropdown.addItems(options)
+            self.intention_dropdown.setCurrentIndex(0)
+            self.intention_dropdown.currentIndexChanged.connect(command)
+            
+        else:  # clear
+            self.intention_selection.addItem('Intention')
+            values = []
+            for value in values:
+                self.intention_dropdown.addItem(value)
+            self.intention_dropdown.currentIndexChanged.connect(command)
+       
+        command(self.intention_selection.currentText())
+            
 
     def context_selected(self, context: str):
         """
@@ -853,84 +861,98 @@ class Configurator(QtWidgets.QMainWindow):
                         print(f"couldn't destroy: {e}")
 
         self.context_instantiations = defaultdict(dict)
-        row = 0
+
         if context not in self.bayesNet.config['contexts']:
             return
         config = self.bayesNet.config
 
-       
-        # Assuming self.context_selected_widget is a QWidget instance
-        context_widget = self.context_selected_widget
+        layout = QGridLayout()
+        self.context_selected_frame.setLayout(layout)
+        layout = self.context_selected_frame.layout()
 
-        # Check if the widget already has a layout set and remove it if it does
-        if context_widget.layout() is not None:
-            context_widget.layout().deleteLater()
-
-
-        # Create a vertical layout to manage the layout of the widgets
-        layout = QVBoxLayout(context_widget)
+        layout.setVerticalSpacing(10)
+        row_count = layout.rowCount()
 
         for instantiation, value in config['contexts'][context].items():
             instantiation_str = str(instantiation) if isinstance(instantiation, bool) else instantiation
-
-            label = QLabel(instantiation_str, context_widget)  # Create a QLabel instance
+            label = QLabel(instantiation_str, self.context_selected_frame)  
             label.setFont(QFont('Times New Roman', 13))
-            line_edit = QLineEdit(str(value), context_widget)   # Create a QLineEdit instance
+            line_edit = QLineEdit(str(value), self.context_selected_frame)  
             line_edit.setFont(QFont('Times New Roman', 13))
+            line_edit.textChanged.connect(lambda text, context=context, instantiation=instantiation: self.apriori_values_changed(text, context=context, instantiation=instantiation)
+    )
 
-            # Create a horizontal layout for the label and line edit
-            row_layout = QHBoxLayout()
-            row_layout.addWidget(label)
-            row_layout.addWidget(line_edit)
+            layout.addWidget(label, row_count, 0)
+            layout.addWidget(line_edit, row_count, 1)
 
-            # Add the horizontal layout to the vertical layout
-            layout.addLayout(row_layout)
-
-        # Set the layout on the context widget
-        context_widget.setLayout(layout)
+            self.context_instantiations[context][instantiation] = (
+                label,
+                line_edit,
+            )
+            row_count += 1
 
 
-    # def influencing_context_selected(self, context_or_intention: str):
-    #     """
-    #     Callback for click on context in influencing context dropdown.
+    def influencing_context_selected(self, context_or_intention: str):
+        """
+        Callback for click on context in influencing context dropdown.
 
-    #     Args:
-    #         context_or_intention: name of the clicked context
-    #     """
-    #     for active_intention, active_context in self.intention_instantiations.items():
-    #         for active_context, instantiations in active_context.items():
-    #             for instantiation, widgets in instantiations.items():
-    #                 for widget in widgets:
-    #                     try:
-    #                         widget.deleteLater()
-    #                     except AttributeError:
-    #                         pass  # can not destroy StringVars
-    #                     except Exception as e:
-    #                         # TODO: better logging
-    #                         print(f"couldn't destroy: {e}")
-    #     intention = self.intention_selection.currentText()
-    #     context = self.influencing_context_selection.currentText()
-    #     if context not in self.bayesNet.config['contexts'] or intention not in self.bayesNet.config['intentions']:
-    #         return
+        Args:
+            context_or_intention: name of the clicked context
+        """
+        for active_intention, active_context in self.intention_instantiations.items():
+            for active_context, instantiations in active_context.items():
+                for instantiation, widgets in instantiations.items():
+                    for widget in widgets:
+                        try:
+                            widget.deleteLater()
+                        except AttributeError:
+                            pass  # can not destroy StringVars
+                        except Exception as e:
+                            # TODO: better logging
+                            print(f"couldn't destroy: {e}")
+        intention = self.intention_selection.currentText()
+        context = self.influencing_context_selection.currentText()
+        if context not in self.bayesNet.config['contexts'] or intention not in self.bayesNet.config['intentions']:
+            return
 
-    #     self.intention_instantiations = defaultdict(lambda: defaultdict(dict))
-    #     row = 0
-    #     for instantiation, value in self.bayesNet.config['intentions'][intention][context].items():
+        self.intention_instantiations = defaultdict(lambda: defaultdict(dict))
 
-    #         self.instantiation_label.setText(f"Influence of {context}:{instantiation} on {intention}: LOW ")
-    #         self.instantiation_label.setBuddy(self.slider)
-    
-    #         self.slider.valueChanged.connect(lambda value, context=context, intention=intention, instantiation=instantiation: self.influence_values_changed(value, context, intention, instantiation))
-    #         self.slider.setBuddy(self.high_label)
+        layout = QGridLayout()
+        self.influencing_context_frame.setLayout(layout)
+        layout = self.influencing_context_frame.layout()
 
-    #         self.high_label.setText("HIGH")
+        layout.setVerticalSpacing(10)
+        row_count = layout.rowCount()
 
-    #         self.intention_instantiations[intention][context][instantiation] = (
-    #             self.instantiation_label,
-    #             self.slider,
-    #             self.high_label,
-    #         )
-    #         row += 1
+        for instantiation, value in self.bayesNet.config['intentions'][intention][context].items():
+            instantiation_label = QLabel(f'Influence of {context}:{instantiation} on {intention}: LOW', self.influencing_context_frame)
+            instantiation_label.setFont(QFont('Times New Roman', 13))
+            slider = QSlider(Qt.Horizontal, self.influencing_context_frame)
+            slider.setFixedSize(100, 20)
+            high_label = QLabel('HIGH', self.influencing_context_frame)
+            high_label.setFont(QFont('Times New Roman', 13))
+
+            
+            layout.addWidget(instantiation_label, row_count, 0)
+            layout.addWidget(slider, row_count, 1)
+            layout.addWidget(high_label, row_count, 2)
+
+            
+            slider.setMinimum(0)
+            slider.setMaximum(5)
+            slider.setTickInterval(1)
+            slider.setValue(value)
+            slider.valueChanged.connect(lambda value, context=context, intention=intention, instantiation=instantiation: self.influence_values_changed(value, context, intention, instantiation))
+
+            
+            self.intention_instantiations[intention][context][instantiation] = (
+                instantiation_label,
+                slider,
+                high_label,
+            )
+
+            row_count += 1
+
 
     def load(self):
         """
@@ -979,21 +1001,21 @@ class Configurator(QtWidgets.QMainWindow):
         except ValueError as e:
             self.error_label['text'] = f'Apriori probability of context "{context}.{instantiation}" is not a number'
 
-    # def influence_values_changed(self, value, context, intention, instantiation):
-    #     """
-    #     Callback for change of the influence values.
+    def influence_values_changed(self, value, context, intention, instantiation):
+        """
+        Callback for change of the influence values.
 
-    #     Args:
-    #         value: new influence value
-    #         context: name of the context
-    #         intention: name of the intention
-    #         instantiation: name of the corresponding instantiation
-    #     """
-    #     self.error_label.setText("")
-    #     try:
-    #         self.bayesNet.change_influence_value(
-    #             intention=intention, context=context, instantiation=instantiation, value=int(value))
-    #     except AssertionError as e:
-    #         self.error_label.setText(str(e))
+        Args:
+            value: new influence value
+            context: name of the context
+            intention: name of the intention
+            instantiation: name of the corresponding instantiation
+        """
+        self.error_label.setText("")
+        try:
+            self.bayesNet.change_influence_value(
+                intention=intention, context=context, instantiation=instantiation, value=int(value))
+        except AssertionError as e:
+            self.error_label.setText(str(e))
 
-    #     return value
+        return value
