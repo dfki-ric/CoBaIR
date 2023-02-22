@@ -440,7 +440,6 @@ class Configurator(QtWidgets.QMainWindow):
         self.setup_layout()
         self.bayesNet = BayesNet(config)
         self.create_fields()
-        self.adjustSize()
         self.show()  # Show the GUI
 
     def set_error_label_red(self):
@@ -458,7 +457,6 @@ class Configurator(QtWidgets.QMainWindow):
         It reads all values from the config and adjusts the GUI accordingly.
         """
         # TODO: uncomment!!
-        self.adjustSize()
         self.set_context_dropdown(self.bayesNet.config['contexts'].keys())
 
         self.set_influencing_context_dropdown(
@@ -467,6 +465,14 @@ class Configurator(QtWidgets.QMainWindow):
         self.set_intention_dropdown(self.bayesNet.config['intentions'].keys())
         self.adjust_button_visibility()
         # self.set_decision_threshold()
+        # self.set_context_dropdown(self.bayesNet.config['contexts'].keys())
+
+        # self.set_influencing_context_dropdown(
+        #     self.bayesNet.config['contexts'].keys())
+
+        # self.set_intention_dropdown(self.bayesNet.config['intentions'].keys())
+        # self.adjust_button_visibility()
+        self.set_decision_threshold()
         # TODO: uncomment!!
         # self.fill_advanced_table()
 
@@ -710,8 +716,8 @@ class Configurator(QtWidgets.QMainWindow):
         """
         Setting up the layout of the GUI.
         """
-        uic.loadUi(Path(Path(__file__).parent, 'C:/Users/aruni/OneDrive/Documents/DFKI/Cobair/CoBaIR/configpyqt5.ui'), self)
 
+        uic.loadUi(Path(Path(__file__).parent, 'configurator.ui'), self)
         self.grid_layout = self.findChild(QGridLayout, 'gridLayout')
         self.grid_layout.setVerticalSpacing(5)
 
