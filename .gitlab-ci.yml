@@ -44,7 +44,7 @@ build_docu:
   script:
     - pip install --upgrade pip
     - pip install -r requirements/doc_requirements.txt
-    - pip install .
+    # - pip install .
     - mkdocs build
   artifacts:
     paths:
