@@ -21,8 +21,8 @@ from .bayes_net import BayesNet, load_config
 from PyQt5 import QtWidgets, uic
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QFont,QFontMetrics
- 
+from PyQt5.QtGui import QFont, QFontMetrics
+
 
 # end file header
 __author__ = 'Adrian Lubitz'
@@ -464,17 +464,17 @@ class Configurator(QtWidgets.QMainWindow):
 
         self.set_intention_dropdown(self.bayesNet.config['intentions'].keys())
         self.adjust_button_visibility()
-        # self.set_decision_threshold()
-        # self.set_context_dropdown(self.bayesNet.config['contexts'].keys())
+        self.set_decision_threshold()
+        self.set_context_dropdown(self.bayesNet.config['contexts'].keys())
 
-        # self.set_influencing_context_dropdown(
-        #     self.bayesNet.config['contexts'].keys())
+        self.set_influencing_context_dropdown(
+            self.bayesNet.config['contexts'].keys())
 
-        # self.set_intention_dropdown(self.bayesNet.config['intentions'].keys())
-        # self.adjust_button_visibility()
+        self.set_intention_dropdown(self.bayesNet.config['intentions'].keys())
+        self.adjust_button_visibility()
         self.set_decision_threshold()
         # TODO: uncomment!!
-        # self.fill_advanced_table()
+        self.fill_advanced_table()
 
     def set_decision_threshold(self):
         """
@@ -507,7 +507,6 @@ class Configurator(QtWidgets.QMainWindow):
             self.edit_intention_button.hide()
             self.delete_intention_button.hide()
             self.grid_layout.addWidget(self.new_intention_button, 2, 4)
-            
 
     def new_context(self):
         """
@@ -629,18 +628,20 @@ class Configurator(QtWidgets.QMainWindow):
             self.error_label['text'] = f"{e}"
         self.create_fields()
 
-    def onclicked_advanced(self, e):
+    def on_clicked_advanced(self):
         """
         Un/folds the advanced section
         """
         if self.advanced_folded:
-            self.advanced_label.config(text=u'advanced \u25B2')
+            # Change text to up arrow
+            self.advanced_label.setText("advanced \u25B2")
             self.advanced_folded = False
-            self.advanced_hidden_frame.grid()
+            self.advanced_hidden_frame.show()
         else:
-            self.advanced_label.config(text=u'advanced \u25BC')
+            # Change text back to down arrow
+            self.advanced_label.setText("advanced \u25BC")
             self.advanced_folded = True
-            self.advanced_hidden_frame.grid_forget()
+            self.advanced_hidden_frame.hide()
 
     def new_combined_influence(self):
         """
@@ -661,51 +662,44 @@ class Configurator(QtWidgets.QMainWindow):
         '''
         Fill the content of the table containing combined influence values
         '''
-        self.advanced_table.grid_forget()
-        self.advanced_table.destroy()
 
-        self.advanced_table = tk.Frame(self.advanced_hidden_frame)
-        self.advanced_table.grid(row=0, column=0)
-        tk.Label(self.advanced_table, text='Intention').grid(row=0, column=0)
-        tk.Label(self.advanced_table, text='|').grid(row=0, column=1)
-        tk.Label(self.advanced_table, text='Contexts').grid(row=0, column=2)
-        tk.Label(self.advanced_table, text='|').grid(row=0, column=3)
-        tk.Label(self.advanced_table, text='Influence Value').grid(
-            row=0, column=4)
+        font = QFont()
+        font.setPointSize(13)
+        self.advanced_table.setParent(None)
+        self.advanced_table.deleteLater()
+        self.advanced_table = QFrame(self.advanced_hidden_frame)
+        self.advanced_table.setLayout(QGridLayout())
+        self.advanced_hidden_frame.layout().addWidget(self.advanced_table, 0, 0)
+        self.advanced_table.layout().addWidget(QLabel('Intention'), 0, 0)
+        self.advanced_table.layout().addWidget(QLabel('|'), 0, 1)
+        self.advanced_table.layout().addWidget(QLabel('Contexts'), 0, 2)
+        self.advanced_table.layout().addWidget(QLabel('|'), 0, 3)
+        self.advanced_table.layout().addWidget(QLabel('Influence Value'), 0, 4)
+        self.advanced_table.setFont(font)
         row = 1
         for intention, context_influence in self.bayesNet.config['intentions'].items():
-            # print(context_influence)
             for context in context_influence:
-                # print(context)
                 if isinstance(context, tuple):
-                    # print(len(list(context_influence[context])))
                     for j in range(len(list(context_influence[context]))):
                         key = (list(context_influence[context])[j])
                         # For every combined case make a label and a button
-                        tk.Label(self.advanced_table, text=f'{intention}').grid(
-                            row=row, column=0)
-                        tk.Label(self.advanced_table, text='|').grid(
-                            row=row, column=1)
+                        self.advanced_table.layout().addWidget(
+                            QLabel(f'{intention}'), row, 0)
+                        self.advanced_table.layout().addWidget(QLabel('|'), row, 1)
                         # build context String
                         context_string = ""
                         for i, _context in enumerate(context):
-                            # print(key[i])
                             context_string += f'{_context}={str(key[i])}, '
                         context_string = context_string[:-2]
-                        # print(_context)
-                        # print(context_string)
-                        tk.Label(self.advanced_table, text=context_string).grid(
-                            row=row, column=2)
-                        tk.Label(self.advanced_table, text='|').grid(
-                            row=row, column=3)
-                        tk.Label(self.advanced_table, text=f'{list(context_influence[context].values())[0]}').grid(
-                            row=row, column=4)
-                        tk.Button(self.advanced_table, text='remove', command=lambda intention=intention, contexts=context, instantiations=list(context_influence[context].keys())[0]: self.remove_combined_influence(
-                            intention, contexts, instantiations)).grid(row=row, column=5)
+                        self.advanced_table.layout().addWidget(QLabel(context_string), row, 2)
+                        self.advanced_table.layout().addWidget(QLabel('|'), row, 3)
+                        self.advanced_table.layout().addWidget(
+                            QLabel(f'{list(context_influence[context].values())[0]}'), row, 4)
+                        remove_button = QPushButton('remove')
+                        remove_button.clicked.connect(lambda _, intention=intention, contexts=context, instantiations=list(
+                            context_influence[context].keys())[0]: self.remove_combined_influence(intention, contexts, instantiations))
+                        self.advanced_table.layout().addWidget(remove_button, row, 5)
                         row += 1
-                        # print(self.advanced_new_button)
-                        # print("test")
-                        # print(context_string)
 
     def remove_combined_influence(self, intention: str, contexts: tuple, instantiations: tuple):
         self.bayesNet.del_combined_influence(
@@ -725,38 +719,58 @@ class Configurator(QtWidgets.QMainWindow):
         self.save_button.clicked.connect(self.save)
         self.decision_threshold_entry.textChanged.connect(
             self.decision_threshold_changed)
-        self.error_label = self.findChild(QtWidgets.QLabel, 'error_label')
+
+        self.error_label = self.findChild(QLabel, 'error_label')
         self.set_error_label_red()
         self.error_label.setText("")
 
         self.context_label = self.findChild(QLabel, 'intention_label_frame_2')
-        self.intention_label_frame = self.findChild(QLabel, 'intention_label_frame')
-        self.on_label=self.findChild(QLabel, 'label_3')
-        
+        self.intention_label_frame = self.findChild(
+            QLabel, 'intention_label_frame')
+        self.on_label = self.findChild(QLabel, 'label_3')
+
         self.context_dropdown = self.findChild(QComboBox, 'context_selection')
         self.context_selection = self.context_dropdown
 
+        self.influencing_context_dropdown = self.findChild(
+            QComboBox, 'influencing_context_selection')
+        self.influencing_context_selection = self.influencing_context_dropdown
 
-        self.influencing_context_dropdown = self.findChild(QComboBox, 'influencing_context_selection')
-        self.influencing_context_selection = self.influencing_context_dropdown        
-
-        self.intention_dropdown = self.findChild(QComboBox, 'intention_selection')
+        self.intention_dropdown = self.findChild(
+            QComboBox, 'intention_selection')
         self.intention_selection = self.intention_dropdown
 
         self.context_instantiations = defaultdict(dict)
 
-        self.context_selected_frame =self.findChild(QFrame, 'frame_2')
-        self.influencing_context_frame =self.findChild(QFrame, 'frame') 
+        self.context_selected_frame = self.findChild(QFrame, 'frame_2')
+        self.influencing_context_frame = self.findChild(QFrame, 'frame')
 
-        self.intention_instantiations = defaultdict(lambda: defaultdict(dict))  
+        self.intention_instantiations = defaultdict(lambda: defaultdict(dict))
 
-        self.new_context_button = self.findChild(QPushButton, 'new_context_button')    
-        self.edit_context_button = self.findChild(QPushButton, 'edit_context_button')
-        self.delete_context_button = self.findChild(QPushButton, 'delete_context_button')
+        self.new_context_button = self.findChild(
+            QPushButton, 'new_context_button')
+        self.edit_context_button = self.findChild(
+            QPushButton, 'edit_context_button')
+        self.delete_context_button = self.findChild(
+            QPushButton, 'delete_context_button')
 
-        self.new_intention_button = self.findChild(QPushButton, 'new_intention_button')
-        self.edit_intention_button = self.findChild(QPushButton, 'edit_intention_button')
-        self.delete_intention_button = self.findChild(QPushButton, 'delete_intention_button')
+        self.new_intention_button = self.findChild(
+            QPushButton, 'new_intention_button')
+        self.edit_intention_button = self.findChild(
+            QPushButton, 'edit_intention_button')
+        self.delete_intention_button = self.findChild(
+            QPushButton, 'delete_intention_button')
+
+        self.advanced_hidden_frame = self.findChild(QFrame, 'frame_3')
+        self.advanced_label.setText("advanced \u25BC")
+        self.advanced_label.setParent(self.advanced_hidden_frame)
+        self.advanced_folded = True
+        self.advanced_label.clicked.connect(self.on_clicked_advanced)
+
+        self.advanced_table = QFrame(self.advanced_hidden_frame)
+        self.advanced_hidden_frame.setLayout(QGridLayout())
+        self.advanced_hidden_frame.layout().addWidget(self.advanced_table, 0, 0)
+        self.on_clicked_advanced()
 
         # add widgets to layout
         self.grid_layout.addWidget(self.context_label, 0, 0)
@@ -772,6 +786,16 @@ class Configurator(QtWidgets.QMainWindow):
         self.grid_layout.addWidget(self.intention_dropdown, 2, 3)
         self.grid_layout.addWidget(self.edit_intention_button, 2, 4)
         self.grid_layout.addWidget(self.delete_intention_button, 2, 5)
+
+        self.grid_layout.addWidget(self.context_instantiations_3, 4, 1)
+        self.grid_layout.addWidget(self.decision_threshold_entry, 4, 2)
+
+        self.grid_layout.addWidget(self.advanced_label, 5, 1)
+
+        self.grid_layout.addWidget(self.advanced_new_button, 7, 1)
+
+        self.grid_layout.addWidget(self.load_button, 8, 1)
+        self.grid_layout.addWidget(self.save_button, 8, 2)
 
     def decision_threshold_changed(self, value):
         """
@@ -801,8 +825,10 @@ class Configurator(QtWidgets.QMainWindow):
         if options:
             if options:
                 self.context_selection.addItems(list(options))
-                max_width = max([QFontMetrics(self.context_dropdown.font()).boundingRect(option).width() for option in options])
-                self.context_dropdown.setMinimumWidth(max_width + 25)  # add some padding
+                max_width = max([QFontMetrics(self.context_dropdown.font()).boundingRect(
+                    option).width() for option in options])
+                self.context_dropdown.setMinimumWidth(
+                    max_width + 25)  # add some padding
                 self.context_dropdown.setCurrentIndex(0)
                 self.context_dropdown.currentTextChanged.connect(command)
             else:
@@ -811,15 +837,14 @@ class Configurator(QtWidgets.QMainWindow):
             self.context_dropdown.addItems(options)
             self.context_dropdown.setCurrentIndex(0)
             self.context_dropdown.currentTextChanged.connect(command)
-            
+
         else:  # clear
             self.context_selection.addItem("Context")
             values = []
             for value in values:
                 self.context_dropdown.addItems(value)
-            self.context_dropdown.currentTextChanged.connect(command)     
+            self.context_dropdown.currentTextChanged.connect(command)
         command(self.context_selection.currentText())
-        
 
     def set_influencing_context_dropdown(self, options: list, command: function = None):
         '''
@@ -835,23 +860,28 @@ class Configurator(QtWidgets.QMainWindow):
         if options:
             if options:
                 self.influencing_context_selection.addItems(list(options))
-                max_width = max([QFontMetrics(self.influencing_context_dropdown.font()).boundingRect(option).width() for option in options])
-                self.influencing_context_dropdown.setMinimumWidth(max_width + 25)  # add some padding
+                max_width = max([QFontMetrics(self.influencing_context_dropdown.font(
+                )).boundingRect(option).width() for option in options])
+                self.influencing_context_dropdown.setMinimumWidth(
+                    max_width + 25)  # add some padding
                 self.influencing_context_dropdown.setCurrentIndex(0)
-                self.influencing_context_dropdown.currentTextChanged.connect(command)
+                self.influencing_context_dropdown.currentTextChanged.connect(
+                    command)
             else:
                 self.influencing_context_selection.addItem('Context')
             self.influencing_context_dropdown.clear()
             self.influencing_context_dropdown.addItems(options)
             self.influencing_context_dropdown.setCurrentIndex(0)
-            self.influencing_context_dropdown.currentIndexChanged.connect(command)
+            self.influencing_context_dropdown.currentIndexChanged.connect(
+                command)
         else:  # clear
             self.influencing_context_selection.addItem("Context")
             values = []
             for value in values:
                 self.influencing_context_dropdown.addItem(value)
-            self.influencing_context_dropdown.currentIndexChanged.connect(command)
-        
+            self.influencing_context_dropdown.currentIndexChanged.connect(
+                command)
+
         command(self.influencing_context_selection.currentText())
 
     def set_intention_dropdown(self, options: list, command: function = None):
@@ -868,8 +898,10 @@ class Configurator(QtWidgets.QMainWindow):
         if options:
             if options:
                 self.intention_selection.addItems(list(options))
-                max_width = max([QFontMetrics(self.intention_dropdown.font()).boundingRect(option).width() for option in options])
-                self.intention_dropdown.setMinimumWidth(max_width + 25)  # add some padding
+                max_width = max([QFontMetrics(self.intention_dropdown.font()).boundingRect(
+                    option).width() for option in options])
+                self.intention_dropdown.setMinimumWidth(
+                    max_width + 25)  # add some padding
                 self.intention_dropdown.setCurrentIndex(0)
                 self.intention_dropdown.currentTextChanged.connect(command)
             else:
@@ -878,16 +910,15 @@ class Configurator(QtWidgets.QMainWindow):
             self.intention_dropdown.addItems(options)
             self.intention_dropdown.setCurrentIndex(0)
             self.intention_dropdown.currentIndexChanged.connect(command)
-            
+
         else:  # clear
             self.intention_selection.addItem('Intention')
             values = []
             for value in values:
                 self.intention_dropdown.addItem(value)
             self.intention_dropdown.currentIndexChanged.connect(command)
-       
+
         command(self.intention_selection.currentText())
-            
 
     def context_selected(self, context: str):
         """
@@ -896,7 +927,7 @@ class Configurator(QtWidgets.QMainWindow):
         Args:
             context: name of the clicked context
         """
-        
+
         for active_context, instantiations in self.context_instantiations.items():
             for instantiation, widgets in instantiations.items():
                 for widget in widgets:
@@ -922,13 +953,14 @@ class Configurator(QtWidgets.QMainWindow):
         row_count = layout.rowCount()
 
         for instantiation, value in config['contexts'][context].items():
-            instantiation_str = str(instantiation) if isinstance(instantiation, bool) else instantiation
-            label = QLabel(instantiation_str, self.context_selected_frame)  
+            instantiation_str = str(instantiation) if isinstance(
+                instantiation, bool) else instantiation
+            label = QLabel(instantiation_str, self.context_selected_frame)
             label.setFont(QFont('Times New Roman', 13))
-            line_edit = QLineEdit(str(value), self.context_selected_frame)  
+            line_edit = QLineEdit(str(value), self.context_selected_frame)
             line_edit.setFont(QFont('Times New Roman', 13))
             line_edit.textChanged.connect(lambda text, context=context, instantiation=instantiation: self.apriori_values_changed(text, context=context, instantiation=instantiation)
-    )
+                                          )
 
             layout.addWidget(label, row_count, 0)
             layout.addWidget(line_edit, row_count, 1)
@@ -938,7 +970,6 @@ class Configurator(QtWidgets.QMainWindow):
                 line_edit,
             )
             row_count += 1
-
 
     def influencing_context_selected(self, context_or_intention: str):
         """
@@ -973,26 +1004,25 @@ class Configurator(QtWidgets.QMainWindow):
         row_count = layout.rowCount()
 
         for instantiation, value in self.bayesNet.config['intentions'][intention][context].items():
-            instantiation_label = QLabel(f'Influence of {context}:{instantiation} on {intention}: LOW', self.influencing_context_frame)
+            instantiation_label = QLabel(
+                f'Influence of {context}:{instantiation} on {intention}: LOW', self.influencing_context_frame)
             instantiation_label.setFont(QFont('Times New Roman', 13))
             slider = QSlider(Qt.Horizontal, self.influencing_context_frame)
             slider.setFixedSize(100, 20)
             high_label = QLabel('HIGH', self.influencing_context_frame)
             high_label.setFont(QFont('Times New Roman', 13))
 
-            
             layout.addWidget(instantiation_label, row_count, 0)
             layout.addWidget(slider, row_count, 1)
             layout.addWidget(high_label, row_count, 2)
 
-            
             slider.setMinimum(0)
             slider.setMaximum(5)
             slider.setTickInterval(1)
             slider.setValue(value)
-            slider.valueChanged.connect(lambda value, context=context, intention=intention, instantiation=instantiation: self.influence_values_changed(value, context, intention, instantiation))
+            slider.valueChanged.connect(lambda value, context=context, intention=intention,
+                                        instantiation=instantiation: self.influence_values_changed(value, context, intention, instantiation))
 
-            
             self.intention_instantiations[intention][context][instantiation] = (
                 instantiation_label,
                 slider,
@@ -1000,7 +1030,6 @@ class Configurator(QtWidgets.QMainWindow):
             )
 
             row_count += 1
-
 
     def load(self):
         """
