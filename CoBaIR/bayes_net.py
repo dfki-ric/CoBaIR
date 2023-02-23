@@ -784,7 +784,7 @@ def config_to_default_dict(config: dict = None):
     if 'decision_threshold' in config:
         new_config['decision_threshold'] = config['decision_threshold']
     else:
-        new_config['decision_threshold'] = 0
+        new_config['decision_threshold'] = 0.0
 
     return new_config
 
