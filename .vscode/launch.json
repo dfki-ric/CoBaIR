@@ -16,7 +16,11 @@
             "type": "python",
             "request": "launch",
             "program": "start_configurator.py",
-            "console": "integratedTerminal"
+            "console": "integratedTerminal",
+            "args": [
+                "-f",
+                "smallest_example.yml"
+            ]
         }
     ]
 }

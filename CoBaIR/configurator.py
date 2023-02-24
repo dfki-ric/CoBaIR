@@ -13,15 +13,19 @@ from copy import deepcopy
 from types import FunctionType as function
 from pathlib import Path
 
-import yaml
 # 3rd party imports
-
-# local imports
-from .bayes_net import BayesNet, load_config
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from PyQt5 import QtWidgets, uic
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont, QFontMetrics
+import yaml
+import matplotlib.pyplot as plt
+import networkx as nx
+
+
+# local imports
+from .bayes_net import BayesNet, load_config
 
 
 # end file header
@@ -437,6 +441,8 @@ class Configurator(QtWidgets.QMainWindow):
         '''
         self.app = QtWidgets.QApplication(sys.argv)
         QtWidgets.QMainWindow.__init__(self, *args, **kwargs)
+        self.figure = plt.figure()
+        self.canvas = FigureCanvas(self.figure)
         self.setup_layout()
         self.bayesNet = BayesNet(config)
         self.create_fields()
@@ -446,7 +452,8 @@ class Configurator(QtWidgets.QMainWindow):
         """
         setting the alignment and color of the error label
         """
-        self.error_label.setAlignment(Qt.AlignCenter)
+        self.error_label.setAlignment(
+            Qt.AlignCenter)  # TODO: no changes of style in functional code!
         self.error_label.setStyleSheet("color: red")
 
     def create_fields(self):
@@ -456,7 +463,6 @@ class Configurator(QtWidgets.QMainWindow):
         This should be used whenever the config is changed.
         It reads all values from the config and adjusts the GUI accordingly.
         """
-        # TODO: uncomment!!
         self.set_context_dropdown(self.bayesNet.config['contexts'].keys())
 
         self.set_influencing_context_dropdown(
@@ -473,8 +479,9 @@ class Configurator(QtWidgets.QMainWindow):
         self.set_intention_dropdown(self.bayesNet.config['intentions'].keys())
         self.adjust_button_visibility()
         self.set_decision_threshold()
-        # TODO: uncomment!!
         self.fill_advanced_table()
+
+        self.draw_graph()
 
     def set_decision_threshold(self):
         """
@@ -794,8 +801,11 @@ class Configurator(QtWidgets.QMainWindow):
 
         self.grid_layout.addWidget(self.advanced_new_button, 7, 1)
 
-        self.grid_layout.addWidget(self.load_button, 8, 1)
-        self.grid_layout.addWidget(self.save_button, 8, 2)
+        self.grid_layout.addWidget(self.load_button, 9, 1)
+        self.grid_layout.addWidget(self.save_button, 9, 2)
+
+        # Adding the canvas
+        self.grid_layout.addWidget(self.canvas, 8, 1)
 
     def decision_threshold_changed(self, value):
         """
@@ -845,6 +855,34 @@ class Configurator(QtWidgets.QMainWindow):
                 self.context_dropdown.addItems(value)
             self.context_dropdown.currentTextChanged.connect(command)
         command(self.context_selection.currentText())
+
+    def create_graph(self):
+        '''
+        This creates the graph object from the current config
+        '''
+        self.graph = nx.DiGraph()
+        self.graph.contexts = list(self.bayesNet.config["contexts"].keys())
+        for intention in self.bayesNet.config['intentions']:
+            for context in self.bayesNet.config['contexts']:
+                self.graph.add_edge(
+                    f"{context}", f"{intention}")
+                # self.graph.contexts.append(f"{context}")
+
+    def draw_graph(self):
+        '''
+        This draws the graph from the current config.
+        '''
+        # make network
+        self.create_graph()
+        self.figure.clf()
+
+        nx.draw_networkx(self.graph, pos=nx.drawing.layout.bipartite_layout(
+            self.graph, self.graph.contexts))
+        plt.title('Two-layer Bayesian Network', size=15)
+        plt.axis("off")
+        self.canvas.draw_idle()
+
+        # plt.show()
 
     def set_influencing_context_dropdown(self, options: list, command: function = None):
         '''
