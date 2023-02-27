@@ -254,10 +254,10 @@ class NewCombinedContextDialog(Dialog):
             contexts), 'instantiations': tuple(instantiations)}
 
 
-class NewContextDialog(Dialog):
+class NewContextDialog(QMainWindow):
     """Dialog Window for new Context"""
 
-    def __init__(self, parent, title: str = ..., predefined_context: dict = None) -> None:
+    def __init__(self, parent = None, predefined_context: dict = None) -> None:
         """
         Extends the Constructor of Dialog to use already existing context and the corresponding instantiations and values.
 
@@ -270,9 +270,11 @@ class NewContextDialog(Dialog):
                     'pickup': 0.2, 'handover': 0.2, 'other': 0.6}}
         """
         self.predefined_context = deepcopy(predefined_context)
-        super().__init__(parent, title)
+        super().__init__(parent)            
+        self.body()
+        self.show()
 
-    def body(self, master):
+    def body(self):
         """
         Sets the Layout.
 
@@ -282,57 +284,44 @@ class NewContextDialog(Dialog):
             tk.Entry:
                 the initial focus
         """
-        name_frame = tk.Frame(master)
-        name_frame.grid(row=0)
-        tk.Label(name_frame, text="Context:").grid(row=0)
-        self.context_entry = tk.Entry(name_frame)
-        self.context_entry.grid(row=0, column=1)
-
-        # frame for instantiations
-        self.instantiations_frame = tk.Frame(master)
-        self.instantiations_frame.grid(row=1)
-        tk.Label(self.instantiations_frame,
-                 text="Instantiation Name").grid(row=0, column=0)
-        tk.Label(self.instantiations_frame,
-                 text="Apriori Probability").grid(row=0, column=1)
-        self.instantiations = []  # This holds the GUI elements for the instantiations
-        self.shown_instantiations = 0
-        # Fill the entries here if predefined_context is given!
+        uic.loadUi(Path(Path(__file__).parent, 'NewContext.ui'), self)
+        # self.grid_layout_2 = self.findChild(QGridLayout, 'gridLayout_2')
+        self.context_entry = self.findChild(QLineEdit, 'context_entry')
+        self.instantiations_frame = self.findChild(QFrame, 'instantiations_frame')
+        self.instantiations = []
+        self.shown_instantiations = 0 
+        self.grid_layout = QGridLayout()
+        self.instantiations_frame.setLayout(self.grid_layout)
+        self.instantiations_frame.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)   
+        # TODO: Fill the entries here if predefined_context is given!
         if self.predefined_context:
             # it's always only one new context
             context = list(self.predefined_context.keys())[0]
             instantiations = self.predefined_context[context]
-            self.context_entry.insert(0, context)
+            self.context_entry.setText(context)
         else:
             instantiations = {}
-        while (self.shown_instantiations < 2 or instantiations):
-            # tk.Label(self.instantiations_frame,
-            #          text=f"Instantiation {self.shown_instantiations}:").grid(row=self.shown_instantiations)
-            name_entry = tk.Entry(self.instantiations_frame)
-            probability_entry = tk.Entry(self.instantiations_frame)
-            remove_button = tk.Button(
-                self.instantiations_frame, command=lambda x=self.shown_instantiations: self.remove_instantiation(x), text='-')
+        while(self.shown_instantiations < 2 or instantiations):
+
+            name_entry = QLineEdit()
+            probability_entry = QLineEdit()
             if instantiations:
                 # get name
                 name = list(instantiations.keys())[0]
                 # get value
                 value = instantiations[name]
                 # set entries
-                name_entry.insert(0, name)
-                probability_entry.insert(0, value)
+                name_entry.setText(name)
+                probability_entry.setText(str(value))
                 # del entry
-                del (instantiations[name])
-            name_entry.grid(row=self.shown_instantiations + 1, column=0)
-            probability_entry.grid(row=self.shown_instantiations + 1, column=1)
-            remove_button.grid(row=self.shown_instantiations + 1, column=2)
-            self.instantiations.append(
-                (name_entry, probability_entry, remove_button))
+                del(instantiations[name])
+            self.grid_layout.addWidget(name_entry, self.shown_instantiations+1, 0)
+            self.grid_layout.addWidget(probability_entry, self.shown_instantiations+1, 1)
+            self.instantiations.append((name_entry, probability_entry))
             self.shown_instantiations += 1
-
-        tk.Button(master, command=self.new_instantiation,
-                  text='More').grid(row=2)
-
-        return self.context_entry  # initial focus
+        self.more = self.findChild(QPushButton, 'pushButton')
+        self.more.clicked.connect(self.new_instantiation)
+        return self.context_entry
 
     def remove_instantiation(self, index):
         """
@@ -341,30 +330,29 @@ class NewContextDialog(Dialog):
             index: the index in self.instantiations
         """
         for element in self.instantiations[index]:
-            element.grid_forget()
-            element.destroy()
+            element.hide()
+            element.deleteLater()
         self.shown_instantiations -= 1
         # TODO: that is problematic because it shifts indexes!!!
         # Or I need to redraw the whole thing like I always do...
-        self.instantiations.pop(index)
+        self.instantiations.itemAt(index).widget().deleteLater()
         for index, instantiation in enumerate(self.instantiations):
             # or I just need to rebind callback with correct index works with configure(command=...)
-            instantiation[2].configure(
-                command=lambda x=index: self.remove_instantiation(x))
+            instantiation[2].clicked.connect(lambda x=index: self.remove_instantiation(x))
 
     def new_instantiation(self):
         """
         Creates two new Entries to input more instantiations
         """
-        name_entry = tk.Entry(self.instantiations_frame)
-        probability_entry = tk.Entry(self.instantiations_frame)
-        name_entry.grid(row=self.shown_instantiations+1, column=0)
-        probability_entry.grid(row=self.shown_instantiations+1, column=1)
-        remove_button = tk.Button(
-            self.instantiations_frame, command=lambda x=self.shown_instantiations: self.remove_instantiation(x), text='-')
-        remove_button.grid(row=self.shown_instantiations+1, column=2)
+        name_entry = QLineEdit(self.instantiations_frame)
+        probability_entry = QLineEdit(self.instantiations_frame)
+        self.grid_layout.addWidget(name_entry, self.shown_instantiations+1, 0)
+        self.grid_layout.addWidget(probability_entry, self.shown_instantiations+1, 1)
+        remove_button = QPushButton('-', self.instantiations_frame)
+        remove_button.clicked.connect(lambda x=self.shown_instantiations: self.remove_instantiation(x))
+        self.grid_layout.addWidget(remove_button, self.shown_instantiations + 1, 2)
         self.instantiations.append(
-            (name_entry, probability_entry, remove_button))
+            (name_entry, probability_entry, remove_button ))
         self.shown_instantiations += 1
 
     def validate(self):
@@ -385,30 +373,26 @@ class NewContextDialog(Dialog):
             valid = False
             # TODO: point out why not valid
         empty_entries = []
-        self.context_entry.configure(highlightbackground='black',
-                                     selectbackground='black', highlightcolor='black')  # TODO: Too much I only want the text to be black/normal...
-        if not self.context_entry.get():
+        self.context_entry.setStyleSheet("QLineEdit { background-color: black; color: black; selection-background-color: black; }")  # TODO: Too much I only want the text to be black/normal...
+        if not self.context_entry.text():
             empty_entries.append(self.context_entry)
         for i, instantiation in enumerate(self.instantiations):
             # Only setting colors for the entry fields
             for entry in instantiation[0:2]:
-                entry.configure(highlightbackground='black',
-                                selectbackground='black', highlightcolor='black')
-                if not entry.get():
+                entry.setStyleSheet("QLineEdit { background-color: black; color: black; selection-background-color: black; }")
+                if not entry.text():
                     empty_entries.append(entry)
-            name = instantiation[0].get()
+            name = instantiation[0].text()
             if name in instantiation_names:
                 # mark red
                 print('mark red')
-                instantiation[0].configure(highlightbackground='red',
-                                           selectbackground='red', highlightcolor='red')
+                instantiation[0].setStyleSheet("QLineEdit { background-color: red; color: red; selection-background-color: red; }")
                 valid = False
             instantiation_names.append(name)
         if empty_entries:
             # mark red
             for entry in empty_entries:
-                entry.configure(highlightbackground='red',
-                                selectbackground='red', highlightcolor='red')
+                entry.setStyleSheet("QLineEdit { background-color: red; color: red; selection-background-color: red; }")
             valid = False
         return valid
 
@@ -418,9 +402,8 @@ class NewContextDialog(Dialog):
         """
         self.result = defaultdict(lambda: defaultdict(dict))
         for instantiation in self.instantiations:
-            self.result[self.context_entry.get(
-            )][instantiation[0].get()] = float(instantiation[1].get())
-
+            self.result[self.context_entry.text()][instantiation[0].text()] = float(instantiation[1].text())
+       
 
 class Configurator(QtWidgets.QMainWindow):
     '''
@@ -456,7 +439,6 @@ class Configurator(QtWidgets.QMainWindow):
         This should be used whenever the config is changed.
         It reads all values from the config and adjusts the GUI accordingly.
         """
-        # TODO: uncomment!!
         self.set_context_dropdown(self.bayesNet.config['contexts'].keys())
 
         self.set_influencing_context_dropdown(
@@ -473,7 +455,6 @@ class Configurator(QtWidgets.QMainWindow):
         self.set_intention_dropdown(self.bayesNet.config['intentions'].keys())
         self.adjust_button_visibility()
         self.set_decision_threshold()
-        # TODO: uncomment!!
         self.fill_advanced_table()
 
     def set_decision_threshold(self):
@@ -513,23 +494,25 @@ class Configurator(QtWidgets.QMainWindow):
         Open a new Dialog to create new contexts.
         """
         # remove errorText
-        self.error_label['text'] = f""
+        self.error_label.setText("")
         # open small dialog to create context
-        dialog = NewContextDialog(self, title="New Context")
-        if dialog.result:
-            # check if context already exists!
-            # it's always only one new context
-            new_context = list(dialog.result.keys())[0]
-            try:
-                self.bayesNet.add_context(
-                    new_context, dialog.result[new_context])
-            except AssertionError as e:
-                self.error_label['text'] = f"{e}"
-            # update view!
-            self.create_fields()
-            self.context_selection.set(new_context)
-            # Explicit call is neccessary because set seems not to trigger the callback
-            self.context_selected(new_context)
+        dialog = NewContextDialog(self)
+        # if dialog.result():
+        #     # check if context already exists!
+        #     # it's always only one new context
+        #     pass
+        #     new_context = list(dialog.result().keys())[0]
+        #     try:
+        #         self.bayesNet.add_context(
+        #             new_context, dialog.result()[new_context])
+        #     except AssertionError as e:
+        #         self.error_label.setText(str(e))
+        #     # update view!
+        #     self.create_fields()
+        #     self.context_selection.setCurrentText(new_context)
+        #     # Explicit call is neccessary because setCurrentText seems not to trigger the callback
+        #     self.context_selected(new_context)
+
 
     def edit_context(self):
         """
@@ -749,6 +732,8 @@ class Configurator(QtWidgets.QMainWindow):
 
         self.new_context_button = self.findChild(
             QPushButton, 'new_context_button')
+        self.new_context_button.clicked.connect(self.new_context)
+        
         self.edit_context_button = self.findChild(
             QPushButton, 'edit_context_button')
         self.delete_context_button = self.findChild(
