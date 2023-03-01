@@ -254,7 +254,7 @@ class NewCombinedContextDialog(Dialog):
             contexts), 'instantiations': tuple(instantiations)}
 
 
-class NewContextDialog(QMainWindow):
+class NewContextDialog(QDialog):
     """Dialog Window for new Context"""
 
     def __init__(self, parent = None, predefined_context: dict = None) -> None:
@@ -270,7 +270,8 @@ class NewContextDialog(QMainWindow):
                     'pickup': 0.2, 'handover': 0.2, 'other': 0.6}}
         """
         self.predefined_context = deepcopy(predefined_context)
-        super().__init__(parent)            
+        super().__init__(parent)  
+        self.result = None          
         self.body()
         self.show()
 
@@ -285,7 +286,7 @@ class NewContextDialog(QMainWindow):
                 the initial focus
         """
         uic.loadUi(Path(Path(__file__).parent, 'NewContext.ui'), self)
-        # self.grid_layout_2 = self.findChild(QGridLayout, 'gridLayout_2')
+        self.grid_layout_2 = self.findChild(QGridLayout, 'gridLayout_2')
         self.context_entry = self.findChild(QLineEdit, 'context_entry')
         self.instantiations_frame = self.findChild(QFrame, 'instantiations_frame')
         self.instantiations = []
@@ -355,55 +356,55 @@ class NewContextDialog(QMainWindow):
             (name_entry, probability_entry, remove_button ))
         self.shown_instantiations += 1
 
-    def validate(self):
-        """
-        highlights empty fields
+    # def validate(self):
+    #     """
+    #     highlights empty fields
 
-        Returns:
-            bool:
-                True if the entries are not empty
-        """
+    #     Returns:
+    #         bool:
+    #             True if the entries are not empty
+    #     """
 
-        # TODO: entries cannot be the same (len(entries) must be the same as len(set(entries.get())))
+    #     # TODO: entries cannot be the same (len(entries) must be the same as len(set(entries.get())))
 
-        valid = True
-        instantiation_names = []
-        # more than 1 entry is needed!!!
-        if len(self.instantiations) < 2:
-            valid = False
-            # TODO: point out why not valid
-        empty_entries = []
-        self.context_entry.setStyleSheet("QLineEdit { background-color: black; color: black; selection-background-color: black; }")  # TODO: Too much I only want the text to be black/normal...
-        if not self.context_entry.text():
-            empty_entries.append(self.context_entry)
-        for i, instantiation in enumerate(self.instantiations):
-            # Only setting colors for the entry fields
-            for entry in instantiation[0:2]:
-                entry.setStyleSheet("QLineEdit { background-color: black; color: black; selection-background-color: black; }")
-                if not entry.text():
-                    empty_entries.append(entry)
-            name = instantiation[0].text()
-            if name in instantiation_names:
-                # mark red
-                print('mark red')
-                instantiation[0].setStyleSheet("QLineEdit { background-color: red; color: red; selection-background-color: red; }")
-                valid = False
-            instantiation_names.append(name)
-        if empty_entries:
-            # mark red
-            for entry in empty_entries:
-                entry.setStyleSheet("QLineEdit { background-color: red; color: red; selection-background-color: red; }")
-            valid = False
-        return valid
+    #     valid = True
+    #     instantiation_names = []
+    #     # more than 1 entry is needed!!!
+    #     if len(self.instantiations) < 2:
+    #         valid = False
+    #         # TODO: point out why not valid
+    #     empty_entries = []
+    #     self.context_entry.setStyleSheet("QLineEdit { background-color: black; color: black; selection-background-color: black; }")  # TODO: Too much I only want the text to be black/normal...
+    #     if not self.context_entry.text():
+    #         empty_entries.append(self.context_entry)
+    #     for i, instantiation in enumerate(self.instantiations):
+    #         # Only setting colors for the entry fields
+    #         for entry in instantiation[0:2]:
+    #             entry.setStyleSheet("QLineEdit { background-color: black; color: black; selection-background-color: black; }")
+    #             if not entry.text():
+    #                 empty_entries.append(entry)
+    #         name = instantiation[0].text()
+    #         if name in instantiation_names:
+    #             # mark red
+    #             print('mark red')
+    #             instantiation[0].setStyleSheet("QLineEdit { background-color: red; color: red; selection-background-color: red; }")
+    #             valid = False
+    #         instantiation_names.append(name)
+    #     if empty_entries:
+    #         # mark red
+    #         for entry in empty_entries:
+    #             entry.setStyleSheet("QLineEdit { background-color: red; color: red; selection-background-color: red; }")
+    #         valid = False
+    #     return valid
 
-    def apply(self):
-        """
-        Applies the result to hand it over to the master
-        """
-        self.result = defaultdict(lambda: defaultdict(dict))
+    def get_result(self):
+        result = defaultdict(lambda: defaultdict(dict))
         for instantiation in self.instantiations:
-            self.result[self.context_entry.text()][instantiation[0].text()] = float(instantiation[1].text())
-       
+            key = instantiation[0].text()
+            value = float(instantiation[1].text())
+            result[self.context_entry.text()][key] = value
+        self.accept()
+        return result
 
 class Configurator(QtWidgets.QMainWindow):
     '''
@@ -497,22 +498,26 @@ class Configurator(QtWidgets.QMainWindow):
         self.error_label.setText("")
         # open small dialog to create context
         dialog = NewContextDialog(self)
-        # if dialog.result():
-        #     # check if context already exists!
-        #     # it's always only one new context
-        #     pass
-        #     new_context = list(dialog.result().keys())[0]
-        #     try:
-        #         self.bayesNet.add_context(
-        #             new_context, dialog.result()[new_context])
-        #     except AssertionError as e:
-        #         self.error_label.setText(str(e))
-        #     # update view!
-        #     self.create_fields()
-        #     self.context_selection.setCurrentText(new_context)
-        #     # Explicit call is neccessary because setCurrentText seems not to trigger the callback
-        #     self.context_selected(new_context)
-
+        ok_button = dialog.findChild(QPushButton, "pushButton_2")
+        ok_button.clicked.connect(lambda: self.update_context(dialog))
+        cancel_button = dialog.findChild(QPushButton, "pushButton_3")
+        cancel_button.clicked.connect(dialog.reject)
+        dialog.exec_()
+        
+    def update_context(self, dialog):
+        result = dialog.get_result()
+        # check if context already exists!
+        # it's always only one new context
+        new_context = list(result.keys())[0]
+        try:
+            self.bayesNet.add_context(new_context, result[new_context])
+        except AssertionError as e:
+            self.error_label.setText(str(e))
+        # update view!
+        self.create_fields()
+        self.context_selection.setCurrentText(new_context)
+        # Explicit call is necessary because setCurrentText seems not to trigger the callback
+        self.context_selected(new_context)
 
     def edit_context(self):
         """

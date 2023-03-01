@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>NewContext</class>
- <widget class="QMainWindow" name="NewContext">
+ <widget class="QDialog" name="NewContext">
   <property name="geometry">
    <rect>
     <x>0</x>
