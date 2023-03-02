@@ -28,10 +28,10 @@ from PyQt5.QtGui import QFont, QFontMetrics
 __author__ = 'Adrian Lubitz'
 
 
-class NewIntentionDialog(Dialog):
+class NewIntentionDialog(QDialog):
     """Dialog Window for new Intention"""
 
-    def __init__(self, parent, title: str = ..., intention: str = None) -> None:
+    def __init__(self, parent = None, intention: str = None) -> None:
         """
         Extends the Constructor of Dialog to use an already existing intention.
 
@@ -41,9 +41,12 @@ class NewIntentionDialog(Dialog):
             intention: An intention that will be filled in the dialog
         """
         self.intention = intention
-        super().__init__(parent, title)
+        super().__init__(parent)
+        self.result = None 
+        self.body()
+        self.show()
 
-    def body(self, master):
+    def body(self):
         """
         Sets the Layout.
 
@@ -53,35 +56,34 @@ class NewIntentionDialog(Dialog):
             tk.Entry:
                 the initial focus
         """
-
-        tk.Label(master, text="New Intention:").grid(row=0)
-        self.intention_entry = tk.Entry(master)
+        uic.loadUi(Path(Path(__file__).parent, 'NewIntention.ui'), self)
+        self.intention_entry = self.findChild(QLineEdit, 'lineEdit')
         if self.intention:
-            self.intention_entry.insert(0, self.intention)
-        self.intention_entry.grid(row=1)
+            self.intention_entry.setText(self.intention)
         return self.intention_entry  # initial focus
 
-    def validate(self):
-        """
-        highlights empty fields
+    # def validate(self):
+    #     """
+    #     highlights empty fields
 
-        Returns:
-            bool:
-                True if the entry is not empty
-        """
-        if not self.intention_entry.get():
-            # mark red
-            self.intention_entry.configure(highlightbackground='red',
-                                           selectbackground='red', highlightcolor='red')
-            return False
-        else:
-            return True
+    #     Returns:
+    #         bool:
+    #             True if the entry is not empty
+    #     """
+    #     if not self.intention_entry.text():
+    #         # mark red
+    #         self.intention_entry.setStyleSheet("QLineEdit{background-color: red;}")
+    #         return False
+    #     else:
+    #         return True
 
-    def apply(self):
+    def get_result(self):
         """
         Applies the result to hand it over to the master
         """
-        self.result = self.intention_entry.get()
+        result = self.intention_entry.text()
+        self.accept()
+        return result
 
 
 class NewCombinedContextDialog(Dialog):
@@ -573,49 +575,62 @@ class Configurator(QtWidgets.QMainWindow):
         Open a new Dialog to create new intentions.
         """
         # remove errorText
-        self.error_label['text'] = f""
-        dialog = NewIntentionDialog(self, title="New Intention")
-        if dialog.result:
+        self.error_label.setText("")
+        dialog = NewIntentionDialog(self)
+        def update_and_close():
+            result = dialog.get_result()
             try:
-                self.bayesNet.add_intention(dialog.result)
+                self.bayesNet.add_intention(result)
             except AssertionError as e:
-                self.error_label['text'] = f"{e}"
+                self.error_label.setText(str(e))
             # update view!
             self.create_fields()
-            self.intention_selection.set(dialog.result)
+            self.intention_selection.setCurrentText(result)
             # Explicit call is neccessary because set seems not to trigger the callback
-            self.influencing_context_selected(dialog.result)
+            self.influencing_context_selected(result)
+        ok_button = dialog.findChild(QPushButton, 'ok')
+        ok_button.clicked.connect(update_and_close)
+        cancel_button = dialog.findChild(QPushButton, "cancel")
+        cancel_button.clicked.connect(dialog.reject)
+        dialog.exec_()
 
     def edit_intention(self):
         """
         Edit the name of the currently selected intention
         """
 
-        self.error_label['text'] = f""
+        self.error_label.setText("")
         # open small dialog to create context
-        intention = self.intention_selection.get()
-        dialog = NewIntentionDialog(self,
-                                    title="Edit Intention", intention=intention)
-        if dialog.result:
+        intention = self.intention_selection.currentText()
+        dialog = NewIntentionDialog(self, intention=intention)
+        def update_and_close():
+            result = dialog.get_result()
             try:
-                self.bayesNet.edit_intention(intention, dialog.result)
+                self.bayesNet.edit_intention(intention, result)
             except AssertionError as e:
-                self.error_label['text'] = f"{e}"
+                self.error_label.setText(str(e))
             self.create_fields()
-            self.intention_selection.set(dialog.result)
+            self.intention_selection.setCurrentText(result)
             # Explicit call is neccessary because set seems not to trigger the callback
-            self.influencing_context_selected(dialog.result)
+            self.influencing_context_selected(result)
+            dialog.accept()
+
+        ok_button = dialog.findChild(QPushButton, "ok")
+        ok_button.clicked.connect(update_and_close)
+        cancel_button = dialog.findChild(QPushButton, "cancel")
+        cancel_button.clicked.connect(dialog.reject)
+        dialog.exec_()        
 
     def delete_intention(self):
         """
         Delete the currently selected intention
         """
-        self.error_label['text'] = f""
-        intention = self.intention_selection.get()
+        self.error_label.setText("")
+        intention = self.intention_selection.currentText()
         try:
             self.bayesNet.del_intention(intention)
         except AssertionError as e:
-            self.error_label['text'] = f"{e}"
+            self.error_label.setText(str(e))
         self.create_fields()
 
     def on_clicked_advanced(self):
@@ -748,10 +763,13 @@ class Configurator(QtWidgets.QMainWindow):
 
         self.new_intention_button = self.findChild(
             QPushButton, 'new_intention_button')
+        self.new_intention_button.clicked.connect(self.new_intention)
         self.edit_intention_button = self.findChild(
             QPushButton, 'edit_intention_button')
+        self.edit_intention_button.clicked.connect(self.edit_intention)
         self.delete_intention_button = self.findChild(
             QPushButton, 'delete_intention_button')
+        self.delete_intention_button.clicked.connect(self.delete_intention)
 
         self.advanced_hidden_frame = self.findChild(QFrame, 'frame_3')
         self.advanced_label.setText("advanced \u25BC")
