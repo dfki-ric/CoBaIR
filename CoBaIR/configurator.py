@@ -489,7 +489,7 @@ class Configurator(QtWidgets.QMainWindow):
             self.edit_intention_button.hide()
             self.delete_intention_button.hide()
             self.grid_layout.addWidget(self.new_intention_button, 2, 4)
-
+            
     def new_context(self):
         """
         Open a new Dialog to create new contexts.
@@ -498,26 +498,28 @@ class Configurator(QtWidgets.QMainWindow):
         self.error_label.setText("")
         # open small dialog to create context
         dialog = NewContextDialog(self)
+        
+        def update_and_close():
+            result = dialog.get_result()
+            # check if context already exists!
+            # it's always only one new context
+            new_context = list(result.keys())[0]
+            try:
+                self.bayesNet.add_context(new_context, result[new_context])
+            except AssertionError as e:
+                self.error_label.setText(str(e))
+            # update view!
+            self.create_fields()
+            self.context_selection.setCurrentText(new_context)
+            # Explicit call is necessary because setCurrentText seems not to trigger the callback
+            self.context_selected(new_context)
+            dialog.accept()
+
         ok_button = dialog.findChild(QPushButton, "pushButton_2")
-        ok_button.clicked.connect(lambda: self.update_context(dialog))
+        ok_button.clicked.connect(update_and_close)
         cancel_button = dialog.findChild(QPushButton, "pushButton_3")
         cancel_button.clicked.connect(dialog.reject)
         dialog.exec_()
-        
-    def update_context(self, dialog):
-        result = dialog.get_result()
-        # check if context already exists!
-        # it's always only one new context
-        new_context = list(result.keys())[0]
-        try:
-            self.bayesNet.add_context(new_context, result[new_context])
-        except AssertionError as e:
-            self.error_label.setText(str(e))
-        # update view!
-        self.create_fields()
-        self.context_selection.setCurrentText(new_context)
-        # Explicit call is necessary because setCurrentText seems not to trigger the callback
-        self.context_selected(new_context)
 
     def edit_context(self):
         """
