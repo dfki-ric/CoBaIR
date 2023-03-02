@@ -560,12 +560,12 @@ class Configurator(QtWidgets.QMainWindow):
         """"
         Deletes the currently selected context.
         """
-        self.error_label['text'] = f""
-        context = self.context_selection.get()
+        self.error_label.setText("")
+        context = self.context_selection.currentText()
         try:
             self.bayesNet.del_context(context)
         except AssertionError as e:
-            self.error_label['text'] = f"{e}"
+            self.error_label.setText(str(e))
         self.create_fields()
 
     def new_intention(self):
@@ -745,6 +745,7 @@ class Configurator(QtWidgets.QMainWindow):
             QPushButton, 'edit_context_button')
         self.delete_context_button = self.findChild(
             QPushButton, 'delete_context_button')
+        self.delete_context_button.clicked.connect(self.delete_context)
 
         self.new_intention_button = self.findChild(
             QPushButton, 'new_intention_button')
