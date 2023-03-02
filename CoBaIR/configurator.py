@@ -451,7 +451,7 @@ class Configurator(QtWidgets.QMainWindow):
         self.win = pg.GraphicsLayoutWidget()
         # adding view box to the graphic layout widget
         self.view = self.win.addViewBox()
-        self.graph_item = pg.GraphItem()
+        self.graph_item = TwoLayerGraph()
         self.view.addItem(self.graph_item)
         self.setup_layout()
         self.bayesNet = BayesNet(config)
@@ -866,38 +866,11 @@ class Configurator(QtWidgets.QMainWindow):
             self.context_dropdown.currentTextChanged.connect(command)
         command(self.context_selection.currentText())
 
-    def create_graph(self):
-        '''
-        This creates the graph object from the current config
-        '''
-        # self.graph = nx.DiGraph()
-        # self.graph.contexts = list(self.bayesNet.config["contexts"].keys())
-        # for intention in self.bayesNet.config['intentions']:
-        #     for context in self.bayesNet.config['contexts']:
-        #         self.graph.add_edge(
-        #             f"{context}", f"{intention}")
-        #         # self.graph.contexts.append(f"{context}")
-        pass
-        # define positions, connections
-        pos = []
-        mapping = {}  # mapping for the names
-        for i, intention in enumerate(self.bayesNet.config['intentions']):
-            pos.append((10, i*10))
-            mapping[(10, i*10)] = intention
-        for j, context in enumerate(self.bayesNet.config['contexts']):
-            pos.append((0, j*10))
-            mapping[(0, j*10)] = context
-        adj = list(itertools.product(range(i+1, i+j+2), range(i+1)))
-        return np.array(pos), np.array(adj), mapping
-
     def draw_graph(self):
         '''
         This draws the graph from the current config.
         '''
-        # make network
-        pos, adj, mapping = self.create_graph()
-        # , pen=lines, size=1, symbol=symbols, pxMode=False)
-        self.graph_item.setData(pos=pos, adj=adj)
+        self.graph_item.set_config(self.bayesNet.config)
 
     def set_influencing_context_dropdown(self, options: list, command: function = None):
         '''
@@ -1149,3 +1122,49 @@ class Configurator(QtWidgets.QMainWindow):
             self.error_label.setText(str(e))
 
         return value
+
+
+class TwoLayerGraph(pg.GraphItem):
+    """
+    Graph Visualization for the two layer bayesian network
+    """
+
+    def __init__(self, **kwds):
+        super().__init__(**kwds)
+
+    def set_config(self, config, dist=10):
+        """
+        Uses the config to set the data
+        """
+        # extract every needed field for the parent from config
+        pos = []
+        self.mapping = {}  # mapping for the names
+
+        for i, (intention, context_dict) in enumerate(config['intentions'].items()):
+            position = (dist, dist/2 + i*dist)
+            pos.append(position)
+            self.mapping[position] = intention
+        for j, context in enumerate(config['contexts']):
+            position = (0, j*dist)
+            pos.append(position)
+            self.mapping[position] = context
+        adj = list(itertools.product(range(len(config['intentions']), len(
+            config['intentions']) + len(config['contexts'])), range(len(config['intentions']))))
+        pen_fields = []
+        for combo in adj:
+            context = list(config["contexts"].keys())[
+                combo[0] - len(config["intentions"])]
+            intention = list(config["intentions"].keys())[combo[1]]
+            color = pg.mkPen().color()
+            alpha = color.alpha()
+            red = color.red()
+            green = color.green()
+            blue = color.blue()
+            pen_fields.append(np.array([(red, green, blue, alpha, 5 * np.mean(list(config["intentions"][intention][context].values())))], dtype=[
+                ('red', np.uint8), ('green', np.uint8), ('blue', np.uint8), ('alpha', np.uint8), ('width', np.uint8)]))
+        self.setData(pos=np.array(pos), adj=np.array(
+            adj), pen=np.array(pen_fields))
+        for position, label in self.mapping.items():
+            text_item = pg.TextItem(label)
+            text_item.setParentItem(self)
+            text_item.setPos(*position)
