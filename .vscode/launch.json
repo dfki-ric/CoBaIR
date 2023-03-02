@@ -19,7 +19,7 @@
             "console": "integratedTerminal",
             "args": [
                 "-f",
-                "smallest_example.yml"
+                "small_example.yml"
             ]
         }
     ]

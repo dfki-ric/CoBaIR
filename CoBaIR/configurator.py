@@ -12,16 +12,17 @@ from tkinter import ttk
 from copy import deepcopy
 from types import FunctionType as function
 from pathlib import Path
+import itertools
 
 # 3rd party imports
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+import pyqtgraph as pg
 from PyQt5 import QtWidgets, uic
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont, QFontMetrics
 import yaml
-import matplotlib.pyplot as plt
-import networkx as nx
+import numpy as np
 
 
 # local imports
@@ -441,8 +442,17 @@ class Configurator(QtWidgets.QMainWindow):
         '''
         self.app = QtWidgets.QApplication(sys.argv)
         QtWidgets.QMainWindow.__init__(self, *args, **kwargs)
-        self.figure = plt.figure()
-        self.canvas = FigureCanvas(self.figure)
+        # self.figure = plt.figure()
+        # self.canvas = FigureCanvas(self.figure)
+        # creating a graph item
+        # setting configuration options
+        pg.setConfigOptions(antialias=True)
+        # creating graphics layout widget
+        self.win = pg.GraphicsLayoutWidget()
+        # adding view box to the graphic layout widget
+        self.view = self.win.addViewBox()
+        self.graph_item = pg.GraphItem()
+        self.view.addItem(self.graph_item)
         self.setup_layout()
         self.bayesNet = BayesNet(config)
         self.create_fields()
@@ -805,7 +815,7 @@ class Configurator(QtWidgets.QMainWindow):
         self.grid_layout.addWidget(self.save_button, 9, 2)
 
         # Adding the canvas
-        self.grid_layout.addWidget(self.canvas, 8, 1)
+        self.grid_layout.addWidget(self.win, 8, 1)
 
     def decision_threshold_changed(self, value):
         """
@@ -860,29 +870,34 @@ class Configurator(QtWidgets.QMainWindow):
         '''
         This creates the graph object from the current config
         '''
-        self.graph = nx.DiGraph()
-        self.graph.contexts = list(self.bayesNet.config["contexts"].keys())
-        for intention in self.bayesNet.config['intentions']:
-            for context in self.bayesNet.config['contexts']:
-                self.graph.add_edge(
-                    f"{context}", f"{intention}")
-                # self.graph.contexts.append(f"{context}")
+        # self.graph = nx.DiGraph()
+        # self.graph.contexts = list(self.bayesNet.config["contexts"].keys())
+        # for intention in self.bayesNet.config['intentions']:
+        #     for context in self.bayesNet.config['contexts']:
+        #         self.graph.add_edge(
+        #             f"{context}", f"{intention}")
+        #         # self.graph.contexts.append(f"{context}")
+        pass
+        # define positions, connections
+        pos = []
+        mapping = {}  # mapping for the names
+        for i, intention in enumerate(self.bayesNet.config['intentions']):
+            pos.append((10, i*10))
+            mapping[(10, i*10)] = intention
+        for j, context in enumerate(self.bayesNet.config['contexts']):
+            pos.append((0, j*10))
+            mapping[(0, j*10)] = context
+        adj = list(itertools.product(range(i+1, i+j+2), range(i+1)))
+        return np.array(pos), np.array(adj), mapping
 
     def draw_graph(self):
         '''
         This draws the graph from the current config.
         '''
         # make network
-        self.create_graph()
-        self.figure.clf()
-
-        nx.draw_networkx(self.graph, pos=nx.drawing.layout.bipartite_layout(
-            self.graph, self.graph.contexts))
-        plt.title('Two-layer Bayesian Network', size=15)
-        plt.axis("off")
-        self.canvas.draw_idle()
-
-        # plt.show()
+        pos, adj, mapping = self.create_graph()
+        # , pen=lines, size=1, symbol=symbols, pxMode=False)
+        self.graph_item.setData(pos=pos, adj=adj)
 
     def set_influencing_context_dropdown(self, options: list, command: function = None):
         '''
