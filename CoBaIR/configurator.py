@@ -1129,42 +1129,132 @@ class TwoLayerGraph(pg.GraphItem):
     Graph Visualization for the two layer bayesian network
     """
 
-    def __init__(self, **kwds):
+    def __init__(self, dist=10, size=3, line_width=[0, 25], pxMode=False, **kwds):
         super().__init__(**kwds)
+        self.dist = dist
+        self.size = size
+        self.line_width = line_width
+        self.pxMode = pxMode
+        self.unfolded_context = set()
+        self.textItems = []
 
-    def set_config(self, config, dist=10):
+    def _set_pos(self):
+        """
+        Add all the data points in the pos array
+        """
+        i = 0
+        added_context = set()
+        for intention, context_dict in self.config['intentions'].items():
+            position = (self.dist, self.dist/2 + i*self.dist)
+            self.data["pos"].append(position)
+            self.data["names"].append(intention)
+            self.data["intention_indices"].append(i)
+            self.data["mapping"][position] = intention
+            i += 1
+            for context, instantiation_dict in context_dict.items():
+                if context not in added_context and isinstance(context, str):
+                    if context in self.unfolded_context:
+                        for instatiation in instantiation_dict:
+                            if f"{context}:{instatiation}" not in added_context and isinstance(context, str):
+                                position = (0, i*self.dist)
+                                self.data["pos"].append(position)
+                                self.data["names"].append(
+                                    f"{context}:{instatiation}")
+                                # TODO: this may be 'instantiation_indices'
+                                # self.data["instantiation_indices"].append(i)
+                                self.data["context_indices"].append(i)
+                                self.data["mapping"][position] = f"{context}:{instatiation}"
+                                added_context.add(f"{context}:{instatiation}")
+                                i += 1
+                    else:
+                        position = (0, i*self.dist)
+                        self.data["pos"].append(position)
+                        self.data["names"].append(context)
+                        self.data["context_indices"].append(i)
+                        self.data["mapping"][position] = context
+                        added_context.add(context)
+                        i += 1
+
+    def _set_adj(self):
+        """
+        Add all the connections in the adj array
+        """
+        self.data["adj"] = list(itertools.product(
+            self.data["context_indices"], self.data["intention_indices"]))
+
+    def _set_pen(self):
+        """
+        Add all the pens for the connections in the pen array 
+        """
+        for start, end in self.data["adj"]:
+            if start in self.data["context_indices"]:
+                context = self.data["names"][start]
+                intention = self.data["names"][end]
+            else:
+                context = self.data["names"][end]
+                intention = self.data["names"][start]
+            color = pg.mkPen().color()
+            normalized_mean = np.mean(
+                list(self.config["intentions"][intention][context].values()))/5.0
+
+            # HAck: TODO: remove
+            if ":" in context:
+                normalized_mean = 0.5
+            alpha = color.alpha()
+            # TODO: Maybe color can even be scaled with the normalized mean
+            red = color.red() if normalized_mean else 255
+            green = color.green() if normalized_mean else 0
+            blue = color.blue() if normalized_mean else 0
+            width = self.line_width[0] + \
+                (self.line_width[1] - self.line_width[0]) * normalized_mean
+
+            self.data["pen"].append(np.array([(red, green, blue, alpha, width)], dtype=[
+                ('red', np.uint8), ('green', np.uint8), ('blue', np.uint8), ('alpha', np.uint8), ('width', np.uint8)]))
+
+    def _set_text(self):
+        """
+        Place all the texts for Context and Intention Names
+        """
+        for i in self.textItems:
+            i.scene().removeItem(i)
+        self.textItems = []
+        for position, label in self.data["mapping"].items():
+            # TODO: change color
+            text_item = pg.TextItem(label, anchor=(0.5, 0.5))
+            text_item.setParentItem(self)
+            text_item.setPos(*position)
+            self.textItems.append(text_item)
+
+    def set_config(self, config):
         """
         Uses the config to set the data
         """
-        # extract every needed field for the parent from config
-        pos = []
-        self.mapping = {}  # mapping for the names
+        # extract every needed field for setData from config
 
-        for i, (intention, context_dict) in enumerate(config['intentions'].items()):
-            position = (dist, dist/2 + i*dist)
-            pos.append(position)
-            self.mapping[position] = intention
-        for j, context in enumerate(config['contexts']):
-            position = (0, j*dist)
-            pos.append(position)
-            self.mapping[position] = context
-        adj = list(itertools.product(range(len(config['intentions']), len(
-            config['intentions']) + len(config['contexts'])), range(len(config['intentions']))))
-        pen_fields = []
-        for combo in adj:
-            context = list(config["contexts"].keys())[
-                combo[0] - len(config["intentions"])]
-            intention = list(config["intentions"].keys())[combo[1]]
-            color = pg.mkPen().color()
-            alpha = color.alpha()
-            red = color.red()
-            green = color.green()
-            blue = color.blue()
-            pen_fields.append(np.array([(red, green, blue, alpha, 5 * np.mean(list(config["intentions"][intention][context].values())))], dtype=[
-                ('red', np.uint8), ('green', np.uint8), ('blue', np.uint8), ('alpha', np.uint8), ('width', np.uint8)]))
-        self.setData(pos=np.array(pos), adj=np.array(
-            adj), pen=np.array(pen_fields))
-        for position, label in self.mapping.items():
-            text_item = pg.TextItem(label)
-            text_item.setParentItem(self)
-            text_item.setPos(*position)
+        self.config = config
+        self.data = {"mapping": {}, "pos": [],
+                     "adj": [], "pen": [], "names": [], "context_indices": [], "intention_indices": [], "instantiation_indices": []}
+        self._set_pos()
+        self._set_adj()
+        self._set_pen()
+        self._set_text()
+
+        self.setData(pos=np.array(self.data["pos"]), adj=np.array(
+            self.data["adj"]), pen=np.array(self.data["pen"]), size=self.size, pxMode=self.pxMode)
+
+    def mousePressEvent(self, event):
+        """
+        Handler for the mouse click event
+        """
+        click_pos = event.pos()
+        # Context
+        if click_pos.x() > 0 - (self.size/2.0) and click_pos.x() < 0 + (self.size/2.0):
+            for position, name in self.data["mapping"].items():
+                if click_pos.y() > position[1] - (self.size/2.0) and click_pos.y() < position[1] + (self.size/2.0) and position[0] == 0:
+                    print(f"clicked on {name}")
+                    self.unfolded_context.add(
+                        name) if name not in self.unfolded_context else self.unfolded_context.remove(name)
+                    self.set_config(self.config)
+        # Intention
+        if click_pos.x() > self.dist - (self.size/2.0) and click_pos.x() < self.dist + (self.size/2.0):
+            pass
