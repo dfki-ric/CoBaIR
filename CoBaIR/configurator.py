@@ -84,10 +84,10 @@ class NewIntentionDialog(Dialog):
         self.result = self.intention_entry.get()
 
 
-class NewCombinedContextDialog(Dialog):
+class NewCombinedContextDialog(QDialog):
     """Dialog Window for new combined Context influence"""
 
-    def __init__(self, parent, title: str = ..., intentions: dict = None) -> None:
+    def __init__(self, parent =  None, intentions: dict = None) -> None:
         """
         Extends the Constructor of Dialog to make config available.
 
@@ -122,51 +122,43 @@ class NewCombinedContextDialog(Dialog):
         """
         self.intentions = deepcopy(intentions)
         self.original_instantiations = defaultdict(dict)
-        super().__init__(parent, title)
+        super().__init__(parent)
+        self.result = None          
+        self.body()
+        self.show()
 
-    def body(self, master):
+    def body(self):
         """
         Sets the Layout.
 
         Args:
             master: the master window this dialog belongs to
         """
-        # intention
-        intention_frame = tk.Frame(master)
-        intention_frame.grid(row=0)
-        tk.Label(intention_frame, text='Intention:').grid(row=0, column=0)
+        uic.loadUi(Path(Path(__file__).parent, 'NewCombinedContextInfluence.ui'), self)
+
         values = list(self.intentions.keys())
-        self.intention_selection = tk.StringVar(
-            intention_frame, values[0])
-        tk.OptionMenu(
-            intention_frame, self.intention_selection, *values).grid(row=0, column=1)
-
-        # Value:
-        value_frame = tk.Frame(master)
-        value_frame.grid(row=2)
-        tk.Label(value_frame, text='Influence value:').grid(row=0, column=0)
-        self.value_selection = tk.StringVar(value_frame, 0)
-        tk.OptionMenu(
-            value_frame, self.value_selection, *[0, 1, 2, 3, 4, 5]).grid(row=0, column=1)
-
+        
+        # intention_frame_layout = self.findChild(QGridLayout, 'gridLayout_2')
+        self.intention_selection = self.findChild(QComboBox, 'comboBox')
+        self.intention_selection.addItems(values)
+        self.intention_selection.setCurrentIndex(0) # set initial value
+        # intention_frame_layout.addWidget(self.intention_selection, 0, 1)
+        # Value
+        self.value_selection = self.findChild(QComboBox, 'comboBox_2')
         # Button
-        button_frame = tk.Frame(master)
-        button_frame.grid(row=3)
-        tk.Button(button_frame, command=self.new_instantiation,
-                  text='additional context').grid()
-        self.error_label = tk.Label(button_frame, fg='#f00')
-        self.error_label.grid(row=1)
-
+        self.additional_context = self.findChild(QPushButton, 'pushButton')
+        self.additional_context.clicked.connect(self.new_instantiation)
+        self.error_label = self.findChild(QLabel, 'label_5')
         # contexts
         self.contexts = {}
+        
+        self.context_frame = self.findChild(QFrame, 'frame')
+        self.grid_layout = QGridLayout()
+        self.context_frame.setLayout(self.grid_layout)
+
         for context, instantiations in list(self.intentions.values())[0].items():
             if not isinstance(context, tuple):
                 self.contexts[context] = instantiations
-        self.context_frame = tk.Frame(master)
-        self.context_frame.grid(row=1)
-        tk.Label(self.context_frame, text='Context').grid(row=0, column=0)
-        tk.Label(self.context_frame, text='Instantiation').grid(
-            row=0, column=1)
         self.context_selections = []
         self.context_menus = []
         self.instantiation_selections = []
@@ -182,25 +174,28 @@ class NewCombinedContextDialog(Dialog):
             context: A context name
             i: the position of the dropdown menu
         """
-        self.instantiation_menus[i].grid_remove()
-        self.instantiation_menus[i].destroy()
+        self.instantiation_menus[i].hide()
+        self.instantiation_menus[i].deleteLater()
         for inst in self.contexts[context]:
             self.original_instantiations[context][str(inst)] = inst
         instantiations = list(self.original_instantiations[context].keys())
-        self.instantiation_menus[i] = tk.OptionMenu(
-            self.context_frame, self.instantiation_selections[i], *instantiations)
-        self.instantiation_menus[i].grid(row=i+1, column=1)
-        self.instantiation_selections[i].set(
+
+        self.instantiation_menus[i] = QComboBox(self.context_frame)
+        self.instantiation_menus[i].addItems(instantiations)
+        self.grid_layout.addWidget(self.instantiation_menus[i], i+1, 1)
+        self.instantiation_selections[i].setCurrentText(
             str(list(self.contexts[context].keys())[0]))
         # available context -> every dropdown should only have available + selected
         available_context = self._eval_available_context()
         for i_m, menu in enumerate(self.context_menus):
-            menu.grid_remove()
-            menu.destroy()
-            contexts = [self.context_selections[i_m].get()] + available_context
-            self.context_menus[i_m] = tk.OptionMenu(
-                self.context_frame, self.context_selections[i_m], *contexts, command=lambda x, i=i_m: self.context_selected(x, i))
-            self.context_menus[i_m].grid(row=i_m+1, column=0)
+            menu.hide()
+            menu.deleteLater()
+            contexts = [self.context_selections[i_m].currentText()] + available_context
+            self.context_menus[i_m] = QComboBox(self.context_frame)
+            self.context_menus[i_m].addItems(contexts)
+            self.context_menus[i_m].currentIndexChanged.connect(lambda x, i=i_m: self.context_selected(x, i))
+            self.grid_layout.addWidget(self.context_menus[i_m], i_m+1, 0)
+
 
     def _eval_available_context(self):
         """
@@ -212,7 +207,7 @@ class NewCombinedContextDialog(Dialog):
         """
         available_context = list(self.contexts.keys())
         for selection in self.context_selections:
-            available_context.remove(selection.get())
+            available_context.remove(selection.currentText())
         return available_context
 
     def new_instantiation(self):
@@ -222,37 +217,43 @@ class NewCombinedContextDialog(Dialog):
         available_context = self._eval_available_context()
         i = len(self.context_selections)
         if not available_context:
-            self.error_label['text'] = 'No more context available'
+            self.error_label.setText('No more context available')
             return
-        self.context_selections.append(tk.StringVar(
-            self.context_frame, available_context[0]))
-        self.instantiation_selections.append(
-            tk.StringVar(self.context_frame, list(self.contexts[available_context[0]].keys())[0]))
-        self.context_menus.append(tk.OptionMenu(
-            self.context_frame, self.context_selections[-1], *available_context, command=lambda x, i=i: self.context_selected(x, i)))
-        self.context_menus[-1].grid(row=i+1, column=0)
+        # available_context = [str(item) if isinstance(item, bool) else item for item in available_context]
+        self.context_selections.append(QComboBox(self.context_frame))
+        self.context_selections[-1].addItems(available_context)
+        self.context_selections[-1].activated.connect(lambda index, i=i: self.context_selected(self.context_selections[-1].currentText(), i))
+        self.context_selections[-1].setCurrentIndex(0)
+        self.instantiation_selections.append(QComboBox(self.context_frame))
+        # context_key = str(available_context[0]) if isinstance(available_context[0], bool) else available_context[0]
+        # instantiations = [str(item) if isinstance(item, bool) else item for item in self.contexts[context_key].keys()]
         instantiations = list(self.contexts[available_context[0]].keys())
-        self.instantiation_menus.append(tk.OptionMenu(
-            self.context_frame, self.instantiation_selections[-1], *instantiations))
-        self.instantiation_menus[-1].grid(row=i+1, column=1)
-        self.context_selected(self.context_selections[-1].get(), i)
+        self.instantiation_selections[-1].addItems(instantiations)
+        self.context_menus.append(self.context_selections[-1])
+        self.grid_layout.addWidget(self.context_menus[-1],  i+1 , 0)
+        self.instantiation_menus.append(self.instantiation_selections[-1])
+        self.grid_layout.addWidget(self.instantiation_menus[-1], i+1, 1)
+        self.context_selected(self.context_selections[-1].currentText(), i)
 
-    def apply(self):
+
+
+    def get_result(self):
         """
         Applies the result to hand it over to the master
         """
-        intention = self.intention_selection.get()
-        value = self.value_selection.get()
+        intention = self.intention_selection.currentText()
+        value = self.value_selection.currentText()
         contexts = []
         instantiations = []
         for i, context_selection in enumerate(self.context_selections):
-            contexts.append(context_selection.get())
+            contexts.append(context_selection.currentText())
             instantiations.append(
-                self.original_instantiations[context_selection.get()][self.instantiation_selections[i].get()])
+                self.original_instantiations[context_selection.currentText()][self.instantiation_selections[i].currentText()])
         # intention: str, contexts: tuple, instantiations: tuple, value: int
-        self.result = {'intention': intention, 'value': int(value), 'contexts': tuple(
+        result = {'intention': intention, 'value': int(value), 'contexts': tuple(
             contexts), 'instantiations': tuple(instantiations)}
-
+        self.accept()
+        return result
 
 class NewContextDialog(QDialog):
     """Dialog Window for new Context"""
@@ -449,13 +450,6 @@ class Configurator(QtWidgets.QMainWindow):
         self.adjust_button_visibility()
         self.set_decision_threshold()
         self.set_context_dropdown(self.bayesNet.config['contexts'].keys())
-
-        self.set_influencing_context_dropdown(
-            self.bayesNet.config['contexts'].keys())
-
-        self.set_intention_dropdown(self.bayesNet.config['intentions'].keys())
-        self.adjust_button_visibility()
-        self.set_decision_threshold()
         self.fill_advanced_table()
 
     def set_decision_threshold(self):
@@ -637,16 +631,23 @@ class Configurator(QtWidgets.QMainWindow):
         """
         Callback for the button
         """
-        self.error_label['text'] = f""
+        self.error_label.setText("")
         dialog = NewCombinedContextDialog(
-            self, title="New combined Context influence", intentions=self.bayesNet.config['intentions'])
-        if dialog.result:
+            self, intentions=self.bayesNet.config['intentions'])
+        def update_and_close():
+            result = dialog.get_result()
             try:
                 self.bayesNet.add_combined_influence(
-                    intention=dialog.result['intention'], contexts=dialog.result['contexts'], instantiations=dialog.result['instantiations'], value=dialog.result['value'])
+                    intention= result['intention'], contexts=result['contexts'], instantiations=result['instantiations'], value=result['value'])
             except ValueError as e:
-                self.error_label['text'] = f"{e}"
+                self.error_label.setText(str(e))
             self.create_fields()
+
+        ok_button = dialog.findChild(QPushButton, "pushButton_2")
+        ok_button.clicked.connect(update_and_close)
+        cancel_button = dialog.findChild(QPushButton, "pushButton_3")
+        cancel_button.clicked.connect(dialog.reject)
+        dialog.exec_()
 
     def fill_advanced_table(self):
         '''
@@ -752,6 +753,11 @@ class Configurator(QtWidgets.QMainWindow):
             QPushButton, 'edit_intention_button')
         self.delete_intention_button = self.findChild(
             QPushButton, 'delete_intention_button')
+        
+        self.new_combined_influence_button = self.findChild(
+            QPushButton, 'advanced_new_button')
+        self.new_combined_influence_button.clicked.connect(self.new_combined_influence)
+    
 
         self.advanced_hidden_frame = self.findChild(QFrame, 'frame_3')
         self.advanced_label.setText("advanced \u25BC")
