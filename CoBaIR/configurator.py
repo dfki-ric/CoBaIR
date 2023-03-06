@@ -607,19 +607,23 @@ class Configurator(QtWidgets.QMainWindow):
         dialog = NewIntentionDialog(self, intention=intention)
         def update_and_close():
             result = dialog.get_result()
-            if not result or result == intention:
+            if not result:
+                # Empty string as intention name
                 ok_button.setEnabled(False)
-                self.error_label.setText("Intention already exits")
+                self.error_label.setText("Intention name cannot be empty")
                 return
-            try:
-                self.bayesNet.edit_intention(intention, result)
-            except AssertionError as e:
-                self.error_label.setText(str(e))
+            if result == intention:
+                try:
+                    self.bayesNet.edit_intention(intention, result)
+                except ValueError as e:
+                    self.error_label.setText(str(e))
+                    return
             self.create_fields()
             self.intention_dropdown.setCurrentText(result)
-            # Explicit call is neccessary because set seems not to trigger the callback
+            # Explicit call is necessary because set seems not to trigger the callback
             self.influencing_context_selected(result)
             dialog.accept()
+        
         ok_button = dialog.findChild(QPushButton, "ok")
         ok_button.clicked.connect(update_and_close)
         cancel_button = dialog.findChild(QPushButton, "cancel")
