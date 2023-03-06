@@ -838,32 +838,21 @@ class Configurator(QtWidgets.QMainWindow):
         '''
         if not command:
             command = self.influencing_context_selected
-        # self.influencing_context_dropdown.deleteLater()
+        self.influencing_context_dropdown.clear()
         if options:
-            if options:
-                self.influencing_context_selection.addItems(list(options))
-                max_width = max([QFontMetrics(self.influencing_context_dropdown.font(
-                )).boundingRect(option).width() for option in options])
-                self.influencing_context_dropdown.setMinimumWidth(
-                    max_width + 25)  # add some padding
-                self.influencing_context_dropdown.setCurrentIndex(0)
-                self.influencing_context_dropdown.currentTextChanged.connect(
-                    command)
-            else:
-                self.influencing_context_selection.addItem('Context')
-            self.influencing_context_dropdown.clear()
-            self.influencing_context_dropdown.addItems(options)
+            self.influencing_context_dropdown.addItems(list(options))
+            max_width = max([QFontMetrics(self.influencing_context_dropdown.font(
+            )).boundingRect(option).width() for option in options])
+            self.influencing_context_dropdown.setMinimumWidth(
+                max_width + 25)  # add some padding
             self.influencing_context_dropdown.setCurrentIndex(0)
+            self.influencing_context_dropdown.currentTextChanged.connect(
+                command)
+        else:
+            self.influencing_context_dropdown.addItem('Context')
             self.influencing_context_dropdown.currentIndexChanged.connect(
                 command)
-        else:  # clear
-            values = []
-            for value in values:
-                self.influencing_context_dropdown.addItem(value)
-            self.influencing_context_dropdown.currentIndexChanged.connect(
-                command)
-
-        command(self.influencing_context_selection.currentText())
+        command(self.influencing_context_dropdown.currentText())
 
     def set_intention_dropdown(self, options: list, command: function = None):
         '''
