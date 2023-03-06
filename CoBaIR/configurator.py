@@ -578,13 +578,18 @@ class Configurator(QtWidgets.QMainWindow):
         dialog = NewIntentionDialog(self)
         def update_and_close():
             result = dialog.get_result()
+            if not result:
+                # Empty string as intention name
+                self.error_label.setText("Intention name cannot be empty")
+                return
             try:
                 self.bayesNet.add_intention(result)
-            except AssertionError as e:
+            except ValueError as e:
                 self.error_label.setText(str(e))
+                return
             # update view!
             self.create_fields()
-            self.intention_selection.setCurrentText(result)
+            self.intention_dropdown.setCurrentText(result)
             # Explicit call is neccessary because set seems not to trigger the callback
             self.influencing_context_selected(result)
         ok_button = dialog.findChild(QPushButton, 'ok')
