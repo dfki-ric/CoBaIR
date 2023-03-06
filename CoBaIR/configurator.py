@@ -558,6 +558,8 @@ class Configurator(QtWidgets.QMainWindow):
             # Explicit call is neccessary because set seems not to trigger the callback
             self.context_selected(new_context_name)
 
+
+
     def delete_context(self):
         """"
         Deletes the currently selected context.
@@ -585,7 +587,7 @@ class Configurator(QtWidgets.QMainWindow):
                 self.error_label.setText(str(e))
             # update view!
             self.create_fields()
-            self.intention_selection.setCurrentText(result)
+            self.intention_dropdown.setCurrentText(result)
             # Explicit call is neccessary because set seems not to trigger the callback
             self.influencing_context_selected(result)
         ok_button = dialog.findChild(QPushButton, 'ok')
@@ -601,20 +603,23 @@ class Configurator(QtWidgets.QMainWindow):
 
         self.error_label.setText("")
         # open small dialog to create context
-        intention = self.intention_selection.currentText()
+        intention = self.intention_dropdown.currentText()
         dialog = NewIntentionDialog(self, intention=intention)
         def update_and_close():
             result = dialog.get_result()
+            if not result or result == intention:
+                ok_button.setEnabled(False)
+                self.error_label.setText("Intention already exits")
+                return
             try:
                 self.bayesNet.edit_intention(intention, result)
             except AssertionError as e:
                 self.error_label.setText(str(e))
             self.create_fields()
-            self.intention_selection.setCurrentText(result)
+            self.intention_dropdown.setCurrentText(result)
             # Explicit call is neccessary because set seems not to trigger the callback
             self.influencing_context_selected(result)
             dialog.accept()
-
         ok_button = dialog.findChild(QPushButton, "ok")
         ok_button.clicked.connect(update_and_close)
         cancel_button = dialog.findChild(QPushButton, "cancel")
@@ -626,7 +631,7 @@ class Configurator(QtWidgets.QMainWindow):
         Delete the currently selected intention
         """
         self.error_label.setText("")
-        intention = self.intention_selection.currentText()
+        intention = self.intention_dropdown.currentText()
         try:
             self.bayesNet.del_intention(intention)
         except AssertionError as e:
@@ -743,7 +748,6 @@ class Configurator(QtWidgets.QMainWindow):
 
         self.intention_dropdown = self.findChild(
             QComboBox, 'intention_selection')
-        self.intention_selection = self.intention_dropdown
 
         self.context_instantiations = defaultdict(dict)
 
@@ -904,31 +908,21 @@ class Configurator(QtWidgets.QMainWindow):
         '''
         if not command:
             command = self.influencing_context_selected
-        # self.intention_dropdown.deleteLater()
+        self.intention_dropdown.clear()
+
         if options:
-            if options:
-                self.intention_selection.addItems(list(options))
-                max_width = max([QFontMetrics(self.intention_dropdown.font()).boundingRect(
-                    option).width() for option in options])
-                self.intention_dropdown.setMinimumWidth(
-                    max_width + 25)  # add some padding
-                self.intention_dropdown.setCurrentIndex(0)
-                self.intention_dropdown.currentTextChanged.connect(command)
-            else:
-                self.intention_selection.addItem('Intention')
-            self.intention_dropdown.clear()
-            self.intention_dropdown.addItems(options)
+            self.intention_dropdown.addItems(list(options))
+            max_width = max([QFontMetrics(self.intention_dropdown.font()).boundingRect(
+                option).width() for option in options])
+            self.intention_dropdown.setMinimumWidth(
+                max_width + 25)  # add some padding
             self.intention_dropdown.setCurrentIndex(0)
+            self.intention_dropdown.currentTextChanged.connect(command)
+        else:
+            self.intention_dropdown.addItem('Intention')
             self.intention_dropdown.currentIndexChanged.connect(command)
 
-        else:  # clear
-            self.intention_selection.addItem('Intention')
-            values = []
-            for value in values:
-                self.intention_dropdown.addItem(value)
-            self.intention_dropdown.currentIndexChanged.connect(command)
-
-        command(self.intention_selection.currentText())
+        command(self.intention_dropdown.currentText())
 
     def context_selected(self, context: str):
         """
@@ -999,7 +993,7 @@ class Configurator(QtWidgets.QMainWindow):
                         except Exception as e:
                             # TODO: better logging
                             print(f"couldn't destroy: {e}")
-        intention = self.intention_selection.currentText()
+        intention = self.intention_dropdown.currentText()
         context = self.influencing_context_selection.currentText()
         if context not in self.bayesNet.config['contexts'] or intention not in self.bayesNet.config['intentions']:
             return
