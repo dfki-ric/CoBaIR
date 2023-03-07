@@ -561,14 +561,14 @@ class Configurator(QtWidgets.QMainWindow):
         """"
         Deletes the currently selected context.
         """
-        self.error_label['text'] = f""
-        context = self.context_selection.get()
+        self.error_label.setText("")
+        context = self.context_dropdown.currentText()
         try:
             self.bayesNet.del_context(context)
         except AssertionError as e:
-            self.error_label['text'] = f"{e}"
+            self.error_label.setText(str(e))
         self.create_fields()
-
+            
     def new_intention(self):
         """
         Open a new Dialog to create new intentions.
@@ -757,6 +757,7 @@ class Configurator(QtWidgets.QMainWindow):
             QPushButton, 'edit_context_button')
         self.delete_context_button = self.findChild(
             QPushButton, 'delete_context_button')
+        self.delete_context_button.clicked.connect(self.delete_context)
 
         self.new_intention_button = self.findChild(
             QPushButton, 'new_intention_button')
@@ -825,31 +826,20 @@ class Configurator(QtWidgets.QMainWindow):
         '''
         if not command:
             command = self.context_selected
-        # self.context_dropdown.deleteLater()
+        self.context_dropdown.clear()
 
         if options:
-            if options:
-                self.context_selection.addItems(list(options))
-                max_width = max([QFontMetrics(self.context_dropdown.font()).boundingRect(
-                    option).width() for option in options])
-                self.context_dropdown.setMinimumWidth(
-                    max_width + 25)  # add some padding
-                self.context_dropdown.setCurrentIndex(0)
-                self.context_dropdown.currentTextChanged.connect(command)
-            else:
-                self.context_selection.addItem('Context')
-            self.context_dropdown.clear()
-            self.context_dropdown.addItems(options)
+            self.context_dropdown.addItems(list(options))
+            max_width = max([QFontMetrics(self.context_dropdown.font()).boundingRect(
+                option).width() for option in options])
+            self.context_dropdown.setMinimumWidth(
+                max_width + 25) 
             self.context_dropdown.setCurrentIndex(0)
             self.context_dropdown.currentTextChanged.connect(command)
-
-        else:  # clear
-            self.context_selection.addItem("Context")
-            values = []
-            for value in values:
-                self.context_dropdown.addItems(value)
+        else:
+            self.context_dropdown.addItem('Context')
             self.context_dropdown.currentTextChanged.connect(command)
-        command(self.context_selection.currentText())
+        command(self.context_dropdown.currentText())
 
     def set_influencing_context_dropdown(self, options: list, command: function = None):
         '''
@@ -861,33 +851,21 @@ class Configurator(QtWidgets.QMainWindow):
         '''
         if not command:
             command = self.influencing_context_selected
-        # self.influencing_context_dropdown.deleteLater()
+        self.influencing_context_dropdown.clear()
         if options:
-            if options:
-                self.influencing_context_selection.addItems(list(options))
-                max_width = max([QFontMetrics(self.influencing_context_dropdown.font(
-                )).boundingRect(option).width() for option in options])
-                self.influencing_context_dropdown.setMinimumWidth(
-                    max_width + 25)  # add some padding
-                self.influencing_context_dropdown.setCurrentIndex(0)
-                self.influencing_context_dropdown.currentTextChanged.connect(
-                    command)
-            else:
-                self.influencing_context_selection.addItem('Context')
-            self.influencing_context_dropdown.clear()
-            self.influencing_context_dropdown.addItems(options)
+            self.influencing_context_dropdown.addItems(list(options))
+            max_width = max([QFontMetrics(self.influencing_context_dropdown.font(
+            )).boundingRect(option).width() for option in options])
+            self.influencing_context_dropdown.setMinimumWidth(
+                max_width + 25)  # add some padding
             self.influencing_context_dropdown.setCurrentIndex(0)
+            self.influencing_context_dropdown.currentTextChanged.connect(
+                command)
+        else:
+            self.influencing_context_dropdown.addItem('Context')
             self.influencing_context_dropdown.currentIndexChanged.connect(
                 command)
-        else:  # clear
-            self.influencing_context_selection.addItem("Context")
-            values = []
-            for value in values:
-                self.influencing_context_dropdown.addItem(value)
-            self.influencing_context_dropdown.currentIndexChanged.connect(
-                command)
-
-        command(self.influencing_context_selection.currentText())
+        command(self.influencing_context_dropdown.currentText())
 
     def set_intention_dropdown(self, options: list, command: function = None):
         '''
@@ -917,7 +895,6 @@ class Configurator(QtWidgets.QMainWindow):
             self.intention_dropdown.currentIndexChanged.connect(command)
 
         else:  # clear
-            self.intention_selection.addItem('Intention')
             values = []
             for value in values:
                 self.intention_dropdown.addItem(value)
