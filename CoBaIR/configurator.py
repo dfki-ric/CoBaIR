@@ -151,11 +151,9 @@ class NewCombinedContextDialog(QDialog):
         self.error_label = self.findChild(QLabel, 'label_5')
         # contexts
         self.contexts = {}
-        
         self.context_frame = self.findChild(QFrame, 'frame')
         self.grid_layout = QGridLayout()
         self.context_frame.setLayout(self.grid_layout)
-
         for context, instantiations in list(self.intentions.values())[0].items():
             if not isinstance(context, tuple):
                 self.contexts[context] = instantiations
@@ -219,21 +217,21 @@ class NewCombinedContextDialog(QDialog):
         if not available_context:
             self.error_label.setText('No more context available')
             return
-        # available_context = [str(item) if isinstance(item, bool) else item for item in available_context]
-        self.context_selections.append(QComboBox(self.context_frame))
-        self.context_selections[-1].addItems(available_context)
-        self.context_selections[-1].activated.connect(lambda index, i=i: self.context_selected(self.context_selections[-1].currentText(), i))
-        self.context_selections[-1].setCurrentIndex(0)
-        self.instantiation_selections.append(QComboBox(self.context_frame))
-        # context_key = str(available_context[0]) if isinstance(available_context[0], bool) else available_context[0]
-        # instantiations = [str(item) if isinstance(item, bool) else item for item in self.contexts[context_key].keys()]
-        instantiations = list(self.contexts[available_context[0]].keys())
-        self.instantiation_selections[-1].addItems(instantiations)
-        self.context_menus.append(self.context_selections[-1])
-        self.grid_layout.addWidget(self.context_menus[-1],  i+1 , 0)
-        self.instantiation_menus.append(self.instantiation_selections[-1])
-        self.grid_layout.addWidget(self.instantiation_menus[-1], i+1, 1)
-        self.context_selected(self.context_selections[-1].currentText(), i)
+        try:
+            self.context_selections.append(QComboBox(self.context_frame))
+            self.context_selections[-1].addItems(available_context)
+            self.context_selections[-1].activated.connect(lambda index, i=i: self.context_selected(self.context_selections[-1].currentText(), i))
+            self.context_selections[-1].setCurrentIndex(0)
+            self.instantiation_selections.append(QComboBox(self.context_frame))
+            instantiations = [str(item) if isinstance(item, bool) else item for item in self.contexts[available_context[0]].keys()]
+            self.instantiation_selections[-1].addItems(instantiations)
+            self.context_menus.append(self.context_selections[-1])
+            self.grid_layout.addWidget(self.context_menus[-1],  i+1 , 0)
+            self.instantiation_menus.append(self.instantiation_selections[-1])
+            self.grid_layout.addWidget(self.instantiation_menus[-1], i+1, 1)
+            self.context_selected(self.context_selections[-1].currentText(), i)
+        except RuntimeError as e:
+            self.error_label.setText('Error: ' + str(e))
 
 
 
