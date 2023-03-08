@@ -292,11 +292,12 @@ class NewContextDialog(QDialog):
         self.grid_layout_2 = self.findChild(QGridLayout, 'gridLayout_2')
         self.context_entry = self.findChild(QLineEdit, 'context_entry')
         self.instantiations_frame = self.findChild(QFrame, 'instantiations_frame')
+        self.error_label = self.findChild( QLabel,'label_5')
         self.instantiations = []
         self.shown_instantiations = 0 
         self.grid_layout = QGridLayout()
         self.instantiations_frame.setLayout(self.grid_layout)
-        self.instantiations_frame.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)   
+        self.instantiations_frame.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.MinimumExpanding)      
         # TODO: Fill the entries here if predefined_context is given!
         if self.predefined_context:
             # it's always only one new context
@@ -309,6 +310,8 @@ class NewContextDialog(QDialog):
 
             name_entry = QLineEdit()
             probability_entry = QLineEdit()
+            remove_button = QPushButton('-')
+            remove_button.clicked.connect(lambda _, btn=remove_button: self.remove_instantiation(btn))
             if instantiations:
                 # get name
                 name = list(instantiations.keys())[0]
@@ -321,28 +324,37 @@ class NewContextDialog(QDialog):
                 del(instantiations[name])
             self.grid_layout.addWidget(name_entry, self.shown_instantiations+1, 0)
             self.grid_layout.addWidget(probability_entry, self.shown_instantiations+1, 1)
-            self.instantiations.append((name_entry, probability_entry))
+            self.grid_layout.addWidget(remove_button, self.shown_instantiations+1, 2)
+            self.instantiations.append((name_entry, probability_entry, remove_button))
             self.shown_instantiations += 1
         self.more = self.findChild(QPushButton, 'pushButton')
         self.more.clicked.connect(self.new_instantiation)
         return self.context_entry
-
-    def remove_instantiation(self, index):
+    
+    def remove_instantiation(self, remove_button):
         """
         Callback for the remove_button
         Args:
-            index: the index in self.instantiations
+            remove_button: the remove_button clicked
         """
-        for element in self.instantiations[index]:
-            element.hide()
-            element.deleteLater()
-        self.shown_instantiations -= 1
-        # TODO: that is problematic because it shifts indexes!!!
-        # Or I need to redraw the whole thing like I always do...
-        self.instantiations.itemAt(index).widget().deleteLater()
-        for index, instantiation in enumerate(self.instantiations):
-            # or I just need to rebind callback with correct index works with configure(command=...)
-            instantiation[2].clicked.connect(lambda x=index: self.remove_instantiation(x))
+        # find the index of the row containing the remove_button
+        index = -1
+        for i, (_, _, btn) in enumerate(self.instantiations):
+            if btn is remove_button:
+                index = i
+                break
+        if index != -1:
+            # remove the row from the layout and from the instantiations list
+            name_entry, probability_entry, _ = self.instantiations.pop(index)
+            self.grid_layout.removeWidget(name_entry)
+            self.grid_layout.removeWidget(probability_entry)
+            self.grid_layout.removeWidget(remove_button)
+            name_entry.deleteLater()
+            probability_entry.deleteLater()
+            remove_button.deleteLater()
+            self.shown_instantiations -= 1
+            self.grid_layout.update()
+
 
     def new_instantiation(self):
         """
@@ -350,64 +362,88 @@ class NewContextDialog(QDialog):
         """
         name_entry = QLineEdit(self.instantiations_frame)
         probability_entry = QLineEdit(self.instantiations_frame)
-        self.grid_layout.addWidget(name_entry, self.shown_instantiations+1, 0)
-        self.grid_layout.addWidget(probability_entry, self.shown_instantiations+1, 1)
         remove_button = QPushButton('-', self.instantiations_frame)
-        remove_button.clicked.connect(lambda x=self.shown_instantiations: self.remove_instantiation(x))
-        self.grid_layout.addWidget(remove_button, self.shown_instantiations + 1, 2)
-        self.instantiations.append(
-            (name_entry, probability_entry, remove_button ))
+        remove_button.clicked.connect(lambda _, btn=remove_button: self.remove_instantiation(btn))
+        self.instantiations.append((name_entry, probability_entry, remove_button))
+        row_count = self.grid_layout.rowCount()
+        self.grid_layout.addWidget(name_entry, row_count, 0)
+        self.grid_layout.addWidget(probability_entry, row_count, 1)
+        self.grid_layout.addWidget(remove_button, row_count, 2)
         self.shown_instantiations += 1
+        self.grid_layout.update()
 
-    def validate(self):
-        """
-        highlights empty fields
 
-        Returns:
-            bool:
-                True if the entries are not empty
-        """
+    # def validate(self):
+    #     """
+    #     highlights empty fields
 
-        # TODO: entries cannot be the same (len(entries) must be the same as len(set(entries.get())))
+    #     Returns:
+    #         bool:
+    #             True if the entries are not empty
+    #     """
 
-        valid = True
-        instantiation_names = []
-        # more than 1 entry is needed!!!
-        if len(self.instantiations) < 2:
-            valid = False
-            # TODO: point out why not valid
-        empty_entries = []
-        self.context_entry.setStyleSheet("QLineEdit { background-color: black; color: black; selection-background-color: black; }")  # TODO: Too much I only want the text to be black/normal...
-        if not self.context_entry.text():
-            empty_entries.append(self.context_entry)
-        for i, instantiation in enumerate(self.instantiations):
-            # Only setting colors for the entry fields
-            for entry in instantiation[0:2]:
-                entry.setStyleSheet("QLineEdit { background-color: black; color: black; selection-background-color: black; }")
-                if not entry.text():
-                    empty_entries.append(entry)
-            name = instantiation[0].text()
-            if name in instantiation_names:
-                # mark red
-                print('mark red')
-                instantiation[0].setStyleSheet("QLineEdit { background-color: red; color: red; selection-background-color: red; }")
-                valid = False
-            instantiation_names.append(name)
-        if empty_entries:
-            # mark red
-            for entry in empty_entries:
-                entry.setStyleSheet("QLineEdit { background-color: red; color: red; selection-background-color: red; }")
-            valid = False
-        return valid
+    #     # TODO: entries cannot be the same (len(entries) must be the same as len(set(entries.get())))
+
+    #     valid = True
+    #     instantiation_names = []
+    #     # more than 1 entry is needed!!!
+    #     if len(self.instantiations) < 2:
+    #         valid = False
+    #         # TODO: point out why not valid
+    #     empty_entries = []
+    #     self.context_entry.setStyleSheet("QLineEdit { background-color: black; color: black; selection-background-color: black; }")  # TODO: Too much I only want the text to be black/normal...
+    #     if not self.context_entry.text():
+    #         empty_entries.append(self.context_entry)
+    #     for i, instantiation in enumerate(self.instantiations):
+    #         # Only setting colors for the entry fields
+    #         for entry in instantiation[0:2]:
+    #             entry.setStyleSheet("QLineEdit { background-color: black; color: black; selection-background-color: black; }")
+    #             if not entry.text():
+    #                 empty_entries.append(entry)
+    #         name = instantiation[0].text()
+    #         if name in instantiation_names:
+    #             # mark red
+    #             print('mark red')
+    #             instantiation[0].setStyleSheet("QLineEdit { background-color: red; color: red; selection-background-color: red; }")
+    #             valid = False
+    #         instantiation_names.append(name)
+    #     if empty_entries:
+    #         # mark red
+    #         for entry in empty_entries:
+    #             entry.setStyleSheet("QLineEdit { background-color: red; color: red; selection-background-color: red; }")
+    #         valid = False
+    #     return valid
 
     def get_result(self):
         result = defaultdict(lambda: defaultdict(dict))
         for instantiation in self.instantiations:
             key = instantiation[0].text()
-            value = float(instantiation[1].text())
-            result[self.context_entry.text()][key] = value
+            value = instantiation[1].text().strip()
+            if not key or not value:
+                # remove the row from the layout and the instantiations list
+                row_index = self.grid_layout.indexOf(instantiation[0]) // self.grid_layout.columnCount()
+                for element in instantiation:
+                    element.hide()
+                    element.deleteLater()
+                self.instantiations.remove(instantiation)
+                self.shown_instantiations -= 1
+                # re-attach the signals for the remove buttons
+                for index, instantiation in enumerate(self.instantiations):
+                    instantiation[2].clicked.connect(lambda i=index: self.remove_instantiation(i))
+            else:
+                value = float(value)
+                result[self.context_entry.text()][key] = value
+
+        # Check if name_entry and probability_entry are empty
+        # name_entry_empty = not any(instantiation[0].text() for instantiation in self.instantiations)
+        # probability_entry_empty = not any(instantiation[1].text() for instantiation in self.instantiations)
+        # if name_entry_empty or probability_entry_empty:
+        #     self.error_label.setText("Error: Name and probability fields cannot be empty.")
+        #     return
+
         self.accept()
         return result
+
 
 class Configurator(QtWidgets.QMainWindow):
     '''
