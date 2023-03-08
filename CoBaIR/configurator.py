@@ -612,7 +612,7 @@ class Configurator(QtWidgets.QMainWindow):
                 ok_button.setEnabled(False)
                 self.error_label.setText("Intention name cannot be empty")
                 return
-            if result == intention:
+            if result:
                 try:
                     self.bayesNet.edit_intention(intention, result)
                 except ValueError as e:
