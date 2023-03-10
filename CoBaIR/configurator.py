@@ -149,6 +149,8 @@ class NewCombinedContextDialog(QDialog):
         self.additional_context = self.findChild(QPushButton, 'pushButton')
         self.additional_context.clicked.connect(self.new_instantiation)
         self.error_label = self.findChild(QLabel, 'label_5')
+        self.error_label.setAlignment(Qt.AlignCenter)
+        self.error_label.setStyleSheet("color: red")
         # contexts
         self.contexts = {}
         self.context_frame = self.findChild(QFrame, 'frame')
@@ -172,39 +174,37 @@ class NewCombinedContextDialog(QDialog):
             context: A context name
             i: the position of the dropdown menu
         """
-        print(i, "WWWW")
-        self.instantiation_menus[i].hide()
+        self.instantiation_menus[i].setVisible(False)
         self.instantiation_menus[i].deleteLater()
+
 
         for inst in self.contexts[context]:
             self.original_instantiations[context][str(inst)] = inst
 
-
         instantiations = list(self.original_instantiations[context].keys())
         instantiations = list(map(str, instantiations))
 
-        self.instantiation_menus[i] = QComboBox(self.context_frame)
-        self.instantiation_menus[i].addItems(instantiations)
-        self.instantiation_menus[i].setCurrentText(self.instantiation_selections[i-1].currentText())
+        self.instantiation_selections[i] = QComboBox(self.context_frame)
+        self.instantiation_selections[i].clear()
+        self.instantiation_selections[i].addItems(instantiations)
+        self.instantiation_selections[i].setCurrentText(self.instantiation_selections[i].currentText())
 
-
-        self.grid_layout.addWidget(self.instantiation_menus[i], i+1, 1)
+        self.grid_layout.addWidget(self.instantiation_selections[i], i+1, 1)
 
         self.instantiation_selections[i].setCurrentText(
             str(list(self.contexts[context].keys())[0]))
 
-
         # available context -> every dropdown should only have available + selected
         available_context = self._eval_available_context()
-        print(available_context)
         for i_m, menu in enumerate(self.context_menus):
-            menu.hide()
+            menu.setVisible(False)
             menu.deleteLater()
             contexts = [self.context_selections[i_m].currentText()] + available_context
-            self.context_menus[i_m] = QComboBox(self.context_frame)
-            self.context_menus[i_m].addItems(contexts)
-            self.context_menus[i_m].currentIndexChanged.connect(lambda x, i=i_m: self.context_selected(x, i))
-            self.grid_layout.addWidget(self.context_menus[i_m], i_m+1, 0)
+            self.context_selections[i_m] = QComboBox(self.context_frame)
+            self.context_selections[i_m].addItems(contexts)
+            self.context_selections[i_m].setCurrentText(self.context_selections[i_m].currentText())
+            self.context_selections[i_m].currentTextChanged.connect(lambda text, i=i_m: self.context_selected(text, i))
+            self.grid_layout.addWidget(self.context_selections[i_m], i_m+1, 0)
 
 
     def _eval_available_context(self):
@@ -229,27 +229,22 @@ class NewCombinedContextDialog(QDialog):
         if not available_context:
             self.error_label.setText('No more context available')
             return
-
         self.context_selections.append(QComboBox(self.context_frame))
         self.context_selections[-1].addItems(available_context)
         self.context_selections[-1].setCurrentIndex(0)
+        self.context_selections[-1].currentTextChanged.connect(lambda text, i=i: self.context_selected(text, i))
+        self.context_menus.append(self.context_selections[-1])
+        self.grid_layout.addWidget(self.context_menus[-1], i+1, 0)
 
         instantiations = list(self.contexts[available_context[0]].keys())
         instantiations = list(map(str, instantiations))
         self.instantiation_selections.append(QComboBox(self.context_frame))
         self.instantiation_selections[-1].addItems(instantiations)
         self.instantiation_selections[-1].setCurrentIndex(0)
-
-        self.context_menus.append(self.context_selections[-1])
-        self.context_menus[-1].currentIndexChanged.connect(lambda x, i=i: self.context_selected(x, i))
-        self.grid_layout.addWidget(self.context_menus[-1], i+1, 0)
-
         self.instantiation_menus.append(self.instantiation_selections[-1])
         self.grid_layout.addWidget(self.instantiation_menus[-1], i+1, 1)
 
         self.context_selected(self.context_selections[-1].currentText(), i)
-
-
 
     def get_result(self):
         """
