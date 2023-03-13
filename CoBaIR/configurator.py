@@ -294,6 +294,8 @@ class NewContextDialog(QDialog):
         self.context_entry = self.findChild(QLineEdit, 'context_entry')
         self.instantiations_frame = self.findChild(QFrame, 'instantiations_frame')
         self.error_label = self.findChild( QLabel,'label_5')
+        self.error_label.setAlignment(Qt.AlignCenter)
+        self.error_label.setStyleSheet("color: red")
         self.instantiations = []
         self.shown_instantiations = 0 
         self.grid_layout = QGridLayout()
@@ -339,6 +341,7 @@ class NewContextDialog(QDialog):
             remove_button: the remove_button clicked
         """
         # find the index of the row containing the remove_button
+        self.error_label.setText("")
         index = -1
         for i, (_, _, btn) in enumerate(self.instantiations):
             if btn is remove_button:
@@ -354,9 +357,8 @@ class NewContextDialog(QDialog):
             probability_entry.deleteLater()
             remove_button.deleteLater()
             self.shown_instantiations -= 1
-            self.grid_layout.update()
-
-
+        self.grid_layout.update()
+        
     def new_instantiation(self):
         """
         Creates two new Entries to input more instantiations
@@ -372,69 +374,39 @@ class NewContextDialog(QDialog):
         self.grid_layout.addWidget(remove_button, row_count, 2)
         self.shown_instantiations += 1
         self.grid_layout.update()
+        # Raise ValueError if both name_entry and probability_entry are empty
+        if not name_entry.text() and not probability_entry.text():
+            self.error_label.setText("Both name and probability cannot be empty.")
+        elif not name_entry.text():
+            self.error_label.setText("Name cannot be empty.")
+        elif not probability_entry.text():
+            self.error_label.setText("Probability cannot be empty.")
 
-
-    # def validate(self):
-    #     """
-    #     highlights empty fields
-
-    #     Returns:
-    #         bool:
-    #             True if the entries are not empty
-    #     """
-
-    #     # TODO: entries cannot be the same (len(entries) must be the same as len(set(entries.get())))
-
-    #     valid = True
-    #     instantiation_names = []
-    #     # more than 1 entry is needed!!!
-    #     if len(self.instantiations) < 2:
-    #         valid = False
-    #         # TODO: point out why not valid
-    #     empty_entries = []
-    #     self.context_entry.setStyleSheet("QLineEdit { background-color: black; color: black; selection-background-color: black; }")  # TODO: Too much I only want the text to be black/normal...
-    #     if not self.context_entry.text():
-    #         empty_entries.append(self.context_entry)
-    #     for i, instantiation in enumerate(self.instantiations):
-    #         # Only setting colors for the entry fields
-    #         for entry in instantiation[0:2]:
-    #             entry.setStyleSheet("QLineEdit { background-color: black; color: black; selection-background-color: black; }")
-    #             if not entry.text():
-    #                 empty_entries.append(entry)
-    #         name = instantiation[0].text()
-    #         if name in instantiation_names:
-    #             # mark red
-    #             print('mark red')
-    #             instantiation[0].setStyleSheet("QLineEdit { background-color: red; color: red; selection-background-color: red; }")
-    #             valid = False
-    #         instantiation_names.append(name)
-    #     if empty_entries:
-    #         # mark red
-    #         for entry in empty_entries:
-    #             entry.setStyleSheet("QLineEdit { background-color: red; color: red; selection-background-color: red; }")
-    #         valid = False
-    #     return valid
     def get_result(self):
         result = defaultdict(lambda: defaultdict(dict))
-        for instantiation in self.instantiations:
-            key = instantiation[0].text()
+        errors = []
+        for i, instantiation in enumerate(self.instantiations):
+            key = instantiation[0].text().strip()
             value = instantiation[1].text().strip()
-            if not key or not value:
-                # remove the row from the layout and the instantiations list
-                row_index = self.grid_layout.indexOf(instantiation[0]) // self.grid_layout.columnCount()
-                for element in instantiation:
-                    element.hide()
-                    element.deleteLater()
-                self.instantiations.remove(instantiation)
-                self.shown_instantiations -= 1
-                # re-attach the signals for the remove buttons
-                for index, instantiation in enumerate(self.instantiations):
-                    instantiation[2].clicked.connect(lambda i=index: self.remove_instantiation(i))
+            if not key and not value:
+                errors.append(f"Name and probability cannot be empty in row {i+1}.")
+            elif not key:
+                errors.append(f"Name cannot be empty in row {i+1}.")
+            elif not value:
+                errors.append(f"Probability cannot be empty in row {i+1}.")
             else:
-                value = float(value)
-                result[self.context_entry.text()][key] = value
-        self.accept()
+                try:
+                    value = float(value)
+                except ValueError:
+                    errors.append(f"Probability must be a number in row {i+1}.")
+                else:
+                    result[self.context_entry.text().strip()][key] = value
+        if errors:
+            self.error_label.setText("\n".join(errors))
+        else:
+            self.accept()
         return result
+
 
 
 
@@ -566,8 +538,6 @@ class Configurator(QtWidgets.QMainWindow):
             # TODO: renaming instantiations should not neccesarily put influence values to zero - check cases
             # TODO: this will always set the instantiations as Strings
             # Open the new Context dialog with prefilled values
-            # remove errorText
-            self.error_label.setText("")
             # open small dialog to create context
             context = self.context_selection.currentText()
             instantiations = self.bayesNet.config['contexts'][context]
@@ -575,24 +545,26 @@ class Configurator(QtWidgets.QMainWindow):
                                     context: instantiations})
             
             def update_and_close():
+                self.error_label.setText("")
                 result = dialog.get_result()
                 if not result:
                     self.error_label.setText("At least one instantiation is required.")
                     return
                 try:
-                    # it's always only one new context
-                    new_context_name = list(result.keys())[0]
-                    new_instantiations = result[new_context_name]
-                    self.bayesNet.edit_context(
-                        context, new_instantiations, new_context_name)
-                except AssertionError as e:
+                    old_context_name = list(result.keys())[0]
+                    new_instantiations = result[old_context_name]
+                    if not old_context_name.strip():
+                        raise ValueError("Error: New context name cannot be empty or whitespace.")
+                    if new_instantiations:
+                        self.bayesNet.edit_context(
+                            context, new_instantiations, old_context_name)
+                except (ValueError, AssertionError) as e:
                     self.error_label.setText(str(e))
+                    return
                 self.create_fields()
-                self.context_selection.setCurrentText(new_context_name)
-                # Explicit call is neccessary because set seems not to trigger the callback
-                self.context_selected(new_context_name)
+                self.context_selection.setCurrentText(old_context_name)
+                self.context_selected(old_context_name)
                 dialog.accept()
-
             ok_button = dialog.findChild(QPushButton, "pushButton_2")
             ok_button.setDefault(True)
             ok_button.clicked.connect(update_and_close)
