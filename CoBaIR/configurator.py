@@ -413,7 +413,6 @@ class NewContextDialog(QDialog):
     #             entry.setStyleSheet("QLineEdit { background-color: red; color: red; selection-background-color: red; }")
     #         valid = False
     #     return valid
-
     def get_result(self):
         result = defaultdict(lambda: defaultdict(dict))
         for instantiation in self.instantiations:
@@ -433,16 +432,9 @@ class NewContextDialog(QDialog):
             else:
                 value = float(value)
                 result[self.context_entry.text()][key] = value
-
-        # Check if name_entry and probability_entry are empty
-        # name_entry_empty = not any(instantiation[0].text() for instantiation in self.instantiations)
-        # probability_entry_empty = not any(instantiation[1].text() for instantiation in self.instantiations)
-        # if name_entry_empty or probability_entry_empty:
-        #     self.error_label.setText("Error: Name and probability fields cannot be empty.")
-        #     return
-
         self.accept()
         return result
+
 
 
 class Configurator(QtWidgets.QMainWindow):
@@ -583,6 +575,9 @@ class Configurator(QtWidgets.QMainWindow):
             
             def update_and_close():
                 result = dialog.get_result()
+                if not result:
+                    self.error_label.setText("At least one instantiation is required.")
+                    return
                 try:
                     # it's always only one new context
                     new_context_name = list(result.keys())[0]
@@ -598,6 +593,7 @@ class Configurator(QtWidgets.QMainWindow):
                 dialog.accept()
 
             ok_button = dialog.findChild(QPushButton, "pushButton_2")
+            ok_button.setDefault(True)
             ok_button.clicked.connect(update_and_close)
             cancel_button = dialog.findChild(QPushButton, "pushButton_3")
             cancel_button.clicked.connect(dialog.reject)
