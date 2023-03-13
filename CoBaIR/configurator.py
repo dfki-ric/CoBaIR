@@ -28,10 +28,10 @@ from PyQt5.QtGui import QFont, QFontMetrics
 __author__ = 'Adrian Lubitz'
 
 
-class NewIntentionDialog(Dialog):
+class NewIntentionDialog(QDialog):
     """Dialog Window for new Intention"""
 
-    def __init__(self, parent, title: str = ..., intention: str = None) -> None:
+    def __init__(self, parent = None, intention: str = None) -> None:
         """
         Extends the Constructor of Dialog to use an already existing intention.
 
@@ -41,9 +41,12 @@ class NewIntentionDialog(Dialog):
             intention: An intention that will be filled in the dialog
         """
         self.intention = intention
-        super().__init__(parent, title)
+        super().__init__(parent)
+        self.result = None 
+        self.body()
+        self.show()
 
-    def body(self, master):
+    def body(self):
         """
         Sets the Layout.
 
@@ -53,35 +56,34 @@ class NewIntentionDialog(Dialog):
             tk.Entry:
                 the initial focus
         """
-
-        tk.Label(master, text="New Intention:").grid(row=0)
-        self.intention_entry = tk.Entry(master)
+        uic.loadUi(Path(Path(__file__).parent, 'NewIntention.ui'), self)
+        self.intention_entry = self.findChild(QLineEdit, 'lineEdit')
         if self.intention:
-            self.intention_entry.insert(0, self.intention)
-        self.intention_entry.grid(row=1)
+            self.intention_entry.setText(self.intention)
         return self.intention_entry  # initial focus
 
-    def validate(self):
-        """
-        highlights empty fields
+    # def validate(self):
+    #     """
+    #     highlights empty fields
 
-        Returns:
-            bool:
-                True if the entry is not empty
-        """
-        if not self.intention_entry.get():
-            # mark red
-            self.intention_entry.configure(highlightbackground='red',
-                                           selectbackground='red', highlightcolor='red')
-            return False
-        else:
-            return True
+    #     Returns:
+    #         bool:
+    #             True if the entry is not empty
+    #     """
+    #     if not self.intention_entry.text():
+    #         # mark red
+    #         self.intention_entry.setStyleSheet("QLineEdit{background-color: red;}")
+    #         return False
+    #     else:
+    #         return True
 
-    def apply(self):
+    def get_result(self):
         """
         Applies the result to hand it over to the master
         """
-        self.result = self.intention_entry.get()
+        result = self.intention_entry.text()
+        self.accept()
+        return result
 
 
 class NewCombinedContextDialog(QDialog):
@@ -559,66 +561,88 @@ class Configurator(QtWidgets.QMainWindow):
             # Explicit call is neccessary because set seems not to trigger the callback
             self.context_selected(new_context_name)
 
+
+
     def delete_context(self):
         """"
         Deletes the currently selected context.
         """
-        self.error_label['text'] = f""
-        context = self.context_selection.get()
+        self.error_label.setText("")
+        context = self.context_dropdown.currentText()
         try:
             self.bayesNet.del_context(context)
         except AssertionError as e:
-            self.error_label['text'] = f"{e}"
+            self.error_label.setText(str(e))
         self.create_fields()
-
+            
     def new_intention(self):
         """
         Open a new Dialog to create new intentions.
         """
         # remove errorText
-        self.error_label['text'] = f""
-        dialog = NewIntentionDialog(self, title="New Intention")
-        if dialog.result:
+        self.error_label.setText("")
+        dialog = NewIntentionDialog(self)
+        def update_and_close():
+            result = dialog.get_result()
             try:
-                self.bayesNet.add_intention(dialog.result)
+                self.bayesNet.add_intention(result)
             except AssertionError as e:
-                self.error_label['text'] = f"{e}"
+                self.error_label.setText(str(e))
             # update view!
             self.create_fields()
-            self.intention_selection.set(dialog.result)
+            self.intention_dropdown.setCurrentText(result)
             # Explicit call is neccessary because set seems not to trigger the callback
-            self.influencing_context_selected(dialog.result)
+            self.influencing_context_selected(result)
+        ok_button = dialog.findChild(QPushButton, 'ok')
+        ok_button.clicked.connect(update_and_close)
+        cancel_button = dialog.findChild(QPushButton, "cancel")
+        cancel_button.clicked.connect(dialog.reject)
+        dialog.exec_()
 
     def edit_intention(self):
         """
         Edit the name of the currently selected intention
         """
 
-        self.error_label['text'] = f""
+        self.error_label.setText("")
         # open small dialog to create context
-        intention = self.intention_selection.get()
-        dialog = NewIntentionDialog(self,
-                                    title="Edit Intention", intention=intention)
-        if dialog.result:
-            try:
-                self.bayesNet.edit_intention(intention, dialog.result)
-            except AssertionError as e:
-                self.error_label['text'] = f"{e}"
+        intention = self.intention_dropdown.currentText()
+        dialog = NewIntentionDialog(self, intention=intention)
+        def update_and_close():
+            result = dialog.get_result()
+            if not result:
+                # Empty string as intention name
+                ok_button.setEnabled(False)
+                self.error_label.setText("Intention name cannot be empty")
+                return
+            if result:
+                try:
+                    self.bayesNet.edit_intention(intention, result)
+                except ValueError as e:
+                    self.error_label.setText(str(e))
+                    return
             self.create_fields()
-            self.intention_selection.set(dialog.result)
-            # Explicit call is neccessary because set seems not to trigger the callback
-            self.influencing_context_selected(dialog.result)
+            self.intention_dropdown.setCurrentText(result)
+            # Explicit call is necessary because set seems not to trigger the callback
+            self.influencing_context_selected(result)
+            dialog.accept()
+        
+        ok_button = dialog.findChild(QPushButton, "ok")
+        ok_button.clicked.connect(update_and_close)
+        cancel_button = dialog.findChild(QPushButton, "cancel")
+        cancel_button.clicked.connect(dialog.reject)
+        dialog.exec_()        
 
     def delete_intention(self):
         """
         Delete the currently selected intention
         """
-        self.error_label['text'] = f""
-        intention = self.intention_selection.get()
+        self.error_label.setText("")
+        intention = self.intention_dropdown.currentText()
         try:
             self.bayesNet.del_intention(intention)
         except AssertionError as e:
-            self.error_label['text'] = f"{e}"
+            self.error_label.setText(str(e))
         self.create_fields()
 
     def on_clicked_advanced(self):
@@ -738,7 +762,6 @@ class Configurator(QtWidgets.QMainWindow):
 
         self.intention_dropdown = self.findChild(
             QComboBox, 'intention_selection')
-        self.intention_selection = self.intention_dropdown
 
         self.context_instantiations = defaultdict(dict)
 
@@ -755,11 +778,14 @@ class Configurator(QtWidgets.QMainWindow):
             QPushButton, 'edit_context_button')
         self.delete_context_button = self.findChild(
             QPushButton, 'delete_context_button')
+        self.delete_context_button.clicked.connect(self.delete_context)
 
         self.new_intention_button = self.findChild(
             QPushButton, 'new_intention_button')
+        self.new_intention_button.clicked.connect(self.new_intention)
         self.edit_intention_button = self.findChild(
             QPushButton, 'edit_intention_button')
+        self.edit_intention_button.clicked.connect(self.edit_intention)
         self.delete_intention_button = self.findChild(
             QPushButton, 'delete_intention_button')
         
@@ -827,31 +853,20 @@ class Configurator(QtWidgets.QMainWindow):
         '''
         if not command:
             command = self.context_selected
-        # self.context_dropdown.deleteLater()
+        self.context_dropdown.clear()
 
         if options:
-            if options:
-                self.context_selection.addItems(list(options))
-                max_width = max([QFontMetrics(self.context_dropdown.font()).boundingRect(
-                    option).width() for option in options])
-                self.context_dropdown.setMinimumWidth(
-                    max_width + 25)  # add some padding
-                self.context_dropdown.setCurrentIndex(0)
-                self.context_dropdown.currentTextChanged.connect(command)
-            else:
-                self.context_selection.addItem('Context')
-            self.context_dropdown.clear()
-            self.context_dropdown.addItems(options)
+            self.context_dropdown.addItems(list(options))
+            max_width = max([QFontMetrics(self.context_dropdown.font()).boundingRect(
+                option).width() for option in options])
+            self.context_dropdown.setMinimumWidth(
+                max_width + 25) 
             self.context_dropdown.setCurrentIndex(0)
             self.context_dropdown.currentTextChanged.connect(command)
-
-        else:  # clear
-            self.context_selection.addItem("Context")
-            values = []
-            for value in values:
-                self.context_dropdown.addItems(value)
+        else:
+            self.context_dropdown.addItem('Context')
             self.context_dropdown.currentTextChanged.connect(command)
-        command(self.context_selection.currentText())
+        command(self.context_dropdown.currentText())
 
     def set_influencing_context_dropdown(self, options: list, command: function = None):
         '''
@@ -863,33 +878,21 @@ class Configurator(QtWidgets.QMainWindow):
         '''
         if not command:
             command = self.influencing_context_selected
-        # self.influencing_context_dropdown.deleteLater()
+        self.influencing_context_dropdown.clear()
         if options:
-            if options:
-                self.influencing_context_selection.addItems(list(options))
-                max_width = max([QFontMetrics(self.influencing_context_dropdown.font(
-                )).boundingRect(option).width() for option in options])
-                self.influencing_context_dropdown.setMinimumWidth(
-                    max_width + 25)  # add some padding
-                self.influencing_context_dropdown.setCurrentIndex(0)
-                self.influencing_context_dropdown.currentTextChanged.connect(
-                    command)
-            else:
-                self.influencing_context_selection.addItem('Context')
-            self.influencing_context_dropdown.clear()
-            self.influencing_context_dropdown.addItems(options)
+            self.influencing_context_dropdown.addItems(list(options))
+            max_width = max([QFontMetrics(self.influencing_context_dropdown.font(
+            )).boundingRect(option).width() for option in options])
+            self.influencing_context_dropdown.setMinimumWidth(
+                max_width + 25)  # add some padding
             self.influencing_context_dropdown.setCurrentIndex(0)
+            self.influencing_context_dropdown.currentTextChanged.connect(
+                command)
+        else:
+            self.influencing_context_dropdown.addItem('Context')
             self.influencing_context_dropdown.currentIndexChanged.connect(
                 command)
-        else:  # clear
-            self.influencing_context_selection.addItem("Context")
-            values = []
-            for value in values:
-                self.influencing_context_dropdown.addItem(value)
-            self.influencing_context_dropdown.currentIndexChanged.connect(
-                command)
-
-        command(self.influencing_context_selection.currentText())
+        command(self.influencing_context_dropdown.currentText())
 
     def set_intention_dropdown(self, options: list, command: function = None):
         '''
@@ -901,31 +904,21 @@ class Configurator(QtWidgets.QMainWindow):
         '''
         if not command:
             command = self.influencing_context_selected
-        # self.intention_dropdown.deleteLater()
+        self.intention_dropdown.clear()
+
         if options:
-            if options:
-                self.intention_selection.addItems(list(options))
-                max_width = max([QFontMetrics(self.intention_dropdown.font()).boundingRect(
-                    option).width() for option in options])
-                self.intention_dropdown.setMinimumWidth(
-                    max_width + 25)  # add some padding
-                self.intention_dropdown.setCurrentIndex(0)
-                self.intention_dropdown.currentTextChanged.connect(command)
-            else:
-                self.intention_selection.addItem('Intention')
-            self.intention_dropdown.clear()
-            self.intention_dropdown.addItems(options)
+            self.intention_dropdown.addItems(list(options))
+            max_width = max([QFontMetrics(self.intention_dropdown.font()).boundingRect(
+                option).width() for option in options])
+            self.intention_dropdown.setMinimumWidth(
+                max_width + 25)  # add some padding
             self.intention_dropdown.setCurrentIndex(0)
+            self.intention_dropdown.currentTextChanged.connect(command)
+        else:
+            self.intention_dropdown.addItem('Intention')
             self.intention_dropdown.currentIndexChanged.connect(command)
 
-        else:  # clear
-            self.intention_selection.addItem('Intention')
-            values = []
-            for value in values:
-                self.intention_dropdown.addItem(value)
-            self.intention_dropdown.currentIndexChanged.connect(command)
-
-        command(self.intention_selection.currentText())
+        command(self.intention_dropdown.currentText())
 
     def context_selected(self, context: str):
         """
@@ -996,7 +989,7 @@ class Configurator(QtWidgets.QMainWindow):
                         except Exception as e:
                             # TODO: better logging
                             print(f"couldn't destroy: {e}")
-        intention = self.intention_selection.currentText()
+        intention = self.intention_dropdown.currentText()
         context = self.influencing_context_selection.currentText()
         if context not in self.bayesNet.config['contexts'] or intention not in self.bayesNet.config['intentions']:
             return
