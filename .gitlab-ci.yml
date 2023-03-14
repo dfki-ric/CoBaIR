@@ -36,7 +36,9 @@ run_tests_3.8:
 #   script:
 #     - pip install .
 #     - python -m unittest discover -s tests
-
+include:
+   - project: 'build_server/gitlab_ci_includes'
+     file: 'software_catalogue.yml'
 
 build_docu:
   image: python:3.8-bullseye
