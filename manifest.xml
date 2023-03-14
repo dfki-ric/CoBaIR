@@ -1,11 +1,11 @@
 <package>
   <description brief="CoBaIR">
-    CoBaIR is a python lib for Context Based Intention Recognition.
-    Default it uses a two-layer Bayesian Net of the following structure.
+    CoBaIR is a python library for Context Based Intention Recognition.
+    By default it uses a two-layer Bayesian Network.
   </description>
   <author>Adrian Lubitz/Adrian.Lubitz@dfki.de</author>
   <maintainer>Adrian Lubitz/Adrian.Lubitz@dfki.de</maintainer>
-  <license></license>
+  <license>BSD 3-Clause</license>
   <url>https://git.hb.dfki.de/kimmi_sf/implementation/bayesian-net-for-intention-recognition</url>
 
   <!---Dependencies is only neccessary because autoproj is not installing the lib propperly-->
@@ -16,5 +16,18 @@
   <activity>active</activity>
 
   <stage>0</stage>
+  <classifiers> 
+    <classifier>gui</classifier>
+    <classifier>python</classifier>
+    <classifier>windows</classifier>
+    <classifier>ubuntu</classifier>
+    <classifier>macos</classifier>
+  </classifiers>
 
+  <keywords>
+    <keyword>intention</keyword>
+    <keyword>recognition</keyword>
+    <keyword>bayesian</keyword>
+    <keyword>context</keyword>
+  </keywords>
 </package>
