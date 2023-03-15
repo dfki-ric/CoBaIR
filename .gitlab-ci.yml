@@ -84,6 +84,9 @@ build_installable_package:
   script:
     - pip install setuptools wheel
     - python setup.py sdist bdist_wheel
+  artifacts:
+    paths:
+      - dist
 
 upload_pypi:
   image: python:3.8-bullseye
