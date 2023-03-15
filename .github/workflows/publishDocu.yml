@@ -1,8 +1,8 @@
 name: publish_docu 
 on:
   push:
-    tags:
-      - /^\d+\.\d+\.\d+$/
+    branches:
+      - main
 permissions:
   contents: write
 jobs:
