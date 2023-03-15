@@ -2,7 +2,7 @@ from setuptools import setup
 from setuptools import find_packages
 import CoBaIR
 
-with open('requirements.txt') as f:
+with open('requirements/requirements.txt') as f:
     requirements = f.read().splitlines()
 
 # TODO: if TAG in pipeline given use tag

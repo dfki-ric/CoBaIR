@@ -1,4 +1,6 @@
 # CoBaIR
 
-::: CoBaIR
+
+::: CoBaIR.bayes_net
+
 

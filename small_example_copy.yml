@@ -9,6 +9,7 @@ contexts:
     handover: 0.2
     other: 0.6
     pickup: 0.2
+decision_threshold: 0.8
 intentions:
   hand over tool:
     human activity:

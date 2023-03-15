@@ -21,10 +21,12 @@ def test_edit_context_from_empty():
     Test editing on a non existing config
     """
     bn = BayesNet()
+    old_config1 = deepcopy(bn.config)
     # I assume this will throw an Error!
     with pytest.raises(ValueError):
         bn.edit_context('the context', {
             'inst_a': 0.3, 'inst_b': 0.3, 'inst_c': 0.4})
+    assert old_config1 == bn.config
 
 def test_edit_context_from_existing_new_name():
     """

@@ -9,7 +9,7 @@ from collections import defaultdict
 from collections.abc import Hashable
 from copy import deepcopy
 import warnings
-
+import os
 
 # 3rd party imports
 import bnlearn as bn
@@ -45,17 +45,19 @@ class BayesNet():
             bn_verbosity: sets the verbose flag for bnlearn. See [bnlearn API](https://erdogant.github.io/bnlearn/pages/html/bnlearn.bnlearn.html?highlight=verbose#bnlearn.bnlearn.make_DAG) for more information
             validate: Flag if the given config should be validated or not. This is necessary to load invalid configs
         '''
+
         self.valid = False
         self.bn_verbosity = bn_verbosity
         self.discretization_functions = {}
 
-        # config = deepcopy(config)
+        if config is None:
+            validate = False
         config = config_to_default_dict(config)
 
-        if not config:
-            self.config = {'intentions': defaultdict(lambda: defaultdict(
-                lambda: defaultdict(int))), 'contexts': defaultdict(lambda: defaultdict(float))}
-            return
+        # if not config:
+        #     self.config = {'intentions': defaultdict(lambda: defaultdict(
+        #         lambda: defaultdict(int))), 'contexts': defaultdict(lambda: defaultdict(float))}
+        #     return
 
         self.config = deepcopy(config)
         self.decision_threshold = self.config['decision_threshold']
@@ -389,6 +391,8 @@ class BayesNet():
         assert 'intentions' in self.config, 'Field "intentions" must be defined in the config'
         assert len(self.config['contexts']), 'No contexts defined'
         assert len(self.config['intentions']), 'No intentions defined'
+        assert isinstance(self.config['decision_threshold'], float) and self.config['decision_threshold'] >= 0 and self.config[
+            'decision_threshold'] < 1, 'Decision threshold must be a number between 0 and 1'
 
         # Intentions need to have influence values for all contexts and their possible instantiations
         for intention, context_influences in self.config['intentions'].items():
@@ -518,12 +522,12 @@ class BayesNet():
             raise ValueError(
                 'Cannot edit non existing context - use add_context to add a new context')
         if new_name:  # del old names context
-            del(self.config['contexts'][context])
+            del (self.config['contexts'][context])
             # rename all occurences in intentions
             for intention in self.config['intentions']:
                 old_instantiations = deepcopy(
                     self.config['intentions'][intention][context])
-                del(self.config['intentions'][intention][context])
+                del (self.config['intentions'][intention][context])
                 self.config['intentions'][intention][new_name] = old_instantiations
             context = new_name
 
@@ -553,7 +557,7 @@ class BayesNet():
             raise ValueError(
                 f'{new_name} exists - cannot be given as the new name for {intention}')
         old_values = deepcopy(self.config['intentions'][intention])
-        del(self.config['intentions'][intention])
+        del (self.config['intentions'][intention])
         self.config['intentions'][new_name] = old_values
         # reinizialize
         self.__init__(self.config)
@@ -567,8 +571,13 @@ class BayesNet():
 
         Raises:
             AssertionError: An AssertionError is raised if the resulting config is not valid.
+            ValueError: An ValueError is raised if the context is not in self.config.
         """
-        del(self.config['contexts'][context])
+        # check if context exists already - only then I can edit
+        if context not in self.config['contexts']:
+            raise ValueError(
+                'Cannot delete non existing context - use add_context to add a new context')
+        del (self.config['contexts'][context])
         self._remove_context_from_intentions()
         self._transport_context_into_intentions()
         # reinizialize
@@ -583,8 +592,12 @@ class BayesNet():
 
         Raises:
             AssertionError: An AssertionError is raised if the resulting config is not valid.
+            ValueError: An ValueError is raised if the intention is not in self.config.
         """
-        del(self.config['intentions'][intention])
+        if intention not in self.config['intentions']:
+            raise ValueError(
+                'Cannot delete non existing intention - use add_intention to add a new intention')
+        del (self.config['intentions'][intention])
         # reinizialize
         self.__init__(self.config)
 
@@ -695,7 +708,7 @@ class BayesNet():
         if instantiations not in self.config['intentions'][intention][contexts]:
             raise ValueError(
                 'remove_combined_influence can only remove combined context instantiations that already exist')
-        del(self.config['intentions'][intention][contexts])
+        del (self.config['intentions'][intention][contexts])
 
     def _transport_context_into_intentions(self):
         """
@@ -726,9 +739,9 @@ class BayesNet():
                             context_instantiations_to_remove_from_intentions.append(
                                 (intention, context, instantiation))
         for intention, context in contexts_to_remove_from_intentions:
-            del(self.config['intentions'][intention][context])
+            del (self.config['intentions'][intention][context])
         for intention, context, instantiation in context_instantiations_to_remove_from_intentions:
-            del(self.config['intentions'][intention][context][instantiation])
+            del (self.config['intentions'][intention][context][instantiation])
 
     def change_decision_threshold(self, decision_threshold):
         """
@@ -742,7 +755,7 @@ class BayesNet():
         self.__init__(self.config)
 
 
-def config_to_default_dict(config: dict):
+def config_to_default_dict(config: dict = None):
     """
     This casts a config given as dict into a defaultdict.
 
@@ -752,24 +765,26 @@ def config_to_default_dict(config: dict):
         defaultdict:
             a defaultdict containing the config
     """
-    if config == None:
-        return None
+    if not config:
+        config = {}
     new_config = {'intentions': defaultdict(lambda: defaultdict(
         lambda: defaultdict(int))), 'contexts': defaultdict(lambda: defaultdict(float))}
-    for context in config['contexts']:
-        for instantiation, value in config['contexts'][context].items():
-            new_config['contexts'][context][instantiation] = value
-    for intention in config['intentions']:
-        # HERE: there is the chance that there is no context yet - write intention once
-        new_config['intentions'][intention] = defaultdict(
-            lambda: defaultdict(int))
-        for context in config['intentions'][intention]:
-            for instantiation, value in config['intentions'][intention][context].items():
-                new_config['intentions'][intention][context][instantiation] = value
+    if 'contexts' in config:
+        for context in config['contexts']:
+            for instantiation, value in config['contexts'][context].items():
+                new_config['contexts'][context][instantiation] = value
+    if 'intentions' in config:
+        for intention in config['intentions']:
+            # HERE: there is the chance that there is no context yet - write intention once
+            new_config['intentions'][intention] = defaultdict(
+                lambda: defaultdict(int))
+            for context in config['intentions'][intention]:
+                for instantiation, value in config['intentions'][intention][context].items():
+                    new_config['intentions'][intention][context][instantiation] = value
     if 'decision_threshold' in config:
         new_config['decision_threshold'] = config['decision_threshold']
     else:
-        new_config['decision_threshold'] = 0
+        new_config['decision_threshold'] = 0.0
 
     return new_config
 
@@ -784,6 +799,10 @@ def load_config(path):
         defaultdict:
             a defaultdict containing the config
     """
+
+    # if os.path.splitext(path)[-1] != ".yml":
+    #     raise TypeError(
+    #         'Invalid format file - only supporting yml files')
     with open(path) as stream:
         return config_to_default_dict(yaml.load(stream, Loader=PrettySafeLoader))
 
