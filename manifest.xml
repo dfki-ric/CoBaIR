@@ -15,7 +15,7 @@
 
   <activity>active</activity>
 
-  <stage>0</stage>
+  <stage>2</stage>
   <classifiers> 
     <classifier>gui</classifier>
     <classifier>python</classifier>
@@ -25,6 +25,7 @@
   </classifiers>
 
   <keywords>
+    <keyword>interaction</keyword>
     <keyword>intention</keyword>
     <keyword>recognition</keyword>
     <keyword>bayesian</keyword>
