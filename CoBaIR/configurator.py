@@ -45,6 +45,7 @@ class NewIntentionDialog(QDialog):
         self.intention = intention
         super().__init__(parent)
         self.result = None 
+        self.setModal(True)  
         self.body()
         self.show()
 
@@ -278,7 +279,8 @@ class NewContextDialog(QDialog):
         dialog.deleteLater()
         self.predefined_context = deepcopy(predefined_context)
         super().__init__(parent)  
-        self.result = None          
+        self.result = None   
+        self.setModal(True)         
         self.body()
         self.show()
 
