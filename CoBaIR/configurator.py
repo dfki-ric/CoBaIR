@@ -275,7 +275,6 @@ class NewContextDialog(QDialog):
                     'pickup': 0.2, 'handover': 0.2, 'other': 0.6}}
         """
         dialog = QDialog()
-        # Do something with the dialog
         dialog.deleteLater()
         self.predefined_context = deepcopy(predefined_context)
         super().__init__(parent)  
@@ -312,7 +311,6 @@ class NewContextDialog(QDialog):
             context = list(self.predefined_context.keys())[0]
             instantiations = self.predefined_context[context]
             self.context_entry.setText(context)
-  
         else:
             instantiations = {}
         while(self.shown_instantiations < 2 or instantiations):
@@ -327,7 +325,7 @@ class NewContextDialog(QDialog):
                 # get value
                 value = instantiations[name]
                 # set entries
-                name_entry.setText(name)
+                name_entry.setText(str(name))
                 probability_entry.setText(str(value))
                 # del entry
                 del(instantiations[name])
@@ -498,7 +496,6 @@ class Configurator(QtWidgets.QMainWindow):
         """
         Open a new Dialog to create new contexts.
         """
-        
         # open small dialog to create context
         dialog = NewContextDialog(self)
         
@@ -515,7 +512,6 @@ class Configurator(QtWidgets.QMainWindow):
                     self.bayesNet.add_context(old_context_name, new_instantiations)
             except AssertionError as e:
                 self.error_label.setText(str(e))
-                return
             # update view!
             self.create_fields()
             self.context_selection.setCurrentText(old_context_name)
@@ -531,49 +527,49 @@ class Configurator(QtWidgets.QMainWindow):
         dialog.exec_()
 
     def edit_context(self):
-            """
-            Edit the currently selected context.
+        """
+        Edit the currently selected context.
 
-            !!! note
-            Changing the name of an instantiation will always set the influence value of this instantiation to zero for all intentions!
+        !!! note
+        Changing the name of an instantiation will always set the influence value of this instantiation to zero for all intentions!
 
-            !!! note
-            The GUI can only handle strings for now. This means every instantiation name will be casted to a string upon editing.
-            """
-            # TODO: renaming instantiations should not neccesarily put influence values to zero - check cases
-            # TODO: this will always set the instantiations as Strings
-            # Open the new Context dialog with prefilled values
-            # open small dialog to create context
-            context = self.context_selection.currentText()
-            instantiations = self.bayesNet.config['contexts'][context]
-            dialog = NewContextDialog(self, predefined_context={
-                                    context: instantiations})
-            
-            def update_and_close():
-                self.error_label.setText("")
-                result = dialog.get_result()
-                if not result:
-                    self.error_label.setText("At least one instantiation is required.")
-                    return
-                try:
-                    old_context_name = list(result.keys())[0]
-                    new_instantiations = result[old_context_name]
-                    if new_instantiations:
-                        self.bayesNet.edit_context(
-                            context, new_instantiations, old_context_name)
-                except (ValueError, AssertionError) as e:
-                    self.error_label.setText(str(e))
-                    return
-                self.create_fields()
-                self.context_selection.setCurrentText(old_context_name)
-                self.context_selected(old_context_name)
-                dialog.accept()
-            ok_button = dialog.findChild(QPushButton, "pushButton_2")
-            ok_button.setDefault(True)
-            ok_button.clicked.connect(update_and_close)
-            cancel_button = dialog.findChild(QPushButton, "pushButton_3")
-            cancel_button.clicked.connect(dialog.reject)
-            dialog.exec_()
+        !!! note
+        The GUI can only handle strings for now. This means every instantiation name will be casted to a string upon editing.
+        """
+        # TODO: renaming instantiations should not neccesarily put influence values to zero - check cases
+        # TODO: this will always set the instantiations as Strings
+        # Open the new Context dialog with prefilled values
+        # open small dialog to create context
+        
+        context = self.context_selection.currentText()
+        instantiations = self.bayesNet.config['contexts'][context]
+        dialog = NewContextDialog(self, predefined_context={
+                                context: instantiations})
+        
+        def update_and_close():
+            self.error_label.setText("")
+            result = dialog.get_result()
+            if not result:
+                self.error_label.setText("At least one instantiation is required.")
+                return
+            try:
+                old_context_name = list(result.keys())[0]
+                new_instantiations = result[old_context_name]
+                if new_instantiations:
+                    self.bayesNet.edit_context(
+                        context, new_instantiations, old_context_name)
+            except (ValueError, AssertionError) as e:
+                self.error_label.setText(str(e))
+            self.create_fields()
+            self.context_selection.setCurrentText(old_context_name)
+            self.context_selected(old_context_name)
+            dialog.accept()
+        ok_button = dialog.findChild(QPushButton, "pushButton_2")
+        ok_button.setDefault(True)
+        ok_button.clicked.connect(update_and_close)
+        cancel_button = dialog.findChild(QPushButton, "pushButton_3")
+        cancel_button.clicked.connect(dialog.reject)
+        dialog.exec_()
 
 
 
@@ -593,10 +589,9 @@ class Configurator(QtWidgets.QMainWindow):
         """
         Open a new Dialog to create new intentions.
         """
-        # remove errorText
-        self.error_label.setText("")
         dialog = NewIntentionDialog(self)
         def update_and_close():
+            self.error_label.setText("")
             result = dialog.get_result()
             if not result:
                 return
@@ -605,7 +600,6 @@ class Configurator(QtWidgets.QMainWindow):
                     self.bayesNet.add_intention(result)
                 except AssertionError as e:
                     self.error_label.setText(str(e))
-                    return
             # update view!
             self.create_fields()
             self.intention_dropdown.setCurrentText(result)
@@ -621,12 +615,11 @@ class Configurator(QtWidgets.QMainWindow):
         """
         Edit the name of the currently selected intention
         """
-
-        self.error_label.setText("")
         # open small dialog to create context
         intention = self.intention_dropdown.currentText()
         dialog = NewIntentionDialog(self, intention=intention)
         def update_and_close():
+            self.error_label.setText("")
             result = dialog.get_result()
             if not result:
                 return
@@ -635,7 +628,6 @@ class Configurator(QtWidgets.QMainWindow):
                     self.bayesNet.edit_intention(intention, result)
                 except ValueError as e:
                     self.error_label.setText(str(e))
-                    return
             self.create_fields()
             self.intention_dropdown.setCurrentText(result)
             # Explicit call is necessary because set seems not to trigger the callback
