@@ -668,11 +668,13 @@ class Configurator(QtWidgets.QMainWindow):
             self.advanced_label.setText("advanced \u25B2")
             self.advanced_folded = False
             self.advanced_hidden_frame.show()
+            self.new_combined_influence_button.show()
         else:
             # Change text back to down arrow
             self.advanced_label.setText("advanced \u25BC")
             self.advanced_folded = True
             self.advanced_hidden_frame.hide()
+            self.new_combined_influence_button.hide()
 
     def new_combined_influence(self):
         """
@@ -812,7 +814,7 @@ class Configurator(QtWidgets.QMainWindow):
         self.advanced_hidden_frame = self.findChild(QFrame, 'frame_3')
         self.advanced_label.setText("advanced \u25BC")
         self.advanced_label.setParent(self.advanced_hidden_frame)
-        self.advanced_folded = True
+        self.advanced_folded = False
         self.advanced_label.clicked.connect(self.on_clicked_advanced)
 
         self.advanced_table = QFrame(self.advanced_hidden_frame)
