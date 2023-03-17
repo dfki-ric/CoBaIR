@@ -40,6 +40,8 @@ class NewIntentionDialog(QDialog):
         Args:
             intention: An intention that will be filled in the dialog
         """
+        dialog = QDialog()
+        dialog.deleteLater()
         self.intention = intention
         super().__init__(parent)
         self.result = None 
@@ -58,31 +60,23 @@ class NewIntentionDialog(QDialog):
         """
         uic.loadUi(Path(Path(__file__).parent, 'NewIntention.ui'), self)
         self.intention_entry = self.findChild(QLineEdit, 'lineEdit')
+        self.error_label = self.findChild( QLabel,'label_2')
+        self.error_label.setAlignment(Qt.AlignCenter)
+        self.error_label.setStyleSheet("color: red")
         if self.intention:
             self.intention_entry.setText(self.intention)
         return self.intention_entry  # initial focus
-
-    # def validate(self):
-    #     """
-    #     highlights empty fields
-
-    #     Returns:
-    #         bool:
-    #             True if the entry is not empty
-    #     """
-    #     if not self.intention_entry.text():
-    #         # mark red
-    #         self.intention_entry.setStyleSheet("QLineEdit{background-color: red;}")
-    #         return False
-    #     else:
-    #         return True
 
     def get_result(self):
         """
         Applies the result to hand it over to the master
         """
-        result = self.intention_entry.text()
-        self.accept()
+        self.error_label.setText("")
+        result = self.intention_entry.text().strip()
+        if not result:
+            self.error_label.setText("Intentions cannot be empty")
+        else:
+            self.accept()
         return result
 
 
@@ -140,11 +134,9 @@ class NewCombinedContextDialog(QDialog):
 
         values = list(self.intentions.keys())
         
-        # intention_frame_layout = self.findChild(QGridLayout, 'gridLayout_2')
         self.intention_selection = self.findChild(QComboBox, 'comboBox')
         self.intention_selection.addItems(values)
-        self.intention_selection.setCurrentIndex(0) # set initial value
-        # intention_frame_layout.addWidget(self.intention_selection, 0, 1)
+        self.intention_selection.setCurrentIndex(0)
         # Value
         self.value_selection = self.findChild(QComboBox, 'comboBox_2')
         # Button
@@ -626,9 +618,6 @@ class Configurator(QtWidgets.QMainWindow):
         def update_and_close():
             result = dialog.get_result()
             if not result:
-                # Empty string as intention name
-                ok_button.setEnabled(False)
-                self.error_label.setText("Intention name cannot be empty")
                 return
             if result:
                 try:
@@ -643,6 +632,7 @@ class Configurator(QtWidgets.QMainWindow):
             dialog.accept()
         
         ok_button = dialog.findChild(QPushButton, "ok")
+        ok_button.setDefault(True)
         ok_button.clicked.connect(update_and_close)
         cancel_button = dialog.findChild(QPushButton, "cancel")
         cancel_button.clicked.connect(dialog.reject)
