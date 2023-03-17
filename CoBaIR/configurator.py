@@ -1087,11 +1087,12 @@ class Configurator(QtWidgets.QMainWindow):
         self.error_label.setText("")
         try:
             self.bayesNet.change_context_apriori_value(context=context, instantiation=instantiation, value=float(
-                self.context_instantiations[context][instantiation][2].get()))
+                self.context_instantiations[context][instantiation][1].text()))
         except AssertionError as e:
             self.error_label.setText(str(e))
         except ValueError as e:
-            self.error_label['text'] = f'Apriori probability of context "{context}.{instantiation}" is not a number'
+            self.error_label.setText(f'Apriori probability of context "{context}.{instantiation}" is not a number')
+
 
     def influence_values_changed(self, value, context, intention, instantiation):
         """
