@@ -591,10 +591,14 @@ class Configurator(QtWidgets.QMainWindow):
         dialog = NewIntentionDialog(self)
         def update_and_close():
             result = dialog.get_result()
-            try:
-                self.bayesNet.add_intention(result)
-            except AssertionError as e:
-                self.error_label.setText(str(e))
+            if not result:
+                return
+            if result:
+                try:
+                    self.bayesNet.add_intention(result)
+                except AssertionError as e:
+                    self.error_label.setText(str(e))
+                    return
             # update view!
             self.create_fields()
             self.intention_dropdown.setCurrentText(result)
