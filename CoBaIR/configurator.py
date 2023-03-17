@@ -310,6 +310,7 @@ class NewContextDialog(QDialog):
             context = list(self.predefined_context.keys())[0]
             instantiations = self.predefined_context[context]
             self.context_entry.setText(context)
+  
         else:
             instantiations = {}
         while(self.shown_instantiations < 2 or instantiations):
@@ -388,30 +389,31 @@ class NewContextDialog(QDialog):
     def get_result(self):
         result = defaultdict(lambda: defaultdict(dict))
         errors = []
-        for i, instantiation in enumerate(self.instantiations):
-            key = instantiation[0].text().strip()
-            value = instantiation[1].text().strip()
-            if not key and not value:
-                errors.append(f"Name and probability cannot be empty in row {i+1}.")
-            elif not key:
-                errors.append(f"Name cannot be empty in row {i+1}.")
-            elif not value:
-                errors.append(f"Probability cannot be empty in row {i+1}.")
-            else:
-                try:
-                    value = float(value)
-                except ValueError:
-                    errors.append(f"Probability must be a number in row {i+1}.")
+        context_entry = self.context_entry.text().strip()
+        if not context_entry:
+            errors.append("Context cannot be empty.")
+        else:
+            for i, instantiation in enumerate(self.instantiations):
+                key = instantiation[0].text().strip()
+                value = instantiation[1].text().strip()
+                if not key and not value:
+                    errors.append(f"Name and probability cannot be empty in row {i+1}.")
+                elif not key:
+                    errors.append(f"Name cannot be empty in row {i+1}.")
+                elif not value:
+                    errors.append(f"Probability cannot be empty in row {i+1}.")
                 else:
-                    result[self.context_entry.text().strip()][key] = value
+                    try:
+                        value = float(value)
+                    except ValueError:
+                        errors.append(f"Probability must be a number in row {i+1}.")
+                    else:
+                        result[self.context_entry.text().strip()][key] = value
         if errors:
             self.error_label.setText("\n".join(errors))
         else:
             self.accept()
         return result
-
-
-
 
 class Configurator(QtWidgets.QMainWindow):
     '''
@@ -494,28 +496,33 @@ class Configurator(QtWidgets.QMainWindow):
         """
         Open a new Dialog to create new contexts.
         """
-        # remove errorText
-        self.error_label.setText("")
+        
         # open small dialog to create context
         dialog = NewContextDialog(self)
         
         def update_and_close():
+            self.error_label.setText("")
             result = dialog.get_result()
-            # check if context already exists!
-            # it's always only one new context
-            new_context = list(result.keys())[0]
+            if not result:
+                self.error_label.setText("At least one instantiation is required.")
+                return
             try:
-                self.bayesNet.add_context(new_context, result[new_context])
+                old_context_name = list(result.keys())[0]
+                new_instantiations = result[old_context_name]
+                if new_instantiations:
+                    self.bayesNet.add_context(old_context_name, new_instantiations)
             except AssertionError as e:
                 self.error_label.setText(str(e))
+                return
             # update view!
             self.create_fields()
-            self.context_selection.setCurrentText(new_context)
+            self.context_selection.setCurrentText(old_context_name)
             # Explicit call is necessary because setCurrentText seems not to trigger the callback
-            self.context_selected(new_context)
+            self.context_selected(old_context_name)
             dialog.accept()
 
         ok_button = dialog.findChild(QPushButton, "pushButton_2")
+        ok_button.setDefault(True)
         ok_button.clicked.connect(update_and_close)
         cancel_button = dialog.findChild(QPushButton, "pushButton_3")
         cancel_button.clicked.connect(dialog.reject)
@@ -549,8 +556,6 @@ class Configurator(QtWidgets.QMainWindow):
                 try:
                     old_context_name = list(result.keys())[0]
                     new_instantiations = result[old_context_name]
-                    if not old_context_name.strip():
-                        raise ValueError("Error: New context name cannot be empty or whitespace.")
                     if new_instantiations:
                         self.bayesNet.edit_context(
                             context, new_instantiations, old_context_name)
