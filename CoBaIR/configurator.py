@@ -1201,7 +1201,9 @@ class TwoLayerGraph(pg.GraphItem):
                                 position = (0, i*self.dist)
                                 self.data["pos"].append(position)
                                 self.data["names"].append(
-                                    f"{context}:{instatiation}")
+                                    (context, instatiation))
+                                # f"{context}:{instatiation}")
+                                # TODO: use tuple here and check for type on usage
                                 # TODO: this may be 'instantiation_indices'
                                 self.data["instantiation_indices"].append(i)
                                 # self.data["context_indices"].append(i)
@@ -1244,7 +1246,8 @@ class TwoLayerGraph(pg.GraphItem):
 
             if start in self.data["instantiation_indices"]:
                 # HAck: TODO: this is problematic if the context has a colon in name
-                context, instantiation = self.data["names"][start].split(":")
+                context, instantiation = self.data["names"][start]
+                # TODO. problem with default dict or problem with type - for "human holding object" bool is used and it does not work...
                 normalized_mean = self.config["intentions"][intention][context][instantiation] / 5.0
             alpha = color.alpha()
             # TODO: Maybe color can even be scaled with the normalized mean
@@ -1267,6 +1270,8 @@ class TwoLayerGraph(pg.GraphItem):
         # self.data["mapping"].items():
         for position, label in zip(self.data["pos"], self.data["names"]):
             # TODO: change color
+            if isinstance(label, tuple):
+                label = f"{label[0]}:{label[1]}"
             text_item = pg.TextItem(label, anchor=(0.5, 0.5))
             text_item.setParentItem(self)
             text_item.setPos(*position)
@@ -1297,13 +1302,21 @@ class TwoLayerGraph(pg.GraphItem):
         # Context
         if click_pos.x() > 0 - (self.size/2.0) and click_pos.x() < 0 + (self.size/2.0):
             # self.data["mapping"].items():
+            i = 0
             for position, name in zip(self.data["pos"], self.data["names"]):
                 if click_pos.y() > position[1] - (self.size/2.0) and click_pos.y() < position[1] + (self.size/2.0) and position[0] == 0:
-                    print(f"clicked on {name}")
-                    self.unfolded_context.add(
-                        name) if name not in self.unfolded_context else self.unfolded_context.remove(name)
-                    self.set_config(self.config)
+                    # click on folded context
+                    if i in self.data["context_indices"]:
+                        self.unfolded_context.add(name)
+                    # click on one of the instantiations of an unfolded context
+                    if i in self.data["instantiation_indices"]:
+                        # HAck: TODO: this is problematic if the context has a colon in name
+                        context, instantiation = self.data["names"][i]
+                        self.unfolded_context.remove(context)
+                i += 1
         # Intention
         if click_pos.x() > self.dist - (self.size/2.0) and click_pos.x() < self.dist + (self.size/2.0):
             pass
             # TODO: maybe set the focus to the corresponding field
+
+        self.set_config(self.config)
