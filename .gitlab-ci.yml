@@ -29,13 +29,16 @@ run_tests_3.8:
       - test_report
 
 
-## No need for python3.6 support
-# run_tests_3.6:
-#   image: python:3.6-bullseye
-#   stage: test
-#   script:
-#     - pip install .
-#     - python -m unittest discover -s tests
+software_catalogue_entry:
+  image: d-reg.hb.dfki.de:5000/ubuntu:overview_generator
+  stage: deploy
+  script:
+  - apt update
+  - apt install -y wget
+  - wget http://bob.dfki.uni-bremen.de/software_overview/generate.sh
+  - sh generate.sh $CI_PROJECT_NAMESPACE $CI_PROJECT_NAME $CI_PROJECT_URL
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/'
 
 
 build_docu:
@@ -81,6 +84,9 @@ build_installable_package:
   script:
     - pip install setuptools wheel
     - python setup.py sdist bdist_wheel
+  artifacts:
+    paths:
+      - dist
 
 upload_pypi:
   image: python:3.8-bullseye

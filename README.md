@@ -1,34 +1,38 @@
-[![pipeline status](https://git.hb.dfki.de/kimmi_sf/implementation/CoBaIR/badges/develop/pipeline.svg)](https://git.hb.dfki.de/kimmi_sf/implementation/CoBaIR/-/commits/develop)
-[![coverage report](https://git.hb.dfki.de/kimmi_sf/implementation/CoBaIR/badges/develop/coverage.svg)](https://git.hb.dfki.de/kimmi_sf/implementation/CoBaIR/-/commits/develop)
-[![Latest Release](https://git.hb.dfki.de/kimmi_sf/implementation/CoBaIR/-/badges/release.svg)](https://git.hb.dfki.de/kimmi_sf/implementation/CoBaIR/-/releases)
-
 # CoBaIR
 
-CoBaIR is a python lib for **Co**ntext **Ba**sed **I**ntention **R**ecognition. 
+CoBaIR is a python library for **Co**ntext **Ba**sed **I**ntention **R**ecognition. 
 It provides the means to infer an intention from given context. 
 An intention is a binary value e.g. `repair pipe` that can either be present or not. Only one intention can be present at a time.
 Context on the otherhand can have multiple discrete instantiations e.g. `weather:sunny|cloudy|raining`.
 If context values are continuous, discretizer functions can be used to create discrete values.
 From the infered intention in a HRI scenario the robot can perform corresponding actions to help the human with a specific task.
 
-
+## Publications
+For a more in-depth explanation consult the following papers:
+- [Concept Paper](https://www.dfki.de/fileadmin/user_upload/import/12351_lubitz_kimmi_cobabir_2022_-_Adrian_Lubitz.pdf)
 
 
 
 ## Install 
 You can install the library from your local copy after cloning this repo with pip using `pip install .`
 <!-- TODO: add pip install from PyPi later -->
+### Known Issues
+On some Linux Distros there seems to be a problem with a shared library. [This Solutions](https://stackoverflow.com/questions/71010343/cannot-load-swrast-and-iris-drivers-in-fedora-35/72200748#72200748) suggests to `export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6
+` which works on Ubuntu 22.04.
 
 ## Use the Graphical User Interface
 To make the configuration of a scenario easier we provide a Graphical User Interface(GUI). The GUI can be started with
 ```bash
 python start_configurator.py
 ```
-### Known Issues
-On some Linux Distros there seems to be a problem with a shared library. [This Solutions](https://stackoverflow.com/questions/71010343/cannot-load-swrast-and-iris-drivers-in-fedora-35/72200748#72200748) suggests to `export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6
-` which works on Ubuntu 22.04.
+if you want to start the GUI with a loaded config use
+```bash
+python start_configurator.py -f config.yml
+```
+
+
 ## Documentation
-The Documentation can be accessed via the VPN on http://bob.dfki.uni-bremen.de/apis/kimmi_sf/implementation/CoBaIR/latest
+The Documentation can be accessed via the VPN on https://dfki-ric.github.io/CoBaIR/
 
 ## Bayesian Approach
 In the bayesian approach CoBaIR uses a two-layer Bayesian Net of the following structure.
@@ -160,26 +164,8 @@ intentions:
         instantiation m_n: [5, 4, 3, 2, 1, 0]
 
 ```
-
-
-### CPT Values
-In the default approach of creating a CPT(Conditional Probability Table) you would need to determine
-
- n<sub>v</sub>(i, j c, n) = &sum;<sub>j</sub> c<sub>j</sub> + i * &prod;<sub>i</sub> n<sub>i</sub> &prod;<sub>j</sub> c<sub>j</sub>
-
-
- values. Where n<sub>v</sub> is the number of values which needs to be determined, c is the number of possible instantiations for a context i is the number of intentions and n is the number of possible instantiations for Intentions.
-
- While in the optimized version the product is replaced with a sum resulting in the following:
-
- n<sub>v</sub>(i, j, c) = (i+1)&sum;<sub>j</sub> c<sub>j</sub>
-
-This is possible due to the following assumptions:
-
-- **Intentions are binary**: we just need to care about the positive case and the negative case can be assumed as counterposibility.
-- **Context has a meaning on its own for intentions**: Therefor we set a percentage influence value v<sub>i, j, n</sub> for every context-intention-tuple (C<sub>i,j</sub>, I<sub>n</sub>) and calculate the conditional probabilities of the conditional probability tables(CPTs) as the average of all influence values for the given context.
-
-This is the optimal case. The second assumption may not be true for every intention.
+# How to contribute
+If you find any Bugs or want to contribute/suggest a new feature you can create a Merge Request / Pull Request or contact me directly via adrian.lubitz@dfki.de
 
 ## Run tests
 Tests are implemented with [pytest](https://docs.pytest.org/en/7.1.x/).
@@ -233,3 +219,12 @@ The documentation will be in the `site` folder.
 
 # Authors
 Adrian Lubitz & Arunima Gopikrishnan
+
+## Funding
+CoBaIR is currently developed in the [Robotics Group](https://robotik.dfki-bremen.de/de/ueber-uns/universitaet-bremen-arbeitsgruppe-robotik.html) of the [University of Bremen](https://www.uni-bremen.de/), together with the [Robotics Innovation Center](https://robotik.dfki-bremen.de/en/startpage.html) of the **German Research Center for Artificial Intelligence** (DFKI) in **Bremen**.
+CoBaIR has been funded by the German Federal Ministry for Economic Affairs and Energy and the [German Aerospace Center](https://www.dlr.de/DE/Home/home_node.html) (DLR).
+CoBaIR been used and/or developed in the [KiMMI-SF](https://robotik.dfki-bremen.de/en/research/projects/kimmi-sf/) project.
+
+<p align="center">
+<img src="https://raw.githubusercontent.com/oarriaga/altamira-data/master/images/funding_partners.png" width="1200">
+</p>

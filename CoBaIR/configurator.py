@@ -19,7 +19,7 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import pyqtgraph as pg
 from PyQt5 import QtWidgets, uic
 from PyQt5.QtWidgets import *
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QStringListModel
 from PyQt5.QtGui import QFont, QFontMetrics
 import yaml
 import numpy as np
@@ -33,10 +33,10 @@ from .bayes_net import BayesNet, load_config
 __author__ = 'Adrian Lubitz'
 
 
-class NewIntentionDialog(Dialog):
+class NewIntentionDialog(QDialog):
     """Dialog Window for new Intention"""
 
-    def __init__(self, parent, title: str = ..., intention: str = None) -> None:
+    def __init__(self, parent=None, intention: str = None) -> None:
         """
         Extends the Constructor of Dialog to use an already existing intention.
 
@@ -45,10 +45,16 @@ class NewIntentionDialog(Dialog):
         Args:
             intention: An intention that will be filled in the dialog
         """
+        dialog = QDialog()
+        dialog.deleteLater()
         self.intention = intention
-        super().__init__(parent, title)
+        super().__init__(parent)
+        self.result = None
+        self.setModal(True)
+        self.body()
+        self.show()
 
-    def body(self, master):
+    def body(self):
         """
         Sets the Layout.
 
@@ -58,41 +64,32 @@ class NewIntentionDialog(Dialog):
             tk.Entry:
                 the initial focus
         """
-
-        tk.Label(master, text="New Intention:").grid(row=0)
-        self.intention_entry = tk.Entry(master)
+        uic.loadUi(Path(Path(__file__).parent, 'NewIntention.ui'), self)
+        self.intention_entry = self.findChild(QLineEdit, 'lineEdit')
+        self.error_label = self.findChild(QLabel, 'label_2')
+        self.error_label.setAlignment(Qt.AlignCenter)
+        self.error_label.setStyleSheet("color: red")
         if self.intention:
-            self.intention_entry.insert(0, self.intention)
-        self.intention_entry.grid(row=1)
+            self.intention_entry.setText(self.intention)
         return self.intention_entry  # initial focus
 
-    def validate(self):
-        """
-        highlights empty fields
-
-        Returns:
-            bool:
-                True if the entry is not empty
-        """
-        if not self.intention_entry.get():
-            # mark red
-            self.intention_entry.configure(highlightbackground='red',
-                                           selectbackground='red', highlightcolor='red')
-            return False
-        else:
-            return True
-
-    def apply(self):
+    def get_result(self):
         """
         Applies the result to hand it over to the master
         """
-        self.result = self.intention_entry.get()
+        self.error_label.setText("")
+        result = self.intention_entry.text().strip()
+        if not result:
+            self.error_label.setText("Intentions cannot be empty")
+        else:
+            self.accept()
+        return result
 
 
-class NewCombinedContextDialog(Dialog):
+class NewCombinedContextDialog(QDialog):
     """Dialog Window for new combined Context influence"""
 
-    def __init__(self, parent, title: str = ..., intentions: dict = None) -> None:
+    def __init__(self, parent=None, intentions: dict = None) -> None:
         """
         Extends the Constructor of Dialog to make config available.
 
@@ -127,51 +124,42 @@ class NewCombinedContextDialog(Dialog):
         """
         self.intentions = deepcopy(intentions)
         self.original_instantiations = defaultdict(dict)
-        super().__init__(parent, title)
+        super().__init__(parent)
+        self.result = None
+        self.body()
+        self.show()
 
-    def body(self, master):
+    def body(self):
         """
         Sets the Layout.
 
         Args:
             master: the master window this dialog belongs to
         """
-        # intention
-        intention_frame = tk.Frame(master)
-        intention_frame.grid(row=0)
-        tk.Label(intention_frame, text='Intention:').grid(row=0, column=0)
+        uic.loadUi(Path(Path(__file__).parent,
+                   'NewCombinedContextInfluence.ui'), self)
+
         values = list(self.intentions.keys())
-        self.intention_selection = tk.StringVar(
-            intention_frame, values[0])
-        tk.OptionMenu(
-            intention_frame, self.intention_selection, *values).grid(row=0, column=1)
 
-        # Value:
-        value_frame = tk.Frame(master)
-        value_frame.grid(row=2)
-        tk.Label(value_frame, text='Influence value:').grid(row=0, column=0)
-        self.value_selection = tk.StringVar(value_frame, 0)
-        tk.OptionMenu(
-            value_frame, self.value_selection, *[0, 1, 2, 3, 4, 5]).grid(row=0, column=1)
-
+        self.intention_selection = self.findChild(QComboBox, 'comboBox')
+        self.intention_selection.addItems(values)
+        self.intention_selection.setCurrentIndex(0)
+        # Value
+        self.value_selection = self.findChild(QComboBox, 'comboBox_2')
         # Button
-        button_frame = tk.Frame(master)
-        button_frame.grid(row=3)
-        tk.Button(button_frame, command=self.new_instantiation,
-                  text='additional context').grid()
-        self.error_label = tk.Label(button_frame, fg='#f00')
-        self.error_label.grid(row=1)
-
+        self.additional_context = self.findChild(QPushButton, 'pushButton')
+        self.additional_context.clicked.connect(self.new_instantiation)
+        self.error_label = self.findChild(QLabel, 'label_5')
+        self.error_label.setAlignment(Qt.AlignCenter)
+        self.error_label.setStyleSheet("color: red")
         # contexts
         self.contexts = {}
+        self.context_frame = self.findChild(QFrame, 'frame')
+        self.grid_layout = QGridLayout()
+        self.context_frame.setLayout(self.grid_layout)
         for context, instantiations in list(self.intentions.values())[0].items():
             if not isinstance(context, tuple):
                 self.contexts[context] = instantiations
-        self.context_frame = tk.Frame(master)
-        self.context_frame.grid(row=1)
-        tk.Label(self.context_frame, text='Context').grid(row=0, column=0)
-        tk.Label(self.context_frame, text='Instantiation').grid(
-            row=0, column=1)
         self.context_selections = []
         self.context_menus = []
         self.instantiation_selections = []
@@ -187,25 +175,40 @@ class NewCombinedContextDialog(Dialog):
             context: A context name
             i: the position of the dropdown menu
         """
-        self.instantiation_menus[i].grid_remove()
-        self.instantiation_menus[i].destroy()
+        self.instantiation_menus[i].setVisible(False)
+        self.instantiation_menus[i].deleteLater()
+
         for inst in self.contexts[context]:
             self.original_instantiations[context][str(inst)] = inst
+
         instantiations = list(self.original_instantiations[context].keys())
-        self.instantiation_menus[i] = tk.OptionMenu(
-            self.context_frame, self.instantiation_selections[i], *instantiations)
-        self.instantiation_menus[i].grid(row=i+1, column=1)
-        self.instantiation_selections[i].set(
+        instantiations = list(map(str, instantiations))
+
+        self.instantiation_selections[i] = QComboBox(self.context_frame)
+        self.instantiation_selections[i].clear()
+        self.instantiation_selections[i].addItems(instantiations)
+        self.instantiation_selections[i].setCurrentText(
+            self.instantiation_selections[i].currentText())
+
+        self.grid_layout.addWidget(self.instantiation_selections[i], i+1, 1)
+
+        self.instantiation_selections[i].setCurrentText(
             str(list(self.contexts[context].keys())[0]))
+
         # available context -> every dropdown should only have available + selected
         available_context = self._eval_available_context()
         for i_m, menu in enumerate(self.context_menus):
-            menu.grid_remove()
-            menu.destroy()
-            contexts = [self.context_selections[i_m].get()] + available_context
-            self.context_menus[i_m] = tk.OptionMenu(
-                self.context_frame, self.context_selections[i_m], *contexts, command=lambda x, i=i_m: self.context_selected(x, i))
-            self.context_menus[i_m].grid(row=i_m+1, column=0)
+            menu.setVisible(False)
+            menu.deleteLater()
+            contexts = [self.context_selections[i_m].currentText()] + \
+                available_context
+            self.context_selections[i_m] = QComboBox(self.context_frame)
+            self.context_selections[i_m].addItems(contexts)
+            self.context_selections[i_m].setCurrentText(
+                self.context_selections[i_m].currentText())
+            self.context_selections[i_m].currentTextChanged.connect(
+                lambda text, i=i_m: self.context_selected(text, i))
+            self.grid_layout.addWidget(self.context_selections[i_m], i_m+1, 0)
 
     def _eval_available_context(self):
         """
@@ -217,7 +220,7 @@ class NewCombinedContextDialog(Dialog):
         """
         available_context = list(self.contexts.keys())
         for selection in self.context_selections:
-            available_context.remove(selection.get())
+            available_context.remove(selection.currentText())
         return available_context
 
     def new_instantiation(self):
@@ -227,42 +230,49 @@ class NewCombinedContextDialog(Dialog):
         available_context = self._eval_available_context()
         i = len(self.context_selections)
         if not available_context:
-            self.error_label['text'] = 'No more context available'
+            self.error_label.setText('No more context available')
             return
-        self.context_selections.append(tk.StringVar(
-            self.context_frame, available_context[0]))
-        self.instantiation_selections.append(
-            tk.StringVar(self.context_frame, list(self.contexts[available_context[0]].keys())[0]))
-        self.context_menus.append(tk.OptionMenu(
-            self.context_frame, self.context_selections[-1], *available_context, command=lambda x, i=i: self.context_selected(x, i)))
-        self.context_menus[-1].grid(row=i+1, column=0)
-        instantiations = list(self.contexts[available_context[0]].keys())
-        self.instantiation_menus.append(tk.OptionMenu(
-            self.context_frame, self.instantiation_selections[-1], *instantiations))
-        self.instantiation_menus[-1].grid(row=i+1, column=1)
-        self.context_selected(self.context_selections[-1].get(), i)
+        self.context_selections.append(QComboBox(self.context_frame))
+        self.context_selections[-1].addItems(available_context)
+        self.context_selections[-1].setCurrentIndex(0)
+        self.context_selections[-1].currentTextChanged.connect(
+            lambda text, i=i: self.context_selected(text, i))
+        self.context_menus.append(self.context_selections[-1])
+        self.grid_layout.addWidget(self.context_menus[-1], i+1, 0)
 
-    def apply(self):
+        instantiations = list(self.contexts[available_context[0]].keys())
+        instantiations = list(map(str, instantiations))
+        self.instantiation_selections.append(QComboBox(self.context_frame))
+        self.instantiation_selections[-1].addItems(instantiations)
+        self.instantiation_selections[-1].setCurrentIndex(0)
+        self.instantiation_menus.append(self.instantiation_selections[-1])
+        self.grid_layout.addWidget(self.instantiation_menus[-1], i+1, 1)
+
+        self.context_selected(self.context_selections[-1].currentText(), i)
+
+    def get_result(self):
         """
         Applies the result to hand it over to the master
         """
-        intention = self.intention_selection.get()
-        value = self.value_selection.get()
+        intention = self.intention_selection.currentText()
+        value = self.value_selection.currentText()
         contexts = []
         instantiations = []
         for i, context_selection in enumerate(self.context_selections):
-            contexts.append(context_selection.get())
+            contexts.append(context_selection.currentText())
             instantiations.append(
-                self.original_instantiations[context_selection.get()][self.instantiation_selections[i].get()])
+                self.original_instantiations[context_selection.currentText()][self.instantiation_selections[i].currentText()])
         # intention: str, contexts: tuple, instantiations: tuple, value: int
-        self.result = {'intention': intention, 'value': int(value), 'contexts': tuple(
+        result = {'intention': intention, 'value': int(value), 'contexts': tuple(
             contexts), 'instantiations': tuple(instantiations)}
+        self.accept()
+        return result
 
 
-class NewContextDialog(Dialog):
+class NewContextDialog(QDialog):
     """Dialog Window for new Context"""
 
-    def __init__(self, parent, title: str = ..., predefined_context: dict = None) -> None:
+    def __init__(self, parent=None, predefined_context: dict = None) -> None:
         """
         Extends the Constructor of Dialog to use already existing context and the corresponding instantiations and values.
 
@@ -274,10 +284,16 @@ class NewContextDialog(Dialog):
                 Example: {'speech commands': {
                     'pickup': 0.2, 'handover': 0.2, 'other': 0.6}}
         """
+        dialog = QDialog()
+        dialog.deleteLater()
         self.predefined_context = deepcopy(predefined_context)
-        super().__init__(parent, title)
+        super().__init__(parent)
+        self.result = None
+        self.setModal(True)
+        self.body()
+        self.show()
 
-    def body(self, master):
+    def body(self):
         """
         Sets the Layout.
 
@@ -287,144 +303,139 @@ class NewContextDialog(Dialog):
             tk.Entry:
                 the initial focus
         """
-        name_frame = tk.Frame(master)
-        name_frame.grid(row=0)
-        tk.Label(name_frame, text="Context:").grid(row=0)
-        self.context_entry = tk.Entry(name_frame)
-        self.context_entry.grid(row=0, column=1)
-
-        # frame for instantiations
-        self.instantiations_frame = tk.Frame(master)
-        self.instantiations_frame.grid(row=1)
-        tk.Label(self.instantiations_frame,
-                 text="Instantiation Name").grid(row=0, column=0)
-        tk.Label(self.instantiations_frame,
-                 text="Apriori Probability").grid(row=0, column=1)
-        self.instantiations = []  # This holds the GUI elements for the instantiations
+        uic.loadUi(Path(Path(__file__).parent, 'NewContext.ui'), self)
+        self.grid_layout_2 = self.findChild(QGridLayout, 'gridLayout_2')
+        self.context_entry = self.findChild(QLineEdit, 'context_entry')
+        self.instantiations_frame = self.findChild(
+            QFrame, 'instantiations_frame')
+        self.error_label = self.findChild(QLabel, 'label_5')
+        self.error_label.setAlignment(Qt.AlignCenter)
+        self.error_label.setStyleSheet("color: red")
+        self.instantiations = []
         self.shown_instantiations = 0
-        # Fill the entries here if predefined_context is given!
+        self.grid_layout = QGridLayout()
+        self.instantiations_frame.setLayout(self.grid_layout)
+        self.instantiations_frame.setSizePolicy(
+            QSizePolicy.Expanding, QSizePolicy.MinimumExpanding)
+        # TODO: Fill the entries here if predefined_context is given!
         if self.predefined_context:
             # it's always only one new context
             context = list(self.predefined_context.keys())[0]
             instantiations = self.predefined_context[context]
-            self.context_entry.insert(0, context)
+            self.context_entry.setText(context)
         else:
             instantiations = {}
-        while (self.shown_instantiations < 2 or instantiations):
-            # tk.Label(self.instantiations_frame,
-            #          text=f"Instantiation {self.shown_instantiations}:").grid(row=self.shown_instantiations)
-            name_entry = tk.Entry(self.instantiations_frame)
-            probability_entry = tk.Entry(self.instantiations_frame)
-            remove_button = tk.Button(
-                self.instantiations_frame, command=lambda x=self.shown_instantiations: self.remove_instantiation(x), text='-')
+        while(self.shown_instantiations < 2 or instantiations):
+
+            name_entry = QLineEdit()
+            probability_entry = QLineEdit()
+            remove_button = QPushButton('-')
+            remove_button.clicked.connect(
+                lambda _, btn=remove_button: self.remove_instantiation(btn))
             if instantiations:
                 # get name
                 name = list(instantiations.keys())[0]
                 # get value
                 value = instantiations[name]
                 # set entries
-                name_entry.insert(0, name)
-                probability_entry.insert(0, value)
+                name_entry.setText(str(name))
+                probability_entry.setText(str(value))
                 # del entry
-                del (instantiations[name])
-            name_entry.grid(row=self.shown_instantiations + 1, column=0)
-            probability_entry.grid(row=self.shown_instantiations + 1, column=1)
-            remove_button.grid(row=self.shown_instantiations + 1, column=2)
+                del(instantiations[name])
+            self.grid_layout.addWidget(
+                name_entry, self.shown_instantiations+1, 0)
+            self.grid_layout.addWidget(
+                probability_entry, self.shown_instantiations+1, 1)
+            self.grid_layout.addWidget(
+                remove_button, self.shown_instantiations+1, 2)
             self.instantiations.append(
                 (name_entry, probability_entry, remove_button))
             self.shown_instantiations += 1
+        self.more = self.findChild(QPushButton, 'pushButton')
+        self.more.clicked.connect(self.new_instantiation)
+        return self.context_entry
 
-        tk.Button(master, command=self.new_instantiation,
-                  text='More').grid(row=2)
-
-        return self.context_entry  # initial focus
-
-    def remove_instantiation(self, index):
+    def remove_instantiation(self, remove_button):
         """
         Callback for the remove_button
         Args:
-            index: the index in self.instantiations
+            remove_button: the remove_button clicked
         """
-        for element in self.instantiations[index]:
-            element.grid_forget()
-            element.destroy()
-        self.shown_instantiations -= 1
-        # TODO: that is problematic because it shifts indexes!!!
-        # Or I need to redraw the whole thing like I always do...
-        self.instantiations.pop(index)
-        for index, instantiation in enumerate(self.instantiations):
-            # or I just need to rebind callback with correct index works with configure(command=...)
-            instantiation[2].configure(
-                command=lambda x=index: self.remove_instantiation(x))
+        # find the index of the row containing the remove_button
+        self.error_label.setText("")
+        index = -1
+        for i, (_, _, btn) in enumerate(self.instantiations):
+            if btn is remove_button:
+                index = i
+                break
+        if index != -1:
+            # remove the row from the layout and from the instantiations list
+            name_entry, probability_entry, _ = self.instantiations.pop(index)
+            self.grid_layout.removeWidget(name_entry)
+            self.grid_layout.removeWidget(probability_entry)
+            self.grid_layout.removeWidget(remove_button)
+            name_entry.deleteLater()
+            probability_entry.deleteLater()
+            remove_button.deleteLater()
+            self.shown_instantiations -= 1
+        self.grid_layout.update()
 
     def new_instantiation(self):
         """
         Creates two new Entries to input more instantiations
         """
-        name_entry = tk.Entry(self.instantiations_frame)
-        probability_entry = tk.Entry(self.instantiations_frame)
-        name_entry.grid(row=self.shown_instantiations+1, column=0)
-        probability_entry.grid(row=self.shown_instantiations+1, column=1)
-        remove_button = tk.Button(
-            self.instantiations_frame, command=lambda x=self.shown_instantiations: self.remove_instantiation(x), text='-')
-        remove_button.grid(row=self.shown_instantiations+1, column=2)
+        name_entry = QLineEdit(self.instantiations_frame)
+        probability_entry = QLineEdit(self.instantiations_frame)
+        remove_button = QPushButton('-', self.instantiations_frame)
+        remove_button.clicked.connect(
+            lambda _, btn=remove_button: self.remove_instantiation(btn))
         self.instantiations.append(
             (name_entry, probability_entry, remove_button))
+        row_count = self.grid_layout.rowCount()
+        self.grid_layout.addWidget(name_entry, row_count, 0)
+        self.grid_layout.addWidget(probability_entry, row_count, 1)
+        self.grid_layout.addWidget(remove_button, row_count, 2)
         self.shown_instantiations += 1
+        self.grid_layout.update()
+        # Raise ValueError if both name_entry and probability_entry are empty
+        if not name_entry.text() and not probability_entry.text():
+            self.error_label.setText(
+                "Both name and probability cannot be empty.")
+        elif not name_entry.text():
+            self.error_label.setText("Name cannot be empty.")
+        elif not probability_entry.text():
+            self.error_label.setText("Probability cannot be empty.")
 
-    def validate(self):
-        """
-        highlights empty fields
-
-        Returns:
-            bool:
-                True if the entries are not empty
-        """
-
-        # TODO: entries cannot be the same (len(entries) must be the same as len(set(entries.get())))
-
-        valid = True
-        instantiation_names = []
-        # more than 1 entry is needed!!!
-        if len(self.instantiations) < 2:
-            valid = False
-            # TODO: point out why not valid
-        empty_entries = []
-        self.context_entry.configure(highlightbackground='black',
-                                     selectbackground='black', highlightcolor='black')  # TODO: Too much I only want the text to be black/normal...
-        if not self.context_entry.get():
-            empty_entries.append(self.context_entry)
-        for i, instantiation in enumerate(self.instantiations):
-            # Only setting colors for the entry fields
-            for entry in instantiation[0:2]:
-                entry.configure(highlightbackground='black',
-                                selectbackground='black', highlightcolor='black')
-                if not entry.get():
-                    empty_entries.append(entry)
-            name = instantiation[0].get()
-            if name in instantiation_names:
-                # mark red
-                print('mark red')
-                instantiation[0].configure(highlightbackground='red',
-                                           selectbackground='red', highlightcolor='red')
-                valid = False
-            instantiation_names.append(name)
-        if empty_entries:
-            # mark red
-            for entry in empty_entries:
-                entry.configure(highlightbackground='red',
-                                selectbackground='red', highlightcolor='red')
-            valid = False
-        return valid
-
-    def apply(self):
-        """
-        Applies the result to hand it over to the master
-        """
-        self.result = defaultdict(lambda: defaultdict(dict))
-        for instantiation in self.instantiations:
-            self.result[self.context_entry.get(
-            )][instantiation[0].get()] = float(instantiation[1].get())
+    def get_result(self):
+        result = defaultdict(lambda: defaultdict(dict))
+        errors = []
+        context_entry = self.context_entry.text().strip()
+        if not context_entry:
+            errors.append("Context cannot be empty.")
+        else:
+            for i, instantiation in enumerate(self.instantiations):
+                key = instantiation[0].text().strip()
+                value = instantiation[1].text().strip()
+                if not key and not value:
+                    errors.append(
+                        f"Name and probability cannot be empty in row {i+1}.")
+                elif not key:
+                    errors.append(f"Name cannot be empty in row {i+1}.")
+                elif not value:
+                    errors.append(f"Probability cannot be empty in row {i+1}.")
+                else:
+                    try:
+                        value = float(value)
+                    except ValueError:
+                        errors.append(
+                            f"Probability must be a number in row {i+1}.")
+                    else:
+                        result[self.context_entry.text().strip()][key] = value
+        if errors:
+            self.error_label.setText("\n".join(errors))
+        else:
+            self.accept()
+        return result
 
 
 class Configurator(QtWidgets.QMainWindow):
@@ -490,7 +501,6 @@ class Configurator(QtWidgets.QMainWindow):
         self.adjust_button_visibility()
         self.set_decision_threshold()
         self.fill_advanced_table()
-
         self.draw_graph()
 
     def set_decision_threshold(self):
@@ -529,24 +539,37 @@ class Configurator(QtWidgets.QMainWindow):
         """
         Open a new Dialog to create new contexts.
         """
-        # remove errorText
-        self.error_label['text'] = f""
         # open small dialog to create context
-        dialog = NewContextDialog(self, title="New Context")
-        if dialog.result:
-            # check if context already exists!
-            # it's always only one new context
-            new_context = list(dialog.result.keys())[0]
+        dialog = NewContextDialog(self)
+
+        def update_and_close():
+            self.error_label.setText("")
+            result = dialog.get_result()
+            if not result:
+                self.error_label.setText(
+                    "At least one instantiation is required.")
+                return
             try:
-                self.bayesNet.add_context(
-                    new_context, dialog.result[new_context])
+                old_context_name = list(result.keys())[0]
+                new_instantiations = result[old_context_name]
+                if new_instantiations:
+                    self.bayesNet.add_context(
+                        old_context_name, new_instantiations)
             except AssertionError as e:
-                self.error_label['text'] = f"{e}"
+                self.error_label.setText(str(e))
             # update view!
             self.create_fields()
-            self.context_selection.set(new_context)
-            # Explicit call is neccessary because set seems not to trigger the callback
-            self.context_selected(new_context)
+            self.context_selection.setCurrentText(old_context_name)
+            # Explicit call is necessary because setCurrentText seems not to trigger the callback
+            self.context_selected(old_context_name)
+            dialog.accept()
+
+        ok_button = dialog.findChild(QPushButton, "pushButton_2")
+        ok_button.setDefault(True)
+        ok_button.clicked.connect(update_and_close)
+        cancel_button = dialog.findChild(QPushButton, "pushButton_3")
+        cancel_button.clicked.connect(dialog.reject)
+        dialog.exec_()
 
     def edit_context(self):
         """
@@ -561,88 +584,119 @@ class Configurator(QtWidgets.QMainWindow):
         # TODO: renaming instantiations should not neccesarily put influence values to zero - check cases
         # TODO: this will always set the instantiations as Strings
         # Open the new Context dialog with prefilled values
-        # remove errorText
-        self.error_label['text'] = f""
         # open small dialog to create context
-        context = self.context_selection.get()
-        instantiations = self.bayesNet.config['contexts'][context]
-        dialog = NewContextDialog(self, title="Edit Context", predefined_context={
-                                  context: instantiations})
 
-        if dialog.result:
+        context = self.context_selection.currentText()
+        instantiations = self.bayesNet.config['contexts'][context]
+        dialog = NewContextDialog(self, predefined_context={
+            context: instantiations})
+
+        def update_and_close():
+            self.error_label.setText("")
+            result = dialog.get_result()
+            if not result:
+                self.error_label.setText(
+                    "At least one instantiation is required.")
+                return
             try:
-                # it's always only one new context
-                new_context_name = list(dialog.result.keys())[0]
-                new_instantiations = dialog.result[new_context_name]
-                self.bayesNet.edit_context(
-                    context, new_instantiations, new_context_name)
-            except AssertionError as e:
-                self.error_label['text'] = f"{e}"
+                old_context_name = list(result.keys())[0]
+                new_instantiations = result[old_context_name]
+                if new_instantiations:
+                    self.bayesNet.edit_context(
+                        context, new_instantiations, old_context_name)
+            except (ValueError, AssertionError) as e:
+                self.error_label.setText(str(e))
             self.create_fields()
-            self.context_selection.set(new_context_name)
-            # Explicit call is neccessary because set seems not to trigger the callback
-            self.context_selected(new_context_name)
+            self.context_selection.setCurrentText(old_context_name)
+            self.context_selected(old_context_name)
+            dialog.accept()
+        ok_button = dialog.findChild(QPushButton, "pushButton_2")
+        ok_button.setDefault(True)
+        ok_button.clicked.connect(update_and_close)
+        cancel_button = dialog.findChild(QPushButton, "pushButton_3")
+        cancel_button.clicked.connect(dialog.reject)
+        dialog.exec_()
 
     def delete_context(self):
         """"
         Deletes the currently selected context.
         """
-        self.error_label['text'] = f""
-        context = self.context_selection.get()
+        self.error_label.setText("")
+        context = self.context_dropdown.currentText()
         try:
             self.bayesNet.del_context(context)
         except AssertionError as e:
-            self.error_label['text'] = f"{e}"
+            self.error_label.setText(str(e))
         self.create_fields()
 
     def new_intention(self):
         """
         Open a new Dialog to create new intentions.
         """
-        # remove errorText
-        self.error_label['text'] = f""
-        dialog = NewIntentionDialog(self, title="New Intention")
-        if dialog.result:
-            try:
-                self.bayesNet.add_intention(dialog.result)
-            except AssertionError as e:
-                self.error_label['text'] = f"{e}"
+        dialog = NewIntentionDialog(self)
+
+        def update_and_close():
+            self.error_label.setText("")
+            result = dialog.get_result()
+            if not result:
+                return
+            if result:
+                try:
+                    self.bayesNet.add_intention(result)
+                except AssertionError as e:
+                    self.error_label.setText(str(e))
             # update view!
             self.create_fields()
-            self.intention_selection.set(dialog.result)
+            self.intention_dropdown.setCurrentText(result)
             # Explicit call is neccessary because set seems not to trigger the callback
-            self.influencing_context_selected(dialog.result)
+            self.influencing_context_selected(result)
+        ok_button = dialog.findChild(QPushButton, 'ok')
+        ok_button.clicked.connect(update_and_close)
+        cancel_button = dialog.findChild(QPushButton, "cancel")
+        cancel_button.clicked.connect(dialog.reject)
+        dialog.exec_()
 
     def edit_intention(self):
         """
         Edit the name of the currently selected intention
         """
-
-        self.error_label['text'] = f""
         # open small dialog to create context
-        intention = self.intention_selection.get()
-        dialog = NewIntentionDialog(self,
-                                    title="Edit Intention", intention=intention)
-        if dialog.result:
-            try:
-                self.bayesNet.edit_intention(intention, dialog.result)
-            except AssertionError as e:
-                self.error_label['text'] = f"{e}"
+        intention = self.intention_dropdown.currentText()
+        dialog = NewIntentionDialog(self, intention=intention)
+
+        def update_and_close():
+            self.error_label.setText("")
+            result = dialog.get_result()
+            if not result:
+                return
+            if result:
+                try:
+                    self.bayesNet.edit_intention(intention, result)
+                except ValueError as e:
+                    self.error_label.setText(str(e))
             self.create_fields()
-            self.intention_selection.set(dialog.result)
-            # Explicit call is neccessary because set seems not to trigger the callback
-            self.influencing_context_selected(dialog.result)
+            self.intention_dropdown.setCurrentText(result)
+            # Explicit call is necessary because set seems not to trigger the callback
+            self.influencing_context_selected(result)
+            dialog.accept()
+
+        ok_button = dialog.findChild(QPushButton, "ok")
+        ok_button.setDefault(True)
+        ok_button.clicked.connect(update_and_close)
+        cancel_button = dialog.findChild(QPushButton, "cancel")
+        cancel_button.clicked.connect(dialog.reject)
+        dialog.exec_()
 
     def delete_intention(self):
         """
         Delete the currently selected intention
         """
-        self.error_label['text'] = f""
-        intention = self.intention_selection.get()
+        self.error_label.setText("")
+        intention = self.intention_dropdown.currentText()
         try:
             self.bayesNet.del_intention(intention)
         except AssertionError as e:
-            self.error_label['text'] = f"{e}"
+            self.error_label.setText(str(e))
         self.create_fields()
 
     def on_clicked_advanced(self):
@@ -654,26 +708,36 @@ class Configurator(QtWidgets.QMainWindow):
             self.advanced_label.setText("advanced \u25B2")
             self.advanced_folded = False
             self.advanced_hidden_frame.show()
+            self.new_combined_influence_button.show()
         else:
             # Change text back to down arrow
             self.advanced_label.setText("advanced \u25BC")
             self.advanced_folded = True
             self.advanced_hidden_frame.hide()
+            self.new_combined_influence_button.hide()
 
     def new_combined_influence(self):
         """
         Callback for the button
         """
-        self.error_label['text'] = f""
+        self.error_label.setText("")
         dialog = NewCombinedContextDialog(
-            self, title="New combined Context influence", intentions=self.bayesNet.config['intentions'])
-        if dialog.result:
+            self, intentions=self.bayesNet.config['intentions'])
+
+        def update_and_close():
+            result = dialog.get_result()
             try:
                 self.bayesNet.add_combined_influence(
-                    intention=dialog.result['intention'], contexts=dialog.result['contexts'], instantiations=dialog.result['instantiations'], value=dialog.result['value'])
+                    intention=result['intention'], contexts=result['contexts'], instantiations=result['instantiations'], value=result['value'])
             except ValueError as e:
-                self.error_label['text'] = f"{e}"
+                self.error_label.setText(str(e))
             self.create_fields()
+
+        ok_button = dialog.findChild(QPushButton, "pushButton_2")
+        ok_button.clicked.connect(update_and_close)
+        cancel_button = dialog.findChild(QPushButton, "pushButton_3")
+        cancel_button.clicked.connect(dialog.reject)
+        dialog.exec_()
 
     def fill_advanced_table(self):
         '''
@@ -755,7 +819,6 @@ class Configurator(QtWidgets.QMainWindow):
 
         self.intention_dropdown = self.findChild(
             QComboBox, 'intention_selection')
-        self.intention_selection = self.intention_dropdown
 
         self.context_instantiations = defaultdict(dict)
 
@@ -766,22 +829,33 @@ class Configurator(QtWidgets.QMainWindow):
 
         self.new_context_button = self.findChild(
             QPushButton, 'new_context_button')
+        self.new_context_button.clicked.connect(self.new_context)
+
         self.edit_context_button = self.findChild(
             QPushButton, 'edit_context_button')
+        self.edit_context_button.clicked.connect(self.edit_context)
         self.delete_context_button = self.findChild(
             QPushButton, 'delete_context_button')
+        self.delete_context_button.clicked.connect(self.delete_context)
 
         self.new_intention_button = self.findChild(
             QPushButton, 'new_intention_button')
+        self.new_intention_button.clicked.connect(self.new_intention)
         self.edit_intention_button = self.findChild(
             QPushButton, 'edit_intention_button')
+        self.edit_intention_button.clicked.connect(self.edit_intention)
         self.delete_intention_button = self.findChild(
             QPushButton, 'delete_intention_button')
+
+        self.new_combined_influence_button = self.findChild(
+            QPushButton, 'advanced_new_button')
+        self.new_combined_influence_button.clicked.connect(
+            self.new_combined_influence)
 
         self.advanced_hidden_frame = self.findChild(QFrame, 'frame_3')
         self.advanced_label.setText("advanced \u25BC")
         self.advanced_label.setParent(self.advanced_hidden_frame)
-        self.advanced_folded = True
+        self.advanced_folded = False
         self.advanced_label.clicked.connect(self.on_clicked_advanced)
 
         self.advanced_table = QFrame(self.advanced_hidden_frame)
@@ -840,31 +914,20 @@ class Configurator(QtWidgets.QMainWindow):
         '''
         if not command:
             command = self.context_selected
-        # self.context_dropdown.deleteLater()
+        self.context_dropdown.clear()
 
         if options:
-            if options:
-                self.context_selection.addItems(list(options))
-                max_width = max([QFontMetrics(self.context_dropdown.font()).boundingRect(
-                    option).width() for option in options])
-                self.context_dropdown.setMinimumWidth(
-                    max_width + 25)  # add some padding
-                self.context_dropdown.setCurrentIndex(0)
-                self.context_dropdown.currentTextChanged.connect(command)
-            else:
-                self.context_selection.addItem('Context')
-            self.context_dropdown.clear()
-            self.context_dropdown.addItems(options)
+            self.context_dropdown.addItems(list(options))
+            max_width = max([QFontMetrics(self.context_dropdown.font()).boundingRect(
+                option).width() for option in options])
+            self.context_dropdown.setMinimumWidth(
+                max_width + 25)
             self.context_dropdown.setCurrentIndex(0)
             self.context_dropdown.currentTextChanged.connect(command)
-
-        else:  # clear
-            self.context_selection.addItem("Context")
-            values = []
-            for value in values:
-                self.context_dropdown.addItems(value)
+        else:
+            self.context_dropdown.addItem('Context')
             self.context_dropdown.currentTextChanged.connect(command)
-        command(self.context_selection.currentText())
+        command(self.context_dropdown.currentText())
 
     def draw_graph(self):
         '''
@@ -882,33 +945,21 @@ class Configurator(QtWidgets.QMainWindow):
         '''
         if not command:
             command = self.influencing_context_selected
-        # self.influencing_context_dropdown.deleteLater()
+        self.influencing_context_dropdown.clear()
         if options:
-            if options:
-                self.influencing_context_selection.addItems(list(options))
-                max_width = max([QFontMetrics(self.influencing_context_dropdown.font(
-                )).boundingRect(option).width() for option in options])
-                self.influencing_context_dropdown.setMinimumWidth(
-                    max_width + 25)  # add some padding
-                self.influencing_context_dropdown.setCurrentIndex(0)
-                self.influencing_context_dropdown.currentTextChanged.connect(
-                    command)
-            else:
-                self.influencing_context_selection.addItem('Context')
-            self.influencing_context_dropdown.clear()
-            self.influencing_context_dropdown.addItems(options)
+            self.influencing_context_dropdown.addItems(list(options))
+            max_width = max([QFontMetrics(self.influencing_context_dropdown.font(
+            )).boundingRect(option).width() for option in options])
+            self.influencing_context_dropdown.setMinimumWidth(
+                max_width + 25)  # add some padding
             self.influencing_context_dropdown.setCurrentIndex(0)
+            self.influencing_context_dropdown.currentTextChanged.connect(
+                command)
+        else:
+            self.influencing_context_dropdown.addItem('Context')
             self.influencing_context_dropdown.currentIndexChanged.connect(
                 command)
-        else:  # clear
-            self.influencing_context_selection.addItem("Context")
-            values = []
-            for value in values:
-                self.influencing_context_dropdown.addItem(value)
-            self.influencing_context_dropdown.currentIndexChanged.connect(
-                command)
-
-        command(self.influencing_context_selection.currentText())
+        command(self.influencing_context_dropdown.currentText())
 
     def set_intention_dropdown(self, options: list, command: function = None):
         '''
@@ -920,31 +971,21 @@ class Configurator(QtWidgets.QMainWindow):
         '''
         if not command:
             command = self.influencing_context_selected
-        # self.intention_dropdown.deleteLater()
+        self.intention_dropdown.clear()
+
         if options:
-            if options:
-                self.intention_selection.addItems(list(options))
-                max_width = max([QFontMetrics(self.intention_dropdown.font()).boundingRect(
-                    option).width() for option in options])
-                self.intention_dropdown.setMinimumWidth(
-                    max_width + 25)  # add some padding
-                self.intention_dropdown.setCurrentIndex(0)
-                self.intention_dropdown.currentTextChanged.connect(command)
-            else:
-                self.intention_selection.addItem('Intention')
-            self.intention_dropdown.clear()
-            self.intention_dropdown.addItems(options)
+            self.intention_dropdown.addItems(list(options))
+            max_width = max([QFontMetrics(self.intention_dropdown.font()).boundingRect(
+                option).width() for option in options])
+            self.intention_dropdown.setMinimumWidth(
+                max_width + 25)  # add some padding
             self.intention_dropdown.setCurrentIndex(0)
+            self.intention_dropdown.currentTextChanged.connect(command)
+        else:
+            self.intention_dropdown.addItem('Intention')
             self.intention_dropdown.currentIndexChanged.connect(command)
 
-        else:  # clear
-            self.intention_selection.addItem('Intention')
-            values = []
-            for value in values:
-                self.intention_dropdown.addItem(value)
-            self.intention_dropdown.currentIndexChanged.connect(command)
-
-        command(self.intention_selection.currentText())
+        command(self.intention_dropdown.currentText())
 
     def context_selected(self, context: str):
         """
@@ -1015,7 +1056,7 @@ class Configurator(QtWidgets.QMainWindow):
                         except Exception as e:
                             # TODO: better logging
                             print(f"couldn't destroy: {e}")
-        intention = self.intention_selection.currentText()
+        intention = self.intention_dropdown.currentText()
         context = self.influencing_context_selection.currentText()
         if context not in self.bayesNet.config['contexts'] or intention not in self.bayesNet.config['intentions']:
             return
@@ -1098,11 +1139,12 @@ class Configurator(QtWidgets.QMainWindow):
         self.error_label.setText("")
         try:
             self.bayesNet.change_context_apriori_value(context=context, instantiation=instantiation, value=float(
-                self.context_instantiations[context][instantiation][2].get()))
+                self.context_instantiations[context][instantiation][1].text()))
         except AssertionError as e:
             self.error_label.setText(str(e))
         except ValueError as e:
-            self.error_label['text'] = f'Apriori probability of context "{context}.{instantiation}" is not a number'
+            self.error_label.setText(
+                f'Apriori probability of context "{context}.{instantiation}" is not a number')
 
     def influence_values_changed(self, value, context, intention, instantiation):
         """
