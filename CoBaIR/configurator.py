@@ -40,9 +40,12 @@ class NewIntentionDialog(QDialog):
         Args:
             intention: An intention that will be filled in the dialog
         """
+        dialog = QDialog()
+        dialog.deleteLater()
         self.intention = intention
         super().__init__(parent)
         self.result = None 
+        self.setModal(True)  
         self.body()
         self.show()
 
@@ -58,31 +61,23 @@ class NewIntentionDialog(QDialog):
         """
         uic.loadUi(Path(Path(__file__).parent, 'NewIntention.ui'), self)
         self.intention_entry = self.findChild(QLineEdit, 'lineEdit')
+        self.error_label = self.findChild( QLabel,'label_2')
+        self.error_label.setAlignment(Qt.AlignCenter)
+        self.error_label.setStyleSheet("color: red")
         if self.intention:
             self.intention_entry.setText(self.intention)
         return self.intention_entry  # initial focus
-
-    # def validate(self):
-    #     """
-    #     highlights empty fields
-
-    #     Returns:
-    #         bool:
-    #             True if the entry is not empty
-    #     """
-    #     if not self.intention_entry.text():
-    #         # mark red
-    #         self.intention_entry.setStyleSheet("QLineEdit{background-color: red;}")
-    #         return False
-    #     else:
-    #         return True
 
     def get_result(self):
         """
         Applies the result to hand it over to the master
         """
-        result = self.intention_entry.text()
-        self.accept()
+        self.error_label.setText("")
+        result = self.intention_entry.text().strip()
+        if not result:
+            self.error_label.setText("Intentions cannot be empty")
+        else:
+            self.accept()
         return result
 
 
@@ -140,11 +135,9 @@ class NewCombinedContextDialog(QDialog):
 
         values = list(self.intentions.keys())
         
-        # intention_frame_layout = self.findChild(QGridLayout, 'gridLayout_2')
         self.intention_selection = self.findChild(QComboBox, 'comboBox')
         self.intention_selection.addItems(values)
-        self.intention_selection.setCurrentIndex(0) # set initial value
-        # intention_frame_layout.addWidget(self.intention_selection, 0, 1)
+        self.intention_selection.setCurrentIndex(0)
         # Value
         self.value_selection = self.findChild(QComboBox, 'comboBox_2')
         # Button
@@ -282,11 +275,11 @@ class NewContextDialog(QDialog):
                     'pickup': 0.2, 'handover': 0.2, 'other': 0.6}}
         """
         dialog = QDialog()
-        # Do something with the dialog
         dialog.deleteLater()
         self.predefined_context = deepcopy(predefined_context)
         super().__init__(parent)  
-        self.result = None          
+        self.result = None   
+        self.setModal(True)         
         self.body()
         self.show()
 
@@ -332,7 +325,7 @@ class NewContextDialog(QDialog):
                 # get value
                 value = instantiations[name]
                 # set entries
-                name_entry.setText(name)
+                name_entry.setText(str(name))
                 probability_entry.setText(str(value))
                 # del entry
                 del(instantiations[name])
@@ -396,30 +389,31 @@ class NewContextDialog(QDialog):
     def get_result(self):
         result = defaultdict(lambda: defaultdict(dict))
         errors = []
-        for i, instantiation in enumerate(self.instantiations):
-            key = instantiation[0].text().strip()
-            value = instantiation[1].text().strip()
-            if not key and not value:
-                errors.append(f"Name and probability cannot be empty in row {i+1}.")
-            elif not key:
-                errors.append(f"Name cannot be empty in row {i+1}.")
-            elif not value:
-                errors.append(f"Probability cannot be empty in row {i+1}.")
-            else:
-                try:
-                    value = float(value)
-                except ValueError:
-                    errors.append(f"Probability must be a number in row {i+1}.")
+        context_entry = self.context_entry.text().strip()
+        if not context_entry:
+            errors.append("Context cannot be empty.")
+        else:
+            for i, instantiation in enumerate(self.instantiations):
+                key = instantiation[0].text().strip()
+                value = instantiation[1].text().strip()
+                if not key and not value:
+                    errors.append(f"Name and probability cannot be empty in row {i+1}.")
+                elif not key:
+                    errors.append(f"Name cannot be empty in row {i+1}.")
+                elif not value:
+                    errors.append(f"Probability cannot be empty in row {i+1}.")
                 else:
-                    result[self.context_entry.text().strip()][key] = value
+                    try:
+                        value = float(value)
+                    except ValueError:
+                        errors.append(f"Probability must be a number in row {i+1}.")
+                    else:
+                        result[self.context_entry.text().strip()][key] = value
         if errors:
             self.error_label.setText("\n".join(errors))
         else:
             self.accept()
         return result
-
-
-
 
 class Configurator(QtWidgets.QMainWindow):
     '''
@@ -502,79 +496,80 @@ class Configurator(QtWidgets.QMainWindow):
         """
         Open a new Dialog to create new contexts.
         """
-        # remove errorText
-        self.error_label.setText("")
         # open small dialog to create context
         dialog = NewContextDialog(self)
         
         def update_and_close():
+            self.error_label.setText("")
             result = dialog.get_result()
-            # check if context already exists!
-            # it's always only one new context
-            new_context = list(result.keys())[0]
+            if not result:
+                self.error_label.setText("At least one instantiation is required.")
+                return
             try:
-                self.bayesNet.add_context(new_context, result[new_context])
+                old_context_name = list(result.keys())[0]
+                new_instantiations = result[old_context_name]
+                if new_instantiations:
+                    self.bayesNet.add_context(old_context_name, new_instantiations)
             except AssertionError as e:
                 self.error_label.setText(str(e))
             # update view!
             self.create_fields()
-            self.context_selection.setCurrentText(new_context)
+            self.context_selection.setCurrentText(old_context_name)
             # Explicit call is necessary because setCurrentText seems not to trigger the callback
-            self.context_selected(new_context)
+            self.context_selected(old_context_name)
             dialog.accept()
 
         ok_button = dialog.findChild(QPushButton, "pushButton_2")
+        ok_button.setDefault(True)
         ok_button.clicked.connect(update_and_close)
         cancel_button = dialog.findChild(QPushButton, "pushButton_3")
         cancel_button.clicked.connect(dialog.reject)
         dialog.exec_()
 
     def edit_context(self):
-            """
-            Edit the currently selected context.
+        """
+        Edit the currently selected context.
 
-            !!! note
-            Changing the name of an instantiation will always set the influence value of this instantiation to zero for all intentions!
+        !!! note
+        Changing the name of an instantiation will always set the influence value of this instantiation to zero for all intentions!
 
-            !!! note
-            The GUI can only handle strings for now. This means every instantiation name will be casted to a string upon editing.
-            """
-            # TODO: renaming instantiations should not neccesarily put influence values to zero - check cases
-            # TODO: this will always set the instantiations as Strings
-            # Open the new Context dialog with prefilled values
-            # open small dialog to create context
-            context = self.context_selection.currentText()
-            instantiations = self.bayesNet.config['contexts'][context]
-            dialog = NewContextDialog(self, predefined_context={
-                                    context: instantiations})
-            
-            def update_and_close():
-                self.error_label.setText("")
-                result = dialog.get_result()
-                if not result:
-                    self.error_label.setText("At least one instantiation is required.")
-                    return
-                try:
-                    old_context_name = list(result.keys())[0]
-                    new_instantiations = result[old_context_name]
-                    if not old_context_name.strip():
-                        raise ValueError("Error: New context name cannot be empty or whitespace.")
-                    if new_instantiations:
-                        self.bayesNet.edit_context(
-                            context, new_instantiations, old_context_name)
-                except (ValueError, AssertionError) as e:
-                    self.error_label.setText(str(e))
-                    return
-                self.create_fields()
-                self.context_selection.setCurrentText(old_context_name)
-                self.context_selected(old_context_name)
-                dialog.accept()
-            ok_button = dialog.findChild(QPushButton, "pushButton_2")
-            ok_button.setDefault(True)
-            ok_button.clicked.connect(update_and_close)
-            cancel_button = dialog.findChild(QPushButton, "pushButton_3")
-            cancel_button.clicked.connect(dialog.reject)
-            dialog.exec_()
+        !!! note
+        The GUI can only handle strings for now. This means every instantiation name will be casted to a string upon editing.
+        """
+        # TODO: renaming instantiations should not neccesarily put influence values to zero - check cases
+        # TODO: this will always set the instantiations as Strings
+        # Open the new Context dialog with prefilled values
+        # open small dialog to create context
+        
+        context = self.context_selection.currentText()
+        instantiations = self.bayesNet.config['contexts'][context]
+        dialog = NewContextDialog(self, predefined_context={
+                                context: instantiations})
+        
+        def update_and_close():
+            self.error_label.setText("")
+            result = dialog.get_result()
+            if not result:
+                self.error_label.setText("At least one instantiation is required.")
+                return
+            try:
+                old_context_name = list(result.keys())[0]
+                new_instantiations = result[old_context_name]
+                if new_instantiations:
+                    self.bayesNet.edit_context(
+                        context, new_instantiations, old_context_name)
+            except (ValueError, AssertionError) as e:
+                self.error_label.setText(str(e))
+            self.create_fields()
+            self.context_selection.setCurrentText(old_context_name)
+            self.context_selected(old_context_name)
+            dialog.accept()
+        ok_button = dialog.findChild(QPushButton, "pushButton_2")
+        ok_button.setDefault(True)
+        ok_button.clicked.connect(update_and_close)
+        cancel_button = dialog.findChild(QPushButton, "pushButton_3")
+        cancel_button.clicked.connect(dialog.reject)
+        dialog.exec_()
 
 
 
@@ -594,15 +589,17 @@ class Configurator(QtWidgets.QMainWindow):
         """
         Open a new Dialog to create new intentions.
         """
-        # remove errorText
-        self.error_label.setText("")
         dialog = NewIntentionDialog(self)
         def update_and_close():
+            self.error_label.setText("")
             result = dialog.get_result()
-            try:
-                self.bayesNet.add_intention(result)
-            except AssertionError as e:
-                self.error_label.setText(str(e))
+            if not result:
+                return
+            if result:
+                try:
+                    self.bayesNet.add_intention(result)
+                except AssertionError as e:
+                    self.error_label.setText(str(e))
             # update view!
             self.create_fields()
             self.intention_dropdown.setCurrentText(result)
@@ -618,24 +615,19 @@ class Configurator(QtWidgets.QMainWindow):
         """
         Edit the name of the currently selected intention
         """
-
-        self.error_label.setText("")
         # open small dialog to create context
         intention = self.intention_dropdown.currentText()
         dialog = NewIntentionDialog(self, intention=intention)
         def update_and_close():
+            self.error_label.setText("")
             result = dialog.get_result()
             if not result:
-                # Empty string as intention name
-                ok_button.setEnabled(False)
-                self.error_label.setText("Intention name cannot be empty")
                 return
             if result:
                 try:
                     self.bayesNet.edit_intention(intention, result)
                 except ValueError as e:
                     self.error_label.setText(str(e))
-                    return
             self.create_fields()
             self.intention_dropdown.setCurrentText(result)
             # Explicit call is necessary because set seems not to trigger the callback
@@ -643,6 +635,7 @@ class Configurator(QtWidgets.QMainWindow):
             dialog.accept()
         
         ok_button = dialog.findChild(QPushButton, "ok")
+        ok_button.setDefault(True)
         ok_button.clicked.connect(update_and_close)
         cancel_button = dialog.findChild(QPushButton, "cancel")
         cancel_button.clicked.connect(dialog.reject)
@@ -669,11 +662,13 @@ class Configurator(QtWidgets.QMainWindow):
             self.advanced_label.setText("advanced \u25B2")
             self.advanced_folded = False
             self.advanced_hidden_frame.show()
+            self.new_combined_influence_button.show()
         else:
             # Change text back to down arrow
             self.advanced_label.setText("advanced \u25BC")
             self.advanced_folded = True
             self.advanced_hidden_frame.hide()
+            self.new_combined_influence_button.hide()
 
     def new_combined_influence(self):
         """
@@ -813,7 +808,7 @@ class Configurator(QtWidgets.QMainWindow):
         self.advanced_hidden_frame = self.findChild(QFrame, 'frame_3')
         self.advanced_label.setText("advanced \u25BC")
         self.advanced_label.setParent(self.advanced_hidden_frame)
-        self.advanced_folded = True
+        self.advanced_folded = False
         self.advanced_label.clicked.connect(self.on_clicked_advanced)
 
         self.advanced_table = QFrame(self.advanced_hidden_frame)
@@ -1088,11 +1083,12 @@ class Configurator(QtWidgets.QMainWindow):
         self.error_label.setText("")
         try:
             self.bayesNet.change_context_apriori_value(context=context, instantiation=instantiation, value=float(
-                self.context_instantiations[context][instantiation][2].get()))
+                self.context_instantiations[context][instantiation][1].text()))
         except AssertionError as e:
             self.error_label.setText(str(e))
         except ValueError as e:
-            self.error_label['text'] = f'Apriori probability of context "{context}.{instantiation}" is not a number'
+            self.error_label.setText(f'Apriori probability of context "{context}.{instantiation}" is not a number')
+
 
     def influence_values_changed(self, value, context, intention, instantiation):
         """
