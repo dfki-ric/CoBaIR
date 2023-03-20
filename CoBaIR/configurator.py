@@ -1191,7 +1191,7 @@ class TwoLayerGraph(pg.GraphItem):
             self.data["pos"].append(position)
             self.data["names"].append(intention)
             self.data["intention_indices"].append(i)
-            self.data["mapping"][position] = intention
+            # self.data["mapping"][position] = intention
             i += 1
             for context, instantiation_dict in context_dict.items():
                 if context not in added_context and isinstance(context, str):
@@ -1203,9 +1203,9 @@ class TwoLayerGraph(pg.GraphItem):
                                 self.data["names"].append(
                                     f"{context}:{instatiation}")
                                 # TODO: this may be 'instantiation_indices'
-                                # self.data["instantiation_indices"].append(i)
-                                self.data["context_indices"].append(i)
-                                self.data["mapping"][position] = f"{context}:{instatiation}"
+                                self.data["instantiation_indices"].append(i)
+                                # self.data["context_indices"].append(i)
+                                # self.data["mapping"][position] = f"{context}:{instatiation}"
                                 added_context.add(f"{context}:{instatiation}")
                                 i += 1
                     else:
@@ -1213,7 +1213,7 @@ class TwoLayerGraph(pg.GraphItem):
                         self.data["pos"].append(position)
                         self.data["names"].append(context)
                         self.data["context_indices"].append(i)
-                        self.data["mapping"][position] = context
+                        # self.data["mapping"][position] = context
                         added_context.add(context)
                         i += 1
 
@@ -1221,15 +1221,18 @@ class TwoLayerGraph(pg.GraphItem):
         """
         Add all the connections in the adj array
         """
+        # TODO: merge context and instantiations indices
+        left_side = self.data["context_indices"] + \
+            self.data["instantiation_indices"]
         self.data["adj"] = list(itertools.product(
-            self.data["context_indices"], self.data["intention_indices"]))
+            left_side, self.data["intention_indices"]))
 
     def _set_pen(self):
         """
         Add all the pens for the connections in the pen array 
         """
         for start, end in self.data["adj"]:
-            if start in self.data["context_indices"]:
+            if start in self.data["context_indices"] or start in self.data["instantiation_indices"]:
                 context = self.data["names"][start]
                 intention = self.data["names"][end]
             else:
@@ -1239,9 +1242,10 @@ class TwoLayerGraph(pg.GraphItem):
             normalized_mean = np.mean(
                 list(self.config["intentions"][intention][context].values()))/5.0
 
-            # HAck: TODO: remove
-            if ":" in context:
-                normalized_mean = 0.5
+            if start in self.data["instantiation_indices"]:
+                # HAck: TODO: this is problematic if the context has a colon in name
+                context, instantiation = self.data["names"][start].split(":")
+                normalized_mean = self.config["intentions"][intention][context][instantiation] / 5.0
             alpha = color.alpha()
             # TODO: Maybe color can even be scaled with the normalized mean
             red = color.red() if normalized_mean else 255
@@ -1260,7 +1264,8 @@ class TwoLayerGraph(pg.GraphItem):
         for i in self.textItems:
             i.scene().removeItem(i)
         self.textItems = []
-        for position, label in self.data["mapping"].items():
+        # self.data["mapping"].items():
+        for position, label in zip(self.data["pos"], self.data["names"]):
             # TODO: change color
             text_item = pg.TextItem(label, anchor=(0.5, 0.5))
             text_item.setParentItem(self)
@@ -1291,7 +1296,8 @@ class TwoLayerGraph(pg.GraphItem):
         click_pos = event.pos()
         # Context
         if click_pos.x() > 0 - (self.size/2.0) and click_pos.x() < 0 + (self.size/2.0):
-            for position, name in self.data["mapping"].items():
+            # self.data["mapping"].items():
+            for position, name in zip(self.data["pos"], self.data["names"]):
                 if click_pos.y() > position[1] - (self.size/2.0) and click_pos.y() < position[1] + (self.size/2.0) and position[0] == 0:
                     print(f"clicked on {name}")
                     self.unfolded_context.add(
@@ -1300,3 +1306,4 @@ class TwoLayerGraph(pg.GraphItem):
         # Intention
         if click_pos.x() > self.dist - (self.size/2.0) and click_pos.x() < self.dist + (self.size/2.0):
             pass
+            # TODO: maybe set the focus to the corresponding field
