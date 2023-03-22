@@ -32,7 +32,7 @@ python start_configurator.py -f config.yml
 
 
 ## Documentation
-The Documentation can be accessed via the VPN on https://dfki-ric.github.io/CoBaIR/
+The Documentation can be accessed on https://dfki-ric.github.io/CoBaIR/
 
 ## Bayesian Approach
 In the bayesian approach CoBaIR uses a two-layer Bayesian Net of the following structure.
