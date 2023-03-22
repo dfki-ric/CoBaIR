@@ -889,7 +889,9 @@ class Configurator(QtWidgets.QMainWindow):
         self.grid_layout.addWidget(self.save_button, 9, 2)
 
         # Adding the canvas
-        self.grid_layout.addWidget(self.win, 8, 1)
+        layout = QGridLayout()
+        self.canvas_frame.setLayout(layout)
+        self.canvas_frame.layout().addWidget(self.win, 0, 0)
 
     def decision_threshold_changed(self, value):
         """
