@@ -14,8 +14,12 @@ For a more in-depth explanation consult the following papers:
 
 
 ## Install 
-You can install the library from your local copy after cloning this repo with pip using `pip install .`
-<!-- TODO: add pip install from PyPi later -->
+```bash
+pip install CoBaIR
+```
+You can install the library from your local copy after cloning this repo with pip using `pip install .` 
+or istall the the `develop` branch with `pip install git+https://github.com/dfki-ric/CoBaIR.git@develop`
+
 ### Known Issues
 On some Linux Distros there seems to be a problem with a shared library. [This Solutions](https://stackoverflow.com/questions/71010343/cannot-load-swrast-and-iris-drivers-in-fedora-35/72200748#72200748) suggests to `export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6
 ` which works on Ubuntu 22.04.
