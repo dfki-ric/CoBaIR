@@ -12,16 +12,21 @@ from tkinter import ttk
 from copy import deepcopy
 from types import FunctionType as function
 from pathlib import Path
+import itertools
 
-import yaml
 # 3rd party imports
-
-# local imports
-from .bayes_net import BayesNet, load_config
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+import pyqtgraph as pg
 from PyQt5 import QtWidgets, uic
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import Qt, QStringListModel
 from PyQt5.QtGui import QFont, QFontMetrics
+import yaml
+import numpy as np
+
+
+# local imports
+from .bayes_net import BayesNet, load_config
 
 
 # end file header
@@ -31,7 +36,7 @@ __author__ = 'Adrian Lubitz'
 class NewIntentionDialog(QDialog):
     """Dialog Window for new Intention"""
 
-    def __init__(self, parent = None, intention: str = None) -> None:
+    def __init__(self, parent=None, intention: str = None) -> None:
         """
         Extends the Constructor of Dialog to use an already existing intention.
 
@@ -44,8 +49,8 @@ class NewIntentionDialog(QDialog):
         dialog.deleteLater()
         self.intention = intention
         super().__init__(parent)
-        self.result = None 
-        self.setModal(True)  
+        self.result = None
+        self.setModal(True)
         self.body()
         self.show()
 
@@ -61,7 +66,7 @@ class NewIntentionDialog(QDialog):
         """
         uic.loadUi(Path(Path(__file__).parent, 'NewIntention.ui'), self)
         self.intention_entry = self.findChild(QLineEdit, 'lineEdit')
-        self.error_label = self.findChild( QLabel,'label_2')
+        self.error_label = self.findChild(QLabel, 'label_2')
         self.error_label.setAlignment(Qt.AlignCenter)
         self.error_label.setStyleSheet("color: red")
         if self.intention:
@@ -84,7 +89,7 @@ class NewIntentionDialog(QDialog):
 class NewCombinedContextDialog(QDialog):
     """Dialog Window for new combined Context influence"""
 
-    def __init__(self, parent =  None, intentions: dict = None) -> None:
+    def __init__(self, parent=None, intentions: dict = None) -> None:
         """
         Extends the Constructor of Dialog to make config available.
 
@@ -120,7 +125,7 @@ class NewCombinedContextDialog(QDialog):
         self.intentions = deepcopy(intentions)
         self.original_instantiations = defaultdict(dict)
         super().__init__(parent)
-        self.result = None          
+        self.result = None
         self.body()
         self.show()
 
@@ -131,10 +136,11 @@ class NewCombinedContextDialog(QDialog):
         Args:
             master: the master window this dialog belongs to
         """
-        uic.loadUi(Path(Path(__file__).parent, 'NewCombinedContextInfluence.ui'), self)
+        uic.loadUi(Path(Path(__file__).parent,
+                   'NewCombinedContextInfluence.ui'), self)
 
         values = list(self.intentions.keys())
-        
+
         self.intention_selection = self.findChild(QComboBox, 'comboBox')
         self.intention_selection.addItems(values)
         self.intention_selection.setCurrentIndex(0)
@@ -172,7 +178,6 @@ class NewCombinedContextDialog(QDialog):
         self.instantiation_menus[i].setVisible(False)
         self.instantiation_menus[i].deleteLater()
 
-
         for inst in self.contexts[context]:
             self.original_instantiations[context][str(inst)] = inst
 
@@ -182,7 +187,8 @@ class NewCombinedContextDialog(QDialog):
         self.instantiation_selections[i] = QComboBox(self.context_frame)
         self.instantiation_selections[i].clear()
         self.instantiation_selections[i].addItems(instantiations)
-        self.instantiation_selections[i].setCurrentText(self.instantiation_selections[i].currentText())
+        self.instantiation_selections[i].setCurrentText(
+            self.instantiation_selections[i].currentText())
 
         self.grid_layout.addWidget(self.instantiation_selections[i], i+1, 1)
 
@@ -194,13 +200,15 @@ class NewCombinedContextDialog(QDialog):
         for i_m, menu in enumerate(self.context_menus):
             menu.setVisible(False)
             menu.deleteLater()
-            contexts = [self.context_selections[i_m].currentText()] + available_context
+            contexts = [self.context_selections[i_m].currentText()] + \
+                available_context
             self.context_selections[i_m] = QComboBox(self.context_frame)
             self.context_selections[i_m].addItems(contexts)
-            self.context_selections[i_m].setCurrentText(self.context_selections[i_m].currentText())
-            self.context_selections[i_m].currentTextChanged.connect(lambda text, i=i_m: self.context_selected(text, i))
+            self.context_selections[i_m].setCurrentText(
+                self.context_selections[i_m].currentText())
+            self.context_selections[i_m].currentTextChanged.connect(
+                lambda text, i=i_m: self.context_selected(text, i))
             self.grid_layout.addWidget(self.context_selections[i_m], i_m+1, 0)
-
 
     def _eval_available_context(self):
         """
@@ -227,7 +235,8 @@ class NewCombinedContextDialog(QDialog):
         self.context_selections.append(QComboBox(self.context_frame))
         self.context_selections[-1].addItems(available_context)
         self.context_selections[-1].setCurrentIndex(0)
-        self.context_selections[-1].currentTextChanged.connect(lambda text, i=i: self.context_selected(text, i))
+        self.context_selections[-1].currentTextChanged.connect(
+            lambda text, i=i: self.context_selected(text, i))
         self.context_menus.append(self.context_selections[-1])
         self.grid_layout.addWidget(self.context_menus[-1], i+1, 0)
 
@@ -259,10 +268,11 @@ class NewCombinedContextDialog(QDialog):
         self.accept()
         return result
 
+
 class NewContextDialog(QDialog):
     """Dialog Window for new Context"""
 
-    def __init__(self, parent = None, predefined_context: dict = None) -> None:
+    def __init__(self, parent=None, predefined_context: dict = None) -> None:
         """
         Extends the Constructor of Dialog to use already existing context and the corresponding instantiations and values.
 
@@ -277,9 +287,9 @@ class NewContextDialog(QDialog):
         dialog = QDialog()
         dialog.deleteLater()
         self.predefined_context = deepcopy(predefined_context)
-        super().__init__(parent)  
-        self.result = None   
-        self.setModal(True)         
+        super().__init__(parent)
+        self.result = None
+        self.setModal(True)
         self.body()
         self.show()
 
@@ -296,15 +306,17 @@ class NewContextDialog(QDialog):
         uic.loadUi(Path(Path(__file__).parent, 'NewContext.ui'), self)
         self.grid_layout_2 = self.findChild(QGridLayout, 'gridLayout_2')
         self.context_entry = self.findChild(QLineEdit, 'context_entry')
-        self.instantiations_frame = self.findChild(QFrame, 'instantiations_frame')
-        self.error_label = self.findChild( QLabel,'label_5')
+        self.instantiations_frame = self.findChild(
+            QFrame, 'instantiations_frame')
+        self.error_label = self.findChild(QLabel, 'label_5')
         self.error_label.setAlignment(Qt.AlignCenter)
         self.error_label.setStyleSheet("color: red")
         self.instantiations = []
-        self.shown_instantiations = 0 
+        self.shown_instantiations = 0
         self.grid_layout = QGridLayout()
         self.instantiations_frame.setLayout(self.grid_layout)
-        self.instantiations_frame.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.MinimumExpanding)      
+        self.instantiations_frame.setSizePolicy(
+            QSizePolicy.Expanding, QSizePolicy.MinimumExpanding)
         # TODO: Fill the entries here if predefined_context is given!
         if self.predefined_context:
             # it's always only one new context
@@ -318,7 +330,8 @@ class NewContextDialog(QDialog):
             name_entry = QLineEdit()
             probability_entry = QLineEdit()
             remove_button = QPushButton('-')
-            remove_button.clicked.connect(lambda _, btn=remove_button: self.remove_instantiation(btn))
+            remove_button.clicked.connect(
+                lambda _, btn=remove_button: self.remove_instantiation(btn))
             if instantiations:
                 # get name
                 name = list(instantiations.keys())[0]
@@ -329,15 +342,19 @@ class NewContextDialog(QDialog):
                 probability_entry.setText(str(value))
                 # del entry
                 del(instantiations[name])
-            self.grid_layout.addWidget(name_entry, self.shown_instantiations+1, 0)
-            self.grid_layout.addWidget(probability_entry, self.shown_instantiations+1, 1)
-            self.grid_layout.addWidget(remove_button, self.shown_instantiations+1, 2)
-            self.instantiations.append((name_entry, probability_entry, remove_button))
+            self.grid_layout.addWidget(
+                name_entry, self.shown_instantiations+1, 0)
+            self.grid_layout.addWidget(
+                probability_entry, self.shown_instantiations+1, 1)
+            self.grid_layout.addWidget(
+                remove_button, self.shown_instantiations+1, 2)
+            self.instantiations.append(
+                (name_entry, probability_entry, remove_button))
             self.shown_instantiations += 1
         self.more = self.findChild(QPushButton, 'pushButton')
         self.more.clicked.connect(self.new_instantiation)
         return self.context_entry
-    
+
     def remove_instantiation(self, remove_button):
         """
         Callback for the remove_button
@@ -362,7 +379,7 @@ class NewContextDialog(QDialog):
             remove_button.deleteLater()
             self.shown_instantiations -= 1
         self.grid_layout.update()
-        
+
     def new_instantiation(self):
         """
         Creates two new Entries to input more instantiations
@@ -370,8 +387,10 @@ class NewContextDialog(QDialog):
         name_entry = QLineEdit(self.instantiations_frame)
         probability_entry = QLineEdit(self.instantiations_frame)
         remove_button = QPushButton('-', self.instantiations_frame)
-        remove_button.clicked.connect(lambda _, btn=remove_button: self.remove_instantiation(btn))
-        self.instantiations.append((name_entry, probability_entry, remove_button))
+        remove_button.clicked.connect(
+            lambda _, btn=remove_button: self.remove_instantiation(btn))
+        self.instantiations.append(
+            (name_entry, probability_entry, remove_button))
         row_count = self.grid_layout.rowCount()
         self.grid_layout.addWidget(name_entry, row_count, 0)
         self.grid_layout.addWidget(probability_entry, row_count, 1)
@@ -380,7 +399,8 @@ class NewContextDialog(QDialog):
         self.grid_layout.update()
         # Raise ValueError if both name_entry and probability_entry are empty
         if not name_entry.text() and not probability_entry.text():
-            self.error_label.setText("Both name and probability cannot be empty.")
+            self.error_label.setText(
+                "Both name and probability cannot be empty.")
         elif not name_entry.text():
             self.error_label.setText("Name cannot be empty.")
         elif not probability_entry.text():
@@ -397,7 +417,8 @@ class NewContextDialog(QDialog):
                 key = instantiation[0].text().strip()
                 value = instantiation[1].text().strip()
                 if not key and not value:
-                    errors.append(f"Name and probability cannot be empty in row {i+1}.")
+                    errors.append(
+                        f"Name and probability cannot be empty in row {i+1}.")
                 elif not key:
                     errors.append(f"Name cannot be empty in row {i+1}.")
                 elif not value:
@@ -406,7 +427,8 @@ class NewContextDialog(QDialog):
                     try:
                         value = float(value)
                     except ValueError:
-                        errors.append(f"Probability must be a number in row {i+1}.")
+                        errors.append(
+                            f"Probability must be a number in row {i+1}.")
                     else:
                         result[self.context_entry.text().strip()][key] = value
         if errors:
@@ -414,6 +436,7 @@ class NewContextDialog(QDialog):
         else:
             self.accept()
         return result
+
 
 class Configurator(QtWidgets.QMainWindow):
     '''
@@ -430,6 +453,17 @@ class Configurator(QtWidgets.QMainWindow):
         '''
         self.app = QtWidgets.QApplication(sys.argv)
         QtWidgets.QMainWindow.__init__(self, *args, **kwargs)
+        # self.figure = plt.figure()
+        # self.canvas = FigureCanvas(self.figure)
+        # creating a graph item
+        # setting configuration options
+        pg.setConfigOptions(antialias=True)
+        # creating graphics layout widget
+        self.win = pg.GraphicsLayoutWidget()
+        # adding view box to the graphic layout widget
+        self.view = self.win.addViewBox()
+        self.graph_item = TwoLayerGraph()
+        self.view.addItem(self.graph_item)
         self.setup_layout()
         self.bayesNet = BayesNet(config)
         self.create_fields()
@@ -439,7 +473,8 @@ class Configurator(QtWidgets.QMainWindow):
         """
         setting the alignment and color of the error label
         """
-        self.error_label.setAlignment(Qt.AlignCenter)
+        self.error_label.setAlignment(
+            Qt.AlignCenter)  # TODO: no changes of style in functional code!
         self.error_label.setStyleSheet("color: red")
 
     def create_fields(self):
@@ -458,7 +493,15 @@ class Configurator(QtWidgets.QMainWindow):
         self.adjust_button_visibility()
         self.set_decision_threshold()
         self.set_context_dropdown(self.bayesNet.config['contexts'].keys())
+
+        self.set_influencing_context_dropdown(
+            self.bayesNet.config['contexts'].keys())
+
+        self.set_intention_dropdown(self.bayesNet.config['intentions'].keys())
+        self.adjust_button_visibility()
+        self.set_decision_threshold()
         self.fill_advanced_table()
+        self.draw_graph()
 
     def set_decision_threshold(self):
         """
@@ -491,25 +534,27 @@ class Configurator(QtWidgets.QMainWindow):
             self.edit_intention_button.hide()
             self.delete_intention_button.hide()
             self.grid_layout.addWidget(self.new_intention_button, 2, 4)
-            
+
     def new_context(self):
         """
         Open a new Dialog to create new contexts.
         """
         # open small dialog to create context
         dialog = NewContextDialog(self)
-        
+
         def update_and_close():
             self.error_label.setText("")
             result = dialog.get_result()
             if not result:
-                self.error_label.setText("At least one instantiation is required.")
+                self.error_label.setText(
+                    "At least one instantiation is required.")
                 return
             try:
                 old_context_name = list(result.keys())[0]
                 new_instantiations = result[old_context_name]
                 if new_instantiations:
-                    self.bayesNet.add_context(old_context_name, new_instantiations)
+                    self.bayesNet.add_context(
+                        old_context_name, new_instantiations)
             except AssertionError as e:
                 self.error_label.setText(str(e))
             # update view!
@@ -540,17 +585,18 @@ class Configurator(QtWidgets.QMainWindow):
         # TODO: this will always set the instantiations as Strings
         # Open the new Context dialog with prefilled values
         # open small dialog to create context
-        
+
         context = self.context_selection.currentText()
         instantiations = self.bayesNet.config['contexts'][context]
         dialog = NewContextDialog(self, predefined_context={
-                                context: instantiations})
-        
+            context: instantiations})
+
         def update_and_close():
             self.error_label.setText("")
             result = dialog.get_result()
             if not result:
-                self.error_label.setText("At least one instantiation is required.")
+                self.error_label.setText(
+                    "At least one instantiation is required.")
                 return
             try:
                 old_context_name = list(result.keys())[0]
@@ -571,8 +617,6 @@ class Configurator(QtWidgets.QMainWindow):
         cancel_button.clicked.connect(dialog.reject)
         dialog.exec_()
 
-
-
     def delete_context(self):
         """"
         Deletes the currently selected context.
@@ -584,12 +628,13 @@ class Configurator(QtWidgets.QMainWindow):
         except AssertionError as e:
             self.error_label.setText(str(e))
         self.create_fields()
-            
+
     def new_intention(self):
         """
         Open a new Dialog to create new intentions.
         """
         dialog = NewIntentionDialog(self)
+
         def update_and_close():
             self.error_label.setText("")
             result = dialog.get_result()
@@ -618,6 +663,7 @@ class Configurator(QtWidgets.QMainWindow):
         # open small dialog to create context
         intention = self.intention_dropdown.currentText()
         dialog = NewIntentionDialog(self, intention=intention)
+
         def update_and_close():
             self.error_label.setText("")
             result = dialog.get_result()
@@ -633,13 +679,13 @@ class Configurator(QtWidgets.QMainWindow):
             # Explicit call is necessary because set seems not to trigger the callback
             self.influencing_context_selected(result)
             dialog.accept()
-        
+
         ok_button = dialog.findChild(QPushButton, "ok")
         ok_button.setDefault(True)
         ok_button.clicked.connect(update_and_close)
         cancel_button = dialog.findChild(QPushButton, "cancel")
         cancel_button.clicked.connect(dialog.reject)
-        dialog.exec_()        
+        dialog.exec_()
 
     def delete_intention(self):
         """
@@ -677,11 +723,12 @@ class Configurator(QtWidgets.QMainWindow):
         self.error_label.setText("")
         dialog = NewCombinedContextDialog(
             self, intentions=self.bayesNet.config['intentions'])
+
         def update_and_close():
             result = dialog.get_result()
             try:
                 self.bayesNet.add_combined_influence(
-                    intention= result['intention'], contexts=result['contexts'], instantiations=result['instantiations'], value=result['value'])
+                    intention=result['intention'], contexts=result['contexts'], instantiations=result['instantiations'], value=result['value'])
             except ValueError as e:
                 self.error_label.setText(str(e))
             self.create_fields()
@@ -783,7 +830,7 @@ class Configurator(QtWidgets.QMainWindow):
         self.new_context_button = self.findChild(
             QPushButton, 'new_context_button')
         self.new_context_button.clicked.connect(self.new_context)
-        
+
         self.edit_context_button = self.findChild(
             QPushButton, 'edit_context_button')
         self.edit_context_button.clicked.connect(self.edit_context)
@@ -799,11 +846,11 @@ class Configurator(QtWidgets.QMainWindow):
         self.edit_intention_button.clicked.connect(self.edit_intention)
         self.delete_intention_button = self.findChild(
             QPushButton, 'delete_intention_button')
-        
+
         self.new_combined_influence_button = self.findChild(
             QPushButton, 'advanced_new_button')
-        self.new_combined_influence_button.clicked.connect(self.new_combined_influence)
-    
+        self.new_combined_influence_button.clicked.connect(
+            self.new_combined_influence)
 
         self.advanced_hidden_frame = self.findChild(QFrame, 'frame_3')
         self.advanced_label.setText("advanced \u25BC")
@@ -838,8 +885,13 @@ class Configurator(QtWidgets.QMainWindow):
 
         self.grid_layout.addWidget(self.advanced_new_button, 7, 1)
 
-        self.grid_layout.addWidget(self.load_button, 8, 1)
-        self.grid_layout.addWidget(self.save_button, 8, 2)
+        self.grid_layout.addWidget(self.load_button, 9, 1)
+        self.grid_layout.addWidget(self.save_button, 9, 2)
+
+        # Adding the canvas
+        layout = QGridLayout()
+        self.canvas_frame.setLayout(layout)
+        self.canvas_frame.layout().addWidget(self.win, 0, 0)
 
     def decision_threshold_changed(self, value):
         """
@@ -871,13 +923,19 @@ class Configurator(QtWidgets.QMainWindow):
             max_width = max([QFontMetrics(self.context_dropdown.font()).boundingRect(
                 option).width() for option in options])
             self.context_dropdown.setMinimumWidth(
-                max_width + 25) 
+                max_width + 25)
             self.context_dropdown.setCurrentIndex(0)
             self.context_dropdown.currentTextChanged.connect(command)
         else:
             self.context_dropdown.addItem('Context')
             self.context_dropdown.currentTextChanged.connect(command)
         command(self.context_dropdown.currentText())
+
+    def draw_graph(self):
+        '''
+        This draws the graph from the current config.
+        '''
+        self.graph_item.set_config(self.bayesNet.config)
 
     def set_influencing_context_dropdown(self, options: list, command: function = None):
         '''
@@ -1087,8 +1145,8 @@ class Configurator(QtWidgets.QMainWindow):
         except AssertionError as e:
             self.error_label.setText(str(e))
         except ValueError as e:
-            self.error_label.setText(f'Apriori probability of context "{context}.{instantiation}" is not a number')
-
+            self.error_label.setText(
+                f'Apriori probability of context "{context}.{instantiation}" is not a number')
 
     def influence_values_changed(self, value, context, intention, instantiation):
         """
@@ -1108,3 +1166,159 @@ class Configurator(QtWidgets.QMainWindow):
             self.error_label.setText(str(e))
 
         return value
+
+
+class TwoLayerGraph(pg.GraphItem):
+    """
+    Graph Visualization for the two layer bayesian network
+    """
+
+    def __init__(self, dist=10, size=3, line_width=[0, 25], pxMode=False, **kwds):
+        super().__init__(**kwds)
+        self.dist = dist
+        self.size = size
+        self.line_width = line_width
+        self.pxMode = pxMode
+        self.unfolded_context = set()
+        self.textItems = []
+
+    def _set_pos(self):
+        """
+        Add all the data points in the pos array
+        """
+        i = 0
+        added_context = set()
+        for intention, context_dict in self.config['intentions'].items():
+            position = (self.dist, self.dist/2 + i*self.dist)
+            self.data["pos"].append(position)
+            self.data["names"].append(intention)
+            self.data["intention_indices"].append(i)
+            # self.data["mapping"][position] = intention
+            i += 1
+            for context, instantiation_dict in context_dict.items():
+                if context not in added_context and isinstance(context, str):
+                    if context in self.unfolded_context:
+                        for instatiation in instantiation_dict:
+                            if f"{context}:{instatiation}" not in added_context and isinstance(context, str):
+                                position = (0, i*self.dist)
+                                self.data["pos"].append(position)
+                                self.data["names"].append(
+                                    (context, instatiation))
+                                # f"{context}:{instatiation}")
+                                # TODO: use tuple here and check for type on usage
+                                # TODO: this may be 'instantiation_indices'
+                                self.data["instantiation_indices"].append(i)
+                                # self.data["context_indices"].append(i)
+                                # self.data["mapping"][position] = f"{context}:{instatiation}"
+                                added_context.add(f"{context}:{instatiation}")
+                                i += 1
+                    else:
+                        position = (0, i*self.dist)
+                        self.data["pos"].append(position)
+                        self.data["names"].append(context)
+                        self.data["context_indices"].append(i)
+                        # self.data["mapping"][position] = context
+                        added_context.add(context)
+                        i += 1
+
+    def _set_adj(self):
+        """
+        Add all the connections in the adj array
+        """
+        # TODO: merge context and instantiations indices
+        left_side = self.data["context_indices"] + \
+            self.data["instantiation_indices"]
+        self.data["adj"] = list(itertools.product(
+            left_side, self.data["intention_indices"]))
+
+    def _set_pen(self):
+        """
+        Add all the pens for the connections in the pen array 
+        """
+        for start, end in self.data["adj"]:
+            if start in self.data["context_indices"] or start in self.data["instantiation_indices"]:
+                context = self.data["names"][start]
+                intention = self.data["names"][end]
+            else:
+                context = self.data["names"][end]
+                intention = self.data["names"][start]
+            color = pg.mkPen().color()
+            normalized_mean = np.mean(
+                list(self.config["intentions"][intention][context].values()))/5.0
+
+            if start in self.data["instantiation_indices"]:
+                # HAck: TODO: this is problematic if the context has a colon in name
+                context, instantiation = self.data["names"][start]
+                # TODO. problem with default dict or problem with type - for "human holding object" bool is used and it does not work...
+                normalized_mean = self.config["intentions"][intention][context][instantiation] / 5.0
+            alpha = color.alpha()
+            # TODO: Maybe color can even be scaled with the normalized mean
+            red = color.red() if normalized_mean else 255
+            green = color.green() if normalized_mean else 0
+            blue = color.blue() if normalized_mean else 0
+            width = self.line_width[0] + \
+                (self.line_width[1] - self.line_width[0]) * normalized_mean
+
+            self.data["pen"].append(np.array([(red, green, blue, alpha, width)], dtype=[
+                ('red', np.uint8), ('green', np.uint8), ('blue', np.uint8), ('alpha', np.uint8), ('width', np.uint8)]))
+
+    def _set_text(self):
+        """
+        Place all the texts for Context and Intention Names
+        """
+        for i in self.textItems:
+            i.scene().removeItem(i)
+        self.textItems = []
+        # self.data["mapping"].items():
+        for position, label in zip(self.data["pos"], self.data["names"]):
+            # TODO: change color
+            if isinstance(label, tuple):
+                label = f"{label[0]}:{label[1]}"
+            text_item = pg.TextItem(label, anchor=(0.5, 0.5))
+            text_item.setParentItem(self)
+            text_item.setPos(*position)
+            self.textItems.append(text_item)
+
+    def set_config(self, config):
+        """
+        Uses the config to set the data
+        """
+        # extract every needed field for setData from config
+
+        self.config = config
+        self.data = {"mapping": {}, "pos": [],
+                     "adj": [], "pen": [], "names": [], "context_indices": [], "intention_indices": [], "instantiation_indices": []}
+        self._set_pos()
+        self._set_adj()
+        self._set_pen()
+        self._set_text()
+
+        self.setData(pos=np.array(self.data["pos"]), adj=np.array(
+            self.data["adj"]), pen=np.array(self.data["pen"]), size=self.size, pxMode=self.pxMode)
+
+    def mousePressEvent(self, event):
+        """
+        Handler for the mouse click event
+        """
+        click_pos = event.pos()
+        # Context
+        if click_pos.x() > 0 - (self.size/2.0) and click_pos.x() < 0 + (self.size/2.0):
+            # self.data["mapping"].items():
+            i = 0
+            for position, name in zip(self.data["pos"], self.data["names"]):
+                if click_pos.y() > position[1] - (self.size/2.0) and click_pos.y() < position[1] + (self.size/2.0) and position[0] == 0:
+                    # click on folded context
+                    if i in self.data["context_indices"]:
+                        self.unfolded_context.add(name)
+                    # click on one of the instantiations of an unfolded context
+                    if i in self.data["instantiation_indices"]:
+                        # HAck: TODO: this is problematic if the context has a colon in name
+                        context, instantiation = self.data["names"][i]
+                        self.unfolded_context.remove(context)
+                i += 1
+        # Intention
+        if click_pos.x() > self.dist - (self.size/2.0) and click_pos.x() < self.dist + (self.size/2.0):
+            pass
+            # TODO: maybe set the focus to the corresponding field
+
+        self.set_config(self.config)
