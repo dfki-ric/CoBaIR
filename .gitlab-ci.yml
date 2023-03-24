@@ -41,6 +41,7 @@ software_catalogue_entry:
     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/'
 
 pylint:
+  image: python:3.8-bullseye
   stage: test
   before_script:
     - mkdir -p public/badges public/lint
