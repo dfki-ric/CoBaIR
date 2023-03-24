@@ -14,8 +14,12 @@ For a more in-depth explanation consult the following papers:
 
 
 ## Install 
-You can install the library from your local copy after cloning this repo with pip using `pip install .`
-<!-- TODO: add pip install from PyPi later -->
+```bash
+pip install CoBaIR
+```
+You can install the library from your local copy after cloning this repo with pip using `pip install .` 
+or istall the the `develop` branch with `pip install git+https://github.com/dfki-ric/CoBaIR.git@develop`
+
 ### Known Issues
 On some Linux Distros there seems to be a problem with a shared library. [This Solutions](https://stackoverflow.com/questions/71010343/cannot-load-swrast-and-iris-drivers-in-fedora-35/72200748#72200748) suggests to `export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6
 ` which works on Ubuntu 22.04.
@@ -32,7 +36,7 @@ python start_configurator.py -f config.yml
 
 
 ## Documentation
-The Documentation can be accessed via the VPN on https://dfki-ric.github.io/CoBaIR/
+The Documentation can be accessed on https://dfki-ric.github.io/CoBaIR/
 
 ## Bayesian Approach
 In the bayesian approach CoBaIR uses a two-layer Bayesian Net of the following structure.
@@ -50,118 +54,43 @@ The configuration file for a two layer bayesian net for context based intention 
 
 ```yaml
 # List of contexts. Contexts can have different discrete instantiations. 
-# Number of instantiations must be larger than 2.
+# Number of instantiations must be larger than 1.
 # For all discrete instantiations a prior probability must be given(sum for one context must be 1)
 contexts:
   context 1:
     instantiation 1 : float
-    instantiation 2 : float
-      .
-      .
       .
     instantiation m_1 : float
-  context 2:
-    instantiation 1 : float
-    instantiation 2 : float
-      .
-      .
-      .
-    instantiation m_2 : float
-    .
-    .
-    .
   context n:
     instantiation 1 : float
-    instantiation 2 : float
-      .
-      .
       .
     instantiation m_n : float
-
-
-
 # List of intentions. Intentions are always binary(either present or not)
 # For every intention the context variables and their influence on the intention is given
 # [very high, high, medium, low, very low, no] => [5, 4, 3, 2, 1, 0]
 intentions: 
   intention 1:
     context 1:
-        instantiation 1: [5, 4, 3, 2, 1, 0]
-        instantiation 2: [5, 4, 3, 2, 1, 0]
+        instantiation 1: int # one out of [5, 4, 3, 2, 1, 0]
         .
-        .
-        .
-        instantiation m_1: [5, 4, 3, 2, 1, 0]
-    context 2:
-        instantiation 1: [5, 4, 3, 2, 1, 0]
-        instantiation 2: [5, 4, 3, 2, 1, 0]
-        .
-        .
-        .
-        instantiation m_1: [5, 4, 3, 2, 1, 0]
-        .
-        .
-        .
+        instantiation m_1: int # one out of [5, 4, 3, 2, 1, 0]
     context n:
-        instantiation 1: [5, 4, 3, 2, 1, 0]
-        instantiation 2: [5, 4, 3, 2, 1, 0]
+        instantiation 1: int # one out of [5, 4, 3, 2, 1, 0]
         .
-        .
-        .
-        instantiation m_n: [5, 4, 3, 2, 1, 0]
-  intention 2:
-    context 1:
-        instantiation 1: [5, 4, 3, 2, 1, 0]
-        instantiation 2: [5, 4, 3, 2, 1, 0]
-        .
-        .
-        .
-        instantiation m_1: [5, 4, 3, 2, 1, 0]
-    context 2:
-        instantiation 1: [5, 4, 3, 2, 1, 0]
-        instantiation 2: [5, 4, 3, 2, 1, 0]
-        .
-        .
-        .
-        instantiation m_1: [5, 4, 3, 2, 1, 0]
-        .
-        .
-        .
-    context n:
-        instantiation 1: [5, 4, 3, 2, 1, 0]
-        instantiation 2: [5, 4, 3, 2, 1, 0]
-        .
-        .
-        .
-        instantiation m_n: [5, 4, 3, 2, 1, 0]
-    .
-    .
-    .
+        instantiation m_n: int # one out of [5, 4, 3, 2, 1, 0]
   intention p:
     context 1:
-        instantiation 1: [5, 4, 3, 2, 1, 0]
-        instantiation 2: [5, 4, 3, 2, 1, 0]
+        instantiation 1: int # one out of [5, 4, 3, 2, 1, 0]
         .
-        .
-        .
-        instantiation m_1: [5, 4, 3, 2, 1, 0]
-    context 2:
-        instantiation 1: [5, 4, 3, 2, 1, 0]
-        instantiation 2: [5, 4, 3, 2, 1, 0]
-        .
-        .
-        .
-        instantiation m_1: [5, 4, 3, 2, 1, 0]
-        .
-        .
-        .
+        instantiation m_1: int # one out of [5, 4, 3, 2, 1, 0]
     context n:
-        instantiation 1: [5, 4, 3, 2, 1, 0]
-        instantiation 2: [5, 4, 3, 2, 1, 0]
+        instantiation 1: int # one out of [5, 4, 3, 2, 1, 0]
         .
-        .
-        .
-        instantiation m_n: [5, 4, 3, 2, 1, 0]
+        instantiation m_n: int # one out of [5, 4, 3, 2, 1, 0]
+# decision_threshold is a float value between 0 and 1 which decides 
+# when an intention should be considered in inference.
+# Probability must be greater than decision_threshold.
+decision_threshold: float
 
 ```
 # How to contribute
