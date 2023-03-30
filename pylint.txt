@@ -1,0 +1,352 @@
+************* Module setup
+setup.py:9:1: W0511: TODO: if TAG in pipeline given use tag (fixme)
+setup.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+setup.py:6:5: W1514: Using open without explicitly specifying an encoding (unspecified-encoding)
+setup.py:16:0: C0116: Missing function or method docstring (missing-function-docstring)
+setup.py:17:11: W1514: Using open without explicitly specifying an encoding (unspecified-encoding)
+setup.py:4:0: C0411: standard import "import os" should be placed before "from setuptools import setup" (wrong-import-order)
+setup.py:3:0: W0611: Unused import CoBaIR (unused-import)
+
+------------------------------------------------------------------
+Your code has been rated at 4.17/10 (previous run: 4.17/10, +0.00)
+
+************* Module small_example_from_yml
+small_example_from_yml.py:46:0: C0301: Line too long (133/100) (line-too-long)
+small_example_from_yml.py:37:0: C0116: Missing function or method docstring (missing-function-docstring)
+small_example_from_yml.py:37:36: C0103: Argument name "a" doesn't conform to snake_case naming style (invalid-name)
+small_example_from_yml.py:37:36: W0613: Unused argument 'a' (unused-argument)
+
+------------------------------------------------------------------
+Your code has been rated at 7.50/10 (previous run: 7.50/10, +0.00)
+
+************* Module start_configurator
+start_configurator.py:23:0: C0303: Trailing whitespace (trailing-whitespace)
+start_configurator.py:29:4: C0103: Constant name "config" doesn't conform to UPPER_CASE naming style (invalid-name)
+start_configurator.py:8:0: W0611: Unused import yaml (unused-import)
+
+------------------------------------------------------------------
+Your code has been rated at 7.86/10 (previous run: 7.86/10, +0.00)
+
+************* Module CoBaIR.bayes_net
+CoBaIR\bayes_net.py:364:47: C0303: Trailing whitespace (trailing-whitespace)
+CoBaIR\bayes_net.py:433:79: C0303: Trailing whitespace (trailing-whitespace)
+CoBaIR\bayes_net.py:439:0: C0301: Line too long (126/100) (line-too-long)
+CoBaIR\bayes_net.py:442:0: C0301: Line too long (127/100) (line-too-long)
+CoBaIR\bayes_net.py:449:0: C0301: Line too long (112/100) (line-too-long)
+CoBaIR\bayes_net.py:451:0: C0301: Line too long (136/100) (line-too-long)
+CoBaIR\bayes_net.py:463:0: C0301: Line too long (101/100) (line-too-long)
+CoBaIR\bayes_net.py:680:74: C0303: Trailing whitespace (trailing-whitespace)
+CoBaIR\bayes_net.py:703:74: C0303: Trailing whitespace (trailing-whitespace)
+CoBaIR\bayes_net.py:712:69: C0303: Trailing whitespace (trailing-whitespace)
+CoBaIR\bayes_net.py:729:0: C0301: Line too long (104/100) (line-too-long)
+CoBaIR\bayes_net.py:860:87: C0303: Trailing whitespace (trailing-whitespace)
+CoBaIR\bayes_net.py:864:0: C0304: Final newline missing (missing-final-newline)
+CoBaIR\bayes_net.py:25:0: R0901: Too many ancestors (9/7) (too-many-ancestors)
+CoBaIR\bayes_net.py:45:0: C0115: Missing class docstring (missing-class-docstring)
+CoBaIR\bayes_net.py:45:0: R0902: Too many instance attributes (16/7) (too-many-instance-attributes)
+CoBaIR\bayes_net.py:370:8: R1705: Unnecessary "else" after "return", remove the "else" and de-indent the code inside it (no-else-return)
+CoBaIR\bayes_net.py:505:8: C2801: Unnecessarily calls dunder method __init__. Instantiate class directly. (unnecessary-dunder-call)
+CoBaIR\bayes_net.py:531:8: C2801: Unnecessarily calls dunder method __init__. Instantiate class directly. (unnecessary-dunder-call)
+CoBaIR\bayes_net.py:571:8: C2801: Unnecessarily calls dunder method __init__. Instantiate class directly. (unnecessary-dunder-call)
+CoBaIR\bayes_net.py:596:8: C2801: Unnecessarily calls dunder method __init__. Instantiate class directly. (unnecessary-dunder-call)
+CoBaIR\bayes_net.py:617:8: C2801: Unnecessarily calls dunder method __init__. Instantiate class directly. (unnecessary-dunder-call)
+CoBaIR\bayes_net.py:635:8: C2801: Unnecessarily calls dunder method __init__. Instantiate class directly. (unnecessary-dunder-call)
+CoBaIR\bayes_net.py:666:8: C2801: Unnecessarily calls dunder method __init__. Instantiate class directly. (unnecessary-dunder-call)
+CoBaIR\bayes_net.py:685:12: C2801: Unnecessarily calls dunder method __init__. Instantiate class directly. (unnecessary-dunder-call)
+CoBaIR\bayes_net.py:707:12: C2801: Unnecessarily calls dunder method __init__. Instantiate class directly. (unnecessary-dunder-call)
+CoBaIR\bayes_net.py:731:8: C2801: Unnecessarily calls dunder method __init__. Instantiate class directly. (unnecessary-dunder-call)
+CoBaIR\bayes_net.py:793:8: C2801: Unnecessarily calls dunder method __init__. Instantiate class directly. (unnecessary-dunder-call)
+CoBaIR\bayes_net.py:850:23: C0103: Argument name "d" doesn't conform to snake_case naming style (invalid-name)
+CoBaIR\bayes_net.py:862:7: R1701: Consider merging these isinstance calls to isinstance(d, (defaultdict, dict)) (consider-merging-isinstance)
+
+------------------------------------------------------------------
+Your code has been rated at 8.98/10 (previous run: 8.98/10, +0.00)
+
+************* Module CoBaIR.configurator
+CoBaIR\configurator.py:2:0: C0301: Line too long (164/100) (line-too-long)
+CoBaIR\configurator.py:592:0: C0301: Line too long (105/100) (line-too-long)
+CoBaIR\configurator.py:739:0: C0301: Line too long (143/100) (line-too-long)
+CoBaIR\configurator.py:790:107: C0303: Trailing whitespace (trailing-whitespace)
+CoBaIR\configurator.py:790:0: C0301: Line too long (107/100) (line-too-long)
+CoBaIR\configurator.py:1045:0: C0301: Line too long (180/100) (line-too-long)
+CoBaIR\configurator.py:1079:0: W0311: Bad indentation. Found 16 spaces, expected 12 (bad-indentation)
+CoBaIR\configurator.py:1109:96: C0303: Trailing whitespace (trailing-whitespace)
+CoBaIR\configurator.py:1160:0: C0301: Line too long (113/100) (line-too-long)
+CoBaIR\configurator.py:1219:0: C0301: Line too long (109/100) (line-too-long)
+CoBaIR\configurator.py:1269:0: C0301: Line too long (136/100) (line-too-long)
+CoBaIR\configurator.py:1280:0: C0301: Line too long (119/100) (line-too-long)
+CoBaIR\configurator.py:1307:0: C0301: Line too long (132/100) (line-too-long)
+CoBaIR\configurator.py:1326:0: C0301: Line too long (136/100) (line-too-long)
+CoBaIR\configurator.py:1337:0: C0301: Line too long (103/100) (line-too-long)
+CoBaIR\configurator.py:1:0: C0302: Too many lines in module (1341/1000) (too-many-lines)
+CoBaIR\configurator.py:322:9: W0511: TODO: Fill the entries here if predefined_context is given! (fixme)
+CoBaIR\configurator.py:482:30: W0511: TODO: no changes of style in functional code! (fixme)
+CoBaIR\configurator.py:592:9: W0511: TODO: renaming instantiations should not neccesarily put influence values to zero - check cases (fixme)
+CoBaIR\configurator.py:593:9: W0511: TODO: this will always set the instantiations as Strings (fixme)
+CoBaIR\configurator.py:1022:25: W0511: TODO: better logging (fixme)
+CoBaIR\configurator.py:1073:29: W0511: TODO: better logging (fixme)
+CoBaIR\configurator.py:1225:33: W0511: TODO: use tuple here and check for type on usage (fixme)
+CoBaIR\configurator.py:1226:33: W0511: TODO: this may be 'instantiation_indices' (fixme)
+CoBaIR\configurator.py:1245:9: W0511: TODO: merge context and instantiations indices (fixme)
+CoBaIR\configurator.py:1272:13: W0511: TODO: Maybe color can even be scaled with the normalized mean (fixme)
+CoBaIR\configurator.py:1291:13: W0511: TODO: change color (fixme)
+CoBaIR\configurator.py:1339:13: W0511: TODO: maybe set the focus to the corresponding field (fixme)
+CoBaIR\configurator.py:17:0: E0611: No name 'QDialog' in module 'PyQt5.QtWidgets' (no-name-in-module)
+CoBaIR\configurator.py:17:0: E0611: No name 'QLabel' in module 'PyQt5.QtWidgets' (no-name-in-module)
+CoBaIR\configurator.py:17:0: E0611: No name 'QLineEdit' in module 'PyQt5.QtWidgets' (no-name-in-module)
+CoBaIR\configurator.py:17:0: E0611: No name 'QComboBox' in module 'PyQt5.QtWidgets' (no-name-in-module)
+CoBaIR\configurator.py:17:0: E0611: No name 'QPushButton' in module 'PyQt5.QtWidgets' (no-name-in-module)
+CoBaIR\configurator.py:17:0: E0611: No name 'QFrame' in module 'PyQt5.QtWidgets' (no-name-in-module)
+CoBaIR\configurator.py:17:0: E0611: No name 'QGridLayout' in module 'PyQt5.QtWidgets' (no-name-in-module)
+CoBaIR\configurator.py:17:0: E0611: No name 'QSizePolicy' in module 'PyQt5.QtWidgets' (no-name-in-module)
+CoBaIR\configurator.py:17:0: E0611: No name 'QSlider' in module 'PyQt5.QtWidgets' (no-name-in-module)
+CoBaIR\configurator.py:17:0: E0611: No name 'QFileDialog' in module 'PyQt5.QtWidgets' (no-name-in-module)
+CoBaIR\configurator.py:20:0: E0611: No name 'Qt' in module 'PyQt5.QtCore' (no-name-in-module)
+CoBaIR\configurator.py:20:0: E0611: No name 'QStringListModel' in module 'PyQt5.QtCore' (no-name-in-module)
+CoBaIR\configurator.py:21:0: E0611: No name 'QFont' in module 'PyQt5.QtGui' (no-name-in-module)
+CoBaIR\configurator.py:21:0: E0611: No name 'QFontMetrics' in module 'PyQt5.QtGui' (no-name-in-module)
+CoBaIR\configurator.py:85:0: R0902: Too many instance attributes (14/7) (too-many-instance-attributes)
+CoBaIR\configurator.py:272:0: R0902: Too many instance attributes (10/7) (too-many-instance-attributes)
+CoBaIR\configurator.py:473:8: C0103: Attribute name "bayesNet" doesn't conform to snake_case naming style (invalid-name)
+CoBaIR\configurator.py:446:0: R0902: Too many instance attributes (29/7) (too-many-instance-attributes)
+CoBaIR\configurator.py:446:19: I1101: Module 'PyQt5.QtWidgets' has no 'QMainWindow' member, but source is unavailable. Consider adding this module to extension-pkg-allow-list if you want to perform analysis based on run-time introspection of living objects. (c-extension-no-member)
+CoBaIR\configurator.py:459:19: I1101: Module 'PyQt5.QtWidgets' has no 'QApplication' member, but source is unavailable. Consider adding this module to extension-pkg-allow-list if you want to perform analysis based on run-time introspection of living objects. (c-extension-no-member)
+CoBaIR\configurator.py:460:8: I1101: Module 'PyQt5.QtWidgets' has no 'QMainWindow' member, but source is unavailable. Consider adding this module to extension-pkg-allow-list if you want to perform analysis based on run-time introspection of living objects. (c-extension-no-member)
+CoBaIR\configurator.py:803:4: R0915: Too many statements (64/50) (too-many-statements)
+CoBaIR\configurator.py:920:37: W1309: Using an f-string that does not have any interpolated variables (f-string-without-interpolation)
+CoBaIR\configurator.py:936:24: R1728: Consider using a generator instead 'max(QFontMetrics(self.context_dropdown.font()).boundingRect(option).width() for option in options)' (consider-using-generator)
+CoBaIR\configurator.py:967:24: R1728: Consider using a generator instead 'max(QFontMetrics(self.influencing_context_dropdown.font()).boundingRect(option).width() for option in options)' (consider-using-generator)
+CoBaIR\configurator.py:995:24: R1728: Consider using a generator instead 'max(QFontMetrics(self.intention_dropdown.font()).boundingRect(option).width() for option in options)' (consider-using-generator)
+CoBaIR\configurator.py:1021:27: W0718: Catching too general exception Exception (broad-exception-caught)
+CoBaIR\configurator.py:1021:20: C0103: Variable name "e" doesn't conform to snake_case naming style (invalid-name)
+CoBaIR\configurator.py:1014:12: W0612: Unused variable 'active_context' (unused-variable)
+CoBaIR\configurator.py:1057:4: R0914: Too many local variables (18/15) (too-many-locals)
+CoBaIR\configurator.py:1072:31: W0718: Catching too general exception Exception (broad-exception-caught)
+CoBaIR\configurator.py:1072:24: C0103: Variable name "e" doesn't conform to snake_case naming style (invalid-name)
+CoBaIR\configurator.py:1057:43: W0613: Unused argument 'context_or_intention' (unused-argument)
+CoBaIR\configurator.py:1064:12: W0612: Unused variable 'active_intention' (unused-variable)
+CoBaIR\configurator.py:1126:8: C0103: Variable name "fileName" doesn't conform to snake_case naming style (invalid-name)
+CoBaIR\configurator.py:1135:19: W0718: Catching too general exception Exception (broad-exception-caught)
+CoBaIR\configurator.py:1149:0: W0613: Unused argument 'args' (unused-argument)
+CoBaIR\configurator.py:717:12: W0201: Attribute 'advanced_folded' defined outside __init__ (attribute-defined-outside-init)
+CoBaIR\configurator.py:723:12: W0201: Attribute 'advanced_folded' defined outside __init__ (attribute-defined-outside-init)
+CoBaIR\configurator.py:759:8: W0201: Attribute 'advanced_table' defined outside __init__ (attribute-defined-outside-init)
+CoBaIR\configurator.py:1025:8: W0201: Attribute 'context_instantiations' defined outside __init__ (attribute-defined-outside-init)
+CoBaIR\configurator.py:1081:8: W0201: Attribute 'intention_instantiations' defined outside __init__ (attribute-defined-outside-init)
+CoBaIR\configurator.py:446:0: R0904: Too many public methods (26/20) (too-many-public-methods)
+CoBaIR\configurator.py:1198:8: C0103: Attribute name "pxMode" doesn't conform to snake_case naming style (invalid-name)
+CoBaIR\configurator.py:1200:8: C0103: Attribute name "textItems" doesn't conform to snake_case naming style (invalid-name)
+CoBaIR\configurator.py:1188:0: R0902: Too many instance attributes (8/7) (too-many-instance-attributes)
+CoBaIR\configurator.py:1193:4: W0102: Dangerous default value [] as argument (dangerous-default-value)
+CoBaIR\configurator.py:1208:8: R1702: Too many nested blocks (6/5) (too-many-nested-blocks)
+CoBaIR\configurator.py:1316:4: C0103: Method name "mousePressEvent" doesn't conform to snake_case naming style (invalid-name)
+CoBaIR\configurator.py:1333:33: W0612: Unused variable 'instantiation' (unused-variable)
+CoBaIR\configurator.py:1305:8: W0201: Attribute 'config' defined outside __init__ (attribute-defined-outside-init)
+CoBaIR\configurator.py:1306:8: W0201: Attribute 'data' defined outside __init__ (attribute-defined-outside-init)
+CoBaIR\configurator.py:14:0: W0611: Unused FigureCanvasQTAgg imported from matplotlib.backends.backend_qt5agg as FigureCanvas (unused-import)
+CoBaIR\configurator.py:20:0: W0611: Unused QStringListModel imported from PyQt5.QtCore (unused-import)
+CoBaIR\configurator.py:25:0: W0611: Unused load_config imported from bayes_net (unused-import)
+
+------------------------------------------------------------------
+Your code has been rated at 8.22/10 (previous run: 8.22/10, +0.00)
+
+************* Module CoBaIR.default_discretizer
+CoBaIR\default_discretizer.py:10:0: C0301: Line too long (105/100) (line-too-long)
+CoBaIR\default_discretizer.py:31:0: C0301: Line too long (101/100) (line-too-long)
+CoBaIR\default_discretizer.py:32:4: R1705: Unnecessary "else" after "return", remove the "else" and de-indent the code inside it (no-else-return)
+CoBaIR\default_discretizer.py:33:15: C0121: Comparison 'True != flip' should be 'True is not flip' if checking for the singleton value True, or 'not flip' if testing for falsiness (singleton-comparison)
+CoBaIR\default_discretizer.py:35:15: C0121: Comparison 'False != flip' should be 'False is not flip' if checking for the singleton value False, or 'bool(flip)' if testing for truthiness (singleton-comparison)
+
+------------------------------------------------------------------
+Your code has been rated at 1.67/10 (previous run: 1.67/10, +0.00)
+
+************* Module CoBaIR.random_base_count
+CoBaIR\random_base_count.py:46:0: C0325: Unnecessary parens after 'while' keyword (superfluous-parens)
+
+------------------------------------------------------------------
+Your code has been rated at 9.55/10 (previous run: 9.55/10, +0.00)
+
+************* Module CoBaIR
+CoBaIR\__init__.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+CoBaIR\__init__.py:1:0: C0103: Module name "CoBaIR" doesn't conform to snake_case naming style (invalid-name)
+
+------------------------------------------------------------------
+Your code has been rated at 0.00/10 (previous run: 0.00/10, +0.00)
+
+************* Module tests.test_add_context
+tests\test_add_context.py:18:1: W0511: TODO: add more negative cases (fixme)
+tests\test_add_context.py:26:7: C0121: Comparison 'config == None' should be 'config is None' (singleton-comparison)
+tests\test_add_context.py:29:8: C0103: Variable name "bn" doesn't conform to snake_case naming style (invalid-name)
+tests\test_add_context.py:32:8: C0103: Variable name "bn" doesn't conform to snake_case naming style (invalid-name)
+tests\test_add_context.py:46:24: C0103: Argument name "n" doesn't conform to snake_case naming style (invalid-name)
+tests\test_add_context.py:61:7: C0121: Comparison 'config == None' should be 'config is None' (singleton-comparison)
+tests\test_add_context.py:63:4: C0103: Variable name "bn" doesn't conform to snake_case naming style (invalid-name)
+tests\test_add_context.py:93:7: C0121: Comparison 'config == None' should be 'config is None' (singleton-comparison)
+tests\test_add_context.py:95:4: C0103: Variable name "bn" doesn't conform to snake_case naming style (invalid-name)
+tests\test_add_context.py:7:0: C0411: standard import "from collections import defaultdict" should be placed before "import pytest" (wrong-import-order)
+
+------------------------------------------------------------------
+Your code has been rated at 7.78/10 (previous run: 7.78/10, +0.00)
+
+************* Module tests.test_add_intention
+tests\test_add_intention.py:17:1: W0511: TODO: add more negative cases (fixme)
+tests\test_add_intention.py:29:4: C0103: Variable name "bn" doesn't conform to snake_case naming style (invalid-name)
+tests\test_add_intention.py:37:24: C0103: Argument name "n" doesn't conform to snake_case naming style (invalid-name)
+tests\test_add_intention.py:44:4: C0103: Variable name "bn" doesn't conform to snake_case naming style (invalid-name)
+tests\test_add_intention.py:59:4: C0103: Variable name "bn" doesn't conform to snake_case naming style (invalid-name)
+tests\test_add_intention.py:63:27: C0103: Argument name "n" doesn't conform to snake_case naming style (invalid-name)
+tests\test_add_intention.py:68:4: C0103: Variable name "bn" doesn't conform to snake_case naming style (invalid-name)
+tests\test_add_intention.py:77:4: C0103: Variable name "bn" doesn't conform to snake_case naming style (invalid-name)
+tests\test_add_intention.py:82:34: C0103: Argument name "n" doesn't conform to snake_case naming style (invalid-name)
+tests\test_add_intention.py:86:4: C0103: Variable name "bn" doesn't conform to snake_case naming style (invalid-name)
+tests\test_add_intention.py:7:0: C0411: standard import "from collections import defaultdict" should be placed before "import pytest" (wrong-import-order)
+tests\test_add_intention.py:12:0: W0611: Unused default_to_regular imported from CoBaIR.bayes_net (unused-import)
+
+------------------------------------------------------------------
+Your code has been rated at 7.00/10 (previous run: 7.00/10, +0.00)
+
+************* Module tests.test_create_bayesNet
+tests\test_create_bayesNet.py:92:0: C0305: Trailing newlines (trailing-newlines)
+tests\test_create_bayesNet.py:1:0: C0103: Module name "test_create_bayesNet" doesn't conform to snake_case naming style (invalid-name)
+tests\test_create_bayesNet.py:23:4: C0103: Variable name "bn" doesn't conform to snake_case naming style (invalid-name)
+tests\test_create_bayesNet.py:30:40: C0103: Argument name "n" doesn't conform to snake_case naming style (invalid-name)
+tests\test_create_bayesNet.py:37:4: C0103: Variable name "bn" doesn't conform to snake_case naming style (invalid-name)
+tests\test_create_bayesNet.py:48:4: C0103: Variable name "bn" doesn't conform to snake_case naming style (invalid-name)
+tests\test_create_bayesNet.py:55:40: C0103: Argument name "n" doesn't conform to snake_case naming style (invalid-name)
+tests\test_create_bayesNet.py:61:4: C0103: Variable name "bn" doesn't conform to snake_case naming style (invalid-name)
+tests\test_create_bayesNet.py:73:4: C0103: Variable name "bn" doesn't conform to snake_case naming style (invalid-name)
+tests\test_create_bayesNet.py:87:4: C0103: Variable name "bn" doesn't conform to snake_case naming style (invalid-name)
+
+------------------------------------------------------------------
+Your code has been rated at 7.56/10 (previous run: 7.56/10, +0.00)
+
+************* Module tests.test_delete_context
+tests\test_delete_context.py:24:4: C0103: Variable name "bn" doesn't conform to snake_case naming style (invalid-name)
+tests\test_delete_context.py:36:4: C0103: Variable name "bn" doesn't conform to snake_case naming style (invalid-name)
+tests\test_delete_context.py:57:4: C0103: Variable name "bn" doesn't conform to snake_case naming style (invalid-name)
+tests\test_delete_context.py:59:4: W0612: Unused variable 'old_config' (unused-variable)
+tests\test_delete_context.py:72:4: C0103: Variable name "bn" doesn't conform to snake_case naming style (invalid-name)
+tests\test_delete_context.py:9:0: C0411: standard import "from collections import defaultdict" should be placed before "import pytest" (wrong-import-order)
+tests\test_delete_context.py:9:0: W0611: Unused defaultdict imported from collections (unused-import)
+tests\test_delete_context.py:13:0: W0611: Unused N imported from tests (unused-import)
+tests\test_delete_context.py:14:0: W0611: Unused default_to_regular imported from CoBaIR.bayes_net (unused-import)
+tests\test_delete_context.py:14:0: W0611: Unused load_config imported from CoBaIR.bayes_net (unused-import)
+
+------------------------------------------------------------------
+Your code has been rated at 7.78/10 (previous run: 7.78/10, +0.00)
+
+************* Module tests.test_delete_intention
+tests\test_delete_intention.py:24:4: C0103: Variable name "bn" doesn't conform to snake_case naming style (invalid-name)
+tests\test_delete_intention.py:36:4: C0103: Variable name "bn" doesn't conform to snake_case naming style (invalid-name)
+tests\test_delete_intention.py:57:4: C0103: Variable name "bn" doesn't conform to snake_case naming style (invalid-name)
+tests\test_delete_intention.py:59:4: W0612: Unused variable 'old_config' (unused-variable)
+tests\test_delete_intention.py:71:4: C0103: Variable name "bn" doesn't conform to snake_case naming style (invalid-name)
+tests\test_delete_intention.py:9:0: C0411: standard import "from collections import defaultdict" should be placed before "import pytest" (wrong-import-order)
+tests\test_delete_intention.py:9:0: W0611: Unused defaultdict imported from collections (unused-import)
+tests\test_delete_intention.py:13:0: W0611: Unused N imported from tests (unused-import)
+tests\test_delete_intention.py:14:0: W0611: Unused default_to_regular imported from CoBaIR.bayes_net (unused-import)
+tests\test_delete_intention.py:14:0: W0611: Unused load_config imported from CoBaIR.bayes_net (unused-import)
+
+------------------------------------------------------------------
+Your code has been rated at 7.73/10 (previous run: 7.73/10, +0.00)
+
+************* Module tests.test_edit_context
+tests\test_edit_context.py:49:0: C0301: Line too long (111/100) (line-too-long)
+tests\test_edit_context.py:68:0: C0301: Line too long (132/100) (line-too-long)
+tests\test_edit_context.py:86:0: C0325: Unnecessary parens after 'del' keyword (superfluous-parens)
+tests\test_edit_context.py:94:0: C0301: Line too long (132/100) (line-too-long)
+tests\test_edit_context.py:98:0: C0301: Line too long (143/100) (line-too-long)
+tests\test_edit_context.py:104:0: C0301: Line too long (113/100) (line-too-long)
+tests\test_edit_context.py:120:0: C0301: Line too long (132/100) (line-too-long)
+tests\test_edit_context.py:127:0: C0301: Line too long (101/100) (line-too-long)
+tests\test_edit_context.py:139:0: C0325: Unnecessary parens after 'del' keyword (superfluous-parens)
+tests\test_edit_context.py:147:0: C0301: Line too long (132/100) (line-too-long)
+tests\test_edit_context.py:151:0: C0301: Line too long (149/100) (line-too-long)
+tests\test_edit_context.py:154:0: C0305: Trailing newlines (trailing-newlines)
+tests\test_edit_context.py:23:4: C0103: Variable name "bn" doesn't conform to snake_case naming style (invalid-name)
+tests\test_edit_context.py:35:4: C0103: Variable name "bn" doesn't conform to snake_case naming style (invalid-name)
+tests\test_edit_context.py:55:4: C0103: Variable name "bn" doesn't conform to snake_case naming style (invalid-name)
+tests\test_edit_context.py:58:4: W0612: Unused variable 'old_config' (unused-variable)
+tests\test_edit_context.py:77:4: C0103: Variable name "bn" doesn't conform to snake_case naming style (invalid-name)
+tests\test_edit_context.py:106:4: C0103: Variable name "bn" doesn't conform to snake_case naming style (invalid-name)
+tests\test_edit_context.py:110:4: W0612: Unused variable 'old_config' (unused-variable)
+tests\test_edit_context.py:125:0: E0102: function already defined line 73 (function-redefined)
+tests\test_edit_context.py:129:4: C0103: Variable name "bn" doesn't conform to snake_case naming style (invalid-name)
+tests\test_edit_context.py:11:0: W0611: Unused N imported from tests (unused-import)
+tests\test_edit_context.py:12:0: W0611: Unused default_to_regular imported from CoBaIR.bayes_net (unused-import)
+tests\test_edit_context.py:12:0: W0611: Unused load_config imported from CoBaIR.bayes_net (unused-import)
+
+------------------------------------------------------------------
+Your code has been rated at 7.14/10 (previous run: 7.14/10, +0.00)
+
+************* Module tests.test_edit_intention
+tests\test_edit_intention.py:42:0: C0304: Final newline missing (missing-final-newline)
+tests\test_edit_intention.py:12:0: W0611: Unused N imported from tests (unused-import)
+tests\test_edit_intention.py:13:0: W0611: Unused default_to_regular imported from CoBaIR.bayes_net (unused-import)
+tests\test_edit_intention.py:13:0: W0611: Unused load_config imported from CoBaIR.bayes_net (unused-import)
+
+------------------------------------------------------------------
+Your code has been rated at 8.10/10 (previous run: 8.10/10, +0.00)
+
+************* Module tests.test_infer
+tests\test_infer.py:103:39: C0303: Trailing whitespace (trailing-whitespace)
+tests\test_infer.py:108:4: W0107: Unnecessary pass statement (unnecessary-pass)
+tests\test_infer.py:115:4: W0612: Unused variable 'probabilities' (unused-variable)
+tests\test_infer.py:9:0: W0611: Unused N imported from tests (unused-import)
+tests\test_infer.py:10:0: W0611: Unused default_to_regular imported from CoBaIR.bayes_net (unused-import)
+tests\test_infer.py:10:0: W0611: Unused load_config imported from CoBaIR.bayes_net (unused-import)
+
+------------------------------------------------------------------
+Your code has been rated at 8.38/10 (previous run: 8.38/10, +0.00)
+
+************* Module tests.test_load
+tests\test_load.py:59:41: C0303: Trailing whitespace (trailing-whitespace)
+tests\test_load.py:19:1: W0511: TODO: add more negative cases (fixme)
+tests\test_load.py:6:0: W0611: Unused defaultdict imported from collections (unused-import)
+tests\test_load.py:13:0: W0611: Unused N imported from tests (unused-import)
+
+------------------------------------------------------------------
+Your code has been rated at 8.33/10 (previous run: 8.33/10, +0.00)
+
+************* Module tests.test_new_combined_influence
+tests\test_new_combined_influence.py:80:0: W0311: Bad indentation. Found 12 spaces, expected 8 (bad-indentation)
+tests\test_new_combined_influence.py:92:0: C0301: Line too long (156/100) (line-too-long)
+tests\test_new_combined_influence.py:94:0: W0311: Bad indentation. Found 12 spaces, expected 8 (bad-indentation)
+tests\test_new_combined_influence.py:100:0: W0311: Bad indentation. Found 12 spaces, expected 8 (bad-indentation)
+tests\test_new_combined_influence.py:112:0: W0311: Bad indentation. Found 11 spaces, expected 8 (bad-indentation)
+tests\test_new_combined_influence.py:117:0: W0311: Bad indentation. Found 11 spaces, expected 8 (bad-indentation)
+tests\test_new_combined_influence.py:121:0: C0303: Trailing whitespace (trailing-whitespace)
+tests\test_new_combined_influence.py:60:8: W0212: Access to a protected member _create_combined_context of a client class (protected-access)
+tests\test_new_combined_influence.py:80:12: W0212: Access to a protected member _calculate_probability_values of a client class (protected-access)
+tests\test_new_combined_influence.py:81:11: W0212: Access to a protected member _create_combined_context of a client class (protected-access)
+tests\test_new_combined_influence.py:81:46: W0631: Using possibly undefined loop variable 'context_influence' (undefined-loop-variable)
+tests\test_new_combined_influence.py:94:12: W0212: Access to a protected member _calculate_probability_values of a client class (protected-access)
+tests\test_new_combined_influence.py:95:11: W0212: Access to a protected member _create_combined_context of a client class (protected-access)
+tests\test_new_combined_influence.py:95:46: W0631: Using possibly undefined loop variable 'context_influence' (undefined-loop-variable)
+tests\test_new_combined_influence.py:100:12: W0212: Access to a protected member _calculate_probability_values of a client class (protected-access)
+tests\test_new_combined_influence.py:101:11: W0212: Access to a protected member _create_combined_context of a client class (protected-access)
+tests\test_new_combined_influence.py:112:23: W0212: Access to a protected member _calculate_probability_values of a client class (protected-access)
+tests\test_new_combined_influence.py:117:35: W0212: Access to a protected member _calculate_probability_values of a client class (protected-access)
+
+------------------------------------------------------------------
+Your code has been rated at 7.57/10 (previous run: 6.80/10, +0.77)
+
+************* Module tests.test_remove_combined_influence
+tests\test_remove_combined_influence.py:40:0: C0303: Trailing whitespace (trailing-whitespace)
+tests\test_remove_combined_influence.py:55:0: C0303: Trailing whitespace (trailing-whitespace)
+tests\test_remove_combined_influence.py:24:4: C0103: Variable name "bn" doesn't conform to snake_case naming style (invalid-name)
+tests\test_remove_combined_influence.py:41:4: C0103: Variable name "bn" doesn't conform to snake_case naming style (invalid-name)
+tests\test_remove_combined_influence.py:9:0: C0411: standard import "from collections import defaultdict" should be placed before "import pytest" (wrong-import-order)
+tests\test_remove_combined_influence.py:12:0: W0611: Unused N imported from tests (unused-import)
+tests\test_remove_combined_influence.py:13:0: W0611: Unused default_to_regular imported from CoBaIR.bayes_net (unused-import)
+tests\test_remove_combined_influence.py:13:0: W0611: Unused load_config imported from CoBaIR.bayes_net (unused-import)
+
+------------------------------------------------------------------
+Your code has been rated at 7.04/10 (previous run: 7.04/10, +0.00)
+
+************* Module tests
+tests\__init__.py:1:0: C0114: Missing module docstring (missing-module-docstring)
+
+------------------------------------------------------------------
+Your code has been rated at 0.00/10 (previous run: 0.00/10, +0.00)
+
