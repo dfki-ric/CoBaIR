@@ -33,8 +33,9 @@ def test_remove_combined_influence_from_empty():
 
 def test_remove_existing_add_new_combined_context_influence():
     """
-    Test removing combined context influence from the loaded config's existing combined context influence
-    and adding combined context influence into the loaded config's existing combined context influence
+    Test removing combined context influence from the loaded config's 
+        existing combined context influence.
+    Adding combined context influence into the loaded config's existing combined context influence
     """
     
     bn = BayesNet()

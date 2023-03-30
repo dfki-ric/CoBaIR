@@ -1,6 +1,6 @@
-'''
+""" 
 This module provides a class for a two-layer bayes net for context based intention recognition.
-'''
+"""
 
 # System imports
 from __future__ import annotations
@@ -8,13 +8,10 @@ import itertools
 from collections import defaultdict
 from collections.abc import Hashable
 from copy import deepcopy
-import warnings
-import os
 
 # 3rd party imports
 import bnlearn as bn
 from pgmpy.factors.discrete import TabularCPD
-import numpy as np
 import yaml
 # local imports
 from .random_base_count import Counter
@@ -26,12 +23,22 @@ __author__ = 'Adrian Lubitz'
 
 
 class PrettySafeLoader(yaml.SafeLoader):
+    """A YAML loader that constructs Python tuples from YAML sequences."""
     def construct_python_tuple(self, node):
+        """
+        Construct a Python tuple from a YAML sequence node.
+
+        Args:
+            node (Any): The YAML sequence node to construct a tuple from.
+
+        Returns:
+            tuple: The constructed tuple.
+        """
         return tuple(self.construct_sequence(node))
 
 
 PrettySafeLoader.add_constructor(
-    u'tag:yaml.org,2002:python/tuple',
+    'tag:yaml.org,2002:python/tuple',
     PrettySafeLoader.construct_python_tuple)
 
 
@@ -42,8 +49,11 @@ class BayesNet():
 
         Args:
             config: A dict with a config following the config format.
-            bn_verbosity: sets the verbose flag for bnlearn. See [bnlearn API](https://erdogant.github.io/bnlearn/pages/html/bnlearn.bnlearn.html?highlight=verbose#bnlearn.bnlearn.make_DAG) for more information
-            validate: Flag if the given config should be validated or not. This is necessary to load invalid configs
+            bn_verbosity: sets the verbose flag for bnlearn. See [bnlearn API](
+                https://erdogant.github.io/bnlearn/pages/html/bnlearn.bnlearn.html?highlight=verbose
+                #bnlearn.bnlearn.make_DAG) for more information
+            validate: Flag if the given config should be validated or not. 
+                This is necessary to load invalid configs
         '''
 
         self.valid = False
@@ -82,7 +92,7 @@ class BayesNet():
         self._create_context_cpts()
         self._create_intention_cpts()
         if self.valid:
-            self.DAG = bn.make_DAG(self.edges, CPD=self.cpts,
+            self.dag = bn.make_DAG(self.edges, CPD=self.cpts,
                                    verbose=self.bn_verbosity)
 
     def _create_value_to_card(self):
@@ -92,7 +102,7 @@ class BayesNet():
         self.value_to_card = defaultdict(dict)
         for context, probabilities in self.config['contexts'].items():
             count = 0
-            for key, val in probabilities.items():
+            for key, _ in probabilities.items():
                 self.value_to_card[context][key] = count
                 count += 1
 
@@ -107,7 +117,8 @@ class BayesNet():
 
     def _create_context_cpts(self):
         '''
-        Create the Conditional Probability Tables for all context nodes in the DAG and APPENDS them to self.cpts
+        Create the Conditional Probability Tables for all context nodes in the DAG and 
+            APPENDS them to self.cpts
         '''
         for context, probabilities in self.config['contexts'].items():
             values = [None] * len(probabilities)
@@ -119,16 +130,19 @@ class BayesNet():
 
     def _create_intention_cpts(self):
         '''
-        Create the Conditional Probability Tables for all intention nodes in the DAG and APPENDS them to self.cpts
+        Create the Conditional Probability Tables for all intention nodes in the DAG and 
+            APPENDS them to self.cpts
         '''
         for intention, context_influence in self.config['intentions'].items():
             values = self._calculate_probability_values(context_influence)
             # create a TabularCPD
-            self.cpts.append(TabularCPD(variable=intention, variable_card=2,  # intentions are always binary
-                                        # see https://pgmpy.org/factors/discrete.html?highlight=cpd#module-pgmpy.factors.discrete.CPD
-                                        values=values,
-                                        evidence=self.evidence,
-                                        evidence_card=self.evidence_card))
+            self.cpts.append(
+                TabularCPD(variable=intention,
+                        variable_card=2,  # intentions are always binary
+                        values=values,
+                        evidence=self.evidence,
+                        evidence_card=self.evidence_card)
+            )
 
     def _create_evidence_card(self):
         '''
@@ -140,7 +154,6 @@ class BayesNet():
                 len(self.config['contexts'][evidence_variable]))
 
     def _create_combined_context(self, context_influence: dict) -> dict:
-        # TODO: adjust example to use tuples
         """
         Creates a dict with the combined contexts in card index format from context_influence.
 
@@ -167,13 +180,14 @@ class BayesNet():
                                  ] = context_influence[context]
         return combined_context
 
-    def _alter_combined_context(self, count: Counter, context_influence: dict, combined_context: dict) -> dict:
-        # TODO: adjust example to use tuples
+    def _alter_combined_context(self, count: Counter, context_influence: dict,
+                            combined_context: dict) -> dict:
         """
         Overwrites the influence values for the cases of combined influence.
 
         Args:
-            count: A counter that indicates for which combination of context the average is calculated
+            count: 
+                A counter that indicates for which combination of context the average is calculated
             context_influence: 
                 A dict with the influence values for contexts.
                 Example: {'speech commands':
@@ -214,17 +228,17 @@ class BayesNet():
                     break
             if combined_case:
                 for i, index in enumerate(context_tuple):
-                    altered_context_influence[self.evidence[index]][value_tuple[i]
-                                                                    ] = combined_context[context_tuple][value_tuple]
+                    altered_context_influence[self.evidence[index]][value_tuple[i]] = \
+                        combined_context[context_tuple][value_tuple]
                 break
         return altered_context_influence
 
     def _calculate_probability_values(self, context_influence: dict) -> list:
-        # TODO: adjust example to use tuples
         '''
         Calculates the probability values with the given context_influence from the config.
 
-        Influence on the positive case(intention is true) is calculated as the average over all influences for the given context.
+        Influence on the positive case(intention is true) is calculated as the 
+            average over all influences for the given context.
         The influence mapping is given in
         self.value_to_prob = {5: 0.95, 4: 0.75,
             3: 0.5, 2: 0.25, 1: 0.05, 0: 0.0}
@@ -240,7 +254,7 @@ class BayesNet():
                           }
         Returns:
             list:
-            A list of lists containing the probability values for the negative and positive respectively.
+            A list of lists containing the probability values for the negative and positive.
             Example:
 
             [[0.416, 0.5, 0.183, 0.266, 0.733, 0.816, 0.5, 0.583, 0.733, 0.816, 0.5, 0.583],
@@ -262,8 +276,10 @@ class BayesNet():
             ####
 
             for i in range(len(self.evidence_card)):
-                average += self.value_to_prob[altered_context_influence[self.evidence[i]
-                                                                        ][self.card_to_value[self.evidence[i]][count[i]]]]
+                value = self.card_to_value[self.evidence[i]][count[i]]
+                influence = altered_context_influence[self.evidence[i]][value]
+                prob = self.value_to_prob[influence]
+                average += prob
             average /= len(self.evidence)
             pos_values.append(average)
         # create neg_values
@@ -283,12 +299,14 @@ class BayesNet():
             A tuple of bool to indicate validity and str for error message
         """
         if context not in self.config['contexts'] or instantiation is None:
-            # ignoring unrelated contexts and Nonetype # TODO: if I ignore it anyways then I can as well say it is valid
             return False, 'ignore'
-        if not isinstance(instantiation, Hashable) or not instantiation in self.config['contexts'][context].keys():
-            return False, f'{instantiation} is not a valid instantiation for {context}. Must be one of {list(self.config["contexts"][context].keys())}'
-        else:
-            return True, ''
+        if not isinstance(instantiation, Hashable) or \
+        not instantiation in self.config['contexts'][context].keys():
+            invalid_msg = f'{instantiation} is not a valid instantiation for {context}. '
+            valid_options = list(self.config["contexts"][context].keys())
+            valid_options_msg = f'Must be one of {valid_options}'
+            return False, invalid_msg + valid_options_msg
+        return True, ''
 
     def bind_discretization_function(self, context, discretization_function):
         """
@@ -297,7 +315,8 @@ class BayesNet():
 
         Args:
             context: One of the possible contexts from the config
-            discretization_function: A discretization function which has to take one parameter and return one of the possible discrete context instantiations.
+            discretization_function: A discretization function which has to take one parameter and 
+                return one of the possible discrete context instantiations.
         """
         if context not in self.contexts:
             raise ValueError(
@@ -311,16 +330,20 @@ class BayesNet():
         Args:
             evidence:
                 Evidence to infer the probabilities of all intentions.
-                Evidence can contain context which is not in the config as well as it must not contain all possible contexts.
+                Evidence can contain context which is not in the config; 
+                    it must not contain all possible contexts.
                 Example:
                     {'speech commands': 'pickup',
                      'human holding object': True,
                      'human activity': 'idle'}
-            decision_threshold: a threshold for picking the most likely intention. Must be between 0 and 1. If not given the decision_threshold defined on initialization is taken. 
+            decision_threshold: a threshold for picking the most likely intention. 
+                Must be between 0 and 1. 
+                If not given the decision_threshold defined on initialization is taken. 
             normalized: Flag if the returned inference is normalized to sum up to 1.
         Returns:
             tuple:
-            Returns the highest ranking intention (or None if decision_threshold is not reached) and a dictionary of intentions and the corresponding probabilities.
+            Returns the highest ranking intention (or None if decision_threshold is not reached) and 
+                a dictionary of intentions and the corresponding probabilities.
         '''
         # check if evidence values are in instantiations and create a card form of bnlearn
         if decision_threshold is None:
@@ -338,7 +361,7 @@ class BayesNet():
                 if valid:
                     card_evidence[context] = self.value_to_card[context][discrete_instantiation]
                 else:
-                    if not err_msg == 'ignore':  # A discretizer function should still be able to output None
+                    if not err_msg == 'ignore':  
                         raise ValueError(err_msg)
             else:
                 if not err_msg == 'ignore':
@@ -349,20 +372,25 @@ class BayesNet():
             for intention in self.intentions:
                 # only True values of binary intentions will be saved
                 inference[intention] = bn.inference.fit(
-                    self.DAG, variables=[intention], evidence=card_evidence, verbose=self.bn_verbosity).values[1]
+                    self.DAG,
+                    variables=[intention],
+                    evidence=card_evidence,
+                    verbose=self.bn_verbosity
+                ).values[1]
+
             if normalized:
                 inference = self.normalize_inference(inference)
             max_intention = max(inference, key=inference.get)
             max_intention = max_intention if inference[max_intention] > decision_threshold else None
             return max_intention, inference
         else:
-            raise Exception('Configuration is invalid')
+            raise ValueError('Invalid configuration')
 
     def normalize_inference(self, inference: dict) -> dict:
         '''
         Normalizes the inference to a proper probability distribution.
 
-        Inference which is not normalized will just be normalized for one intention being True or False,
+        Inference which is not normalized will be normalized for one intention being True or False,
         which leads to uninterpretable results for inference of multiple intentions.
 
         Args:
@@ -384,48 +412,55 @@ class BayesNet():
         Raises:
             AssertionError: An AssertionError is raised if the config is not valid.
         '''
-        # TODO: add validation that decision_threshold is a float
-        # TODO: add validation that apriorio values are float
         # contexts and intentions need to be defined
         assert 'contexts' in self.config, 'Field "contexts" must be defined in the config'
         assert 'intentions' in self.config, 'Field "intentions" must be defined in the config'
         assert len(self.config['contexts']), 'No contexts defined'
         assert len(self.config['intentions']), 'No intentions defined'
-        assert isinstance(self.config['decision_threshold'], float) and self.config['decision_threshold'] >= 0 and self.config[
-            'decision_threshold'] < 1, 'Decision threshold must be a number between 0 and 1'
+        assert isinstance(self.config['decision_threshold'], float) and \
+            self.config['decision_threshold'] >= 0 and \
+            self.config['decision_threshold'] < 1, \
+            'Decision threshold must be a number between 0 and 1'
 
-        # Intentions need to have influence values for all contexts and their possible instantiations
+        # Intentions need to have influence value for all contexts and their possible instantiations
         for intention, context_influences in self.config['intentions'].items():
             for context, influences in context_influences.items():
 
                 if isinstance(context, str):
-                    assert context in self.config[
-                        'contexts'], f'Context influence {context} cannot be found in the defined contexts!'
+                    assert context in self.config['contexts'], \
+                        f'Context influence {context} cannot be found in the defined contexts!'
                 # assert influences.keys() == self.config['contexts'][context].keys(
-                # ), f'An influence needs to be defined for all instantiations! {intention}.{context} does not fit the defined instantiations for {context}'
+                # ), f'An influence needs to be defined for all instantiations! 
+                # {intention}.{context} does not fit the defined instantiations for {context}'
+
                 for instantiation, influence in influences.items():
-                    if type(instantiation) is not tuple:
-                        assert 5 >= influence >= 0 and isinstance(
-                            influence, int), f'Influence Value for {intention}.{context}.{instantiation} must be an integer between 0 and 5! Is {influence}'
-                        assert instantiation in self.config['contexts'][context].keys(
-                        ), f'An influence needs to be defined for all instantiations! {intention}.{context}.{instantiation} does not fit the defined instantiations for {context}'
+                    if not isinstance(instantiation, tuple):
+                        assert 5 >= influence >= 0 and isinstance(influence, int), \
+                            f'Influence Value for {intention}.{context}.{instantiation} must be an integer between 0 and 5!' \
+                            f'Is {influence}'
+                        assert instantiation in self.config['contexts'][context].keys(), \
+                            f'An influence needs to be defined for all instantiations! {intention}.{context}.{instantiation}' \
+                            f'does not fit the defined instantiations for {context}'
+
         # Probabilities need to sum up to 1
         for context, instantiations in self.config['contexts'].items():
             for instantiation, value in instantiations.items():
                 assert isinstance(
                     value, float), f'Apriori probability of context "{context}.{instantiation}" is not a number'
-            assert sum(instantiations.values(
-            )) == 1.0, f'The sum of probabilities for context instantiations must be 1 - For "{context}" it is {sum(instantiations.values())}!'
+            assert sum(instantiations.values()) == 1.0, \
+                f'The sum of probabilities for context instantiations must be 1 - For "{context}" it is {sum(instantiations.values())}!'
             # This is the config of the currently running BayesNet
         self.valid_config = deepcopy(self.config)
         self.valid = True
 
     def _create_zero_influence_dict(self, context_with_instantiations: dict) -> defaultdict:
         """
-        This uses the context dict from config['contexts'] to instantiate a dict that can be used in config['intentions']['some_context']
+        This uses the context dict from config['contexts'] to instantiate a dict that can be used in 
+            config['intentions']['some_context']
 
         Args:
-            context_with_instantiations: a dict holding contexts, their instantiations and corresponding apriori probabilities
+            context_with_instantiations: 
+                a dict holding contexts, their instantiations and corresponding apriori probabilities
         Returns:
             defaultdict:
             A dictionary with zero-initialized influence values for every given context.
@@ -440,7 +475,7 @@ class BayesNet():
         """
         zeros = defaultdict(lambda: defaultdict(dict))
         for context, instantiations in context_with_instantiations.items():
-            for instantiation, value in instantiations.items():
+            for instantiation, _ in instantiations.items():
                 zeros[context][instantiation] = 0
         return zeros
 
@@ -465,9 +500,6 @@ class BayesNet():
         # fill in the new context
         self.config['contexts'][context] = instantiations
         # add this context in every intention with instantiations and values beeing zero.
-        # for intention in self.config['intentions']:
-        #     self.config['intentions'][intention] = {**self.config['intentions'][intention], **self._create_zero_influence_dict(
-        #         {context: instantiations})}
         self._transport_context_into_intentions()
         # reinizialize
         self.__init__(self.config)
@@ -503,7 +535,8 @@ class BayesNet():
         Edits an existing context - this can also be used to remove instantiations
 
         !!! note
-            Changing the name of an instantiation will always set the influence value of this instantiation to zero for all intentions!
+            Changing the name of an instantiation will always set the influence value of this 
+                instantiation to zero for all intentions!
 
         Args:
             context: Name of the context to edit
@@ -522,12 +555,12 @@ class BayesNet():
             raise ValueError(
                 'Cannot edit non existing context - use add_context to add a new context')
         if new_name:  # del old names context
-            del (self.config['contexts'][context])
+            del self.config['contexts'][context]
             # rename all occurences in intentions
             for intention in self.config['intentions']:
                 old_instantiations = deepcopy(
                     self.config['intentions'][intention][context])
-                del (self.config['intentions'][intention][context])
+                del self.config['intentions'][intention][context]
                 self.config['intentions'][intention][new_name] = old_instantiations
             context = new_name
 
@@ -557,7 +590,7 @@ class BayesNet():
             raise ValueError(
                 f'{new_name} exists - cannot be given as the new name for {intention}')
         old_values = deepcopy(self.config['intentions'][intention])
-        del (self.config['intentions'][intention])
+        del self.config['intentions'][intention]
         self.config['intentions'][new_name] = old_values
         # reinizialize
         self.__init__(self.config)
@@ -577,7 +610,7 @@ class BayesNet():
         if context not in self.config['contexts']:
             raise ValueError(
                 'Cannot delete non existing context - use add_context to add a new context')
-        del (self.config['contexts'][context])
+        del self.config['contexts'][context]
         self._remove_context_from_intentions()
         self._transport_context_into_intentions()
         # reinizialize
@@ -597,7 +630,7 @@ class BayesNet():
         if intention not in self.config['intentions']:
             raise ValueError(
                 'Cannot delete non existing intention - use add_intention to add a new intention')
-        del (self.config['intentions'][intention])
+        del self.config['intentions'][intention]
         # reinizialize
         self.__init__(self.config)
 
@@ -609,13 +642,14 @@ class BayesNet():
             path: path to the file the config will be saved in
             save_invalid: Flag to decide if invalid configs can be saved
         Raises:
-            ValueError: A ValueError is raised if `save_invalid` is `False` and the config is not valid
+            ValueError: 
+                A ValueError is raised if `save_invalid` is `False` and the config is not valid
         """
         if not self.valid and not save_invalid:
             raise ValueError(
                 "saving invalid config is only possible if save_invalid is set to True")
 
-        with open(path, 'w') as save_file:
+        with open(path, 'w', encoding='utf-8') as save_file:
             yaml.dump(default_to_regular(self.config), save_file)
 
     def load(self, path: str):
@@ -643,7 +677,8 @@ class BayesNet():
             ValueError: Raises a ValueError if the instantiation does not exists in the config
             AssertionError: An AssertionError is raised if the resulting config is not valid.
         """
-        # check if this value already exists because I'm using defaultdict - otherwise you can just add values
+        # check if this value already exists because I'm using defaultdict 
+        # otherwise you can just add values
         if instantiation in self.config['contexts'][context]:
             self.config['contexts'][context][instantiation] = value
             # reinizialize
@@ -654,7 +689,7 @@ class BayesNet():
 
     def change_influence_value(self, intention: str, context: str, instantiation, value: int):
         """
-        Change the influence value for a specific instantiation of a context for a specific intention.
+        Update the influence value of a specific intention for a particular context instance..
 
         Args:
             intention: Name of the intention
@@ -665,7 +700,8 @@ class BayesNet():
             ValueError: Raises a ValueError if the instantiation does not exists in the config
             AssertionError: An AssertionError is raised if the resulting config is not valid.
         """
-        # check if this value already exists because I'm using defaultdict - otherwise you can just add values
+        # check if this value already exists because I'm using defaultdict 
+        # otherwise you can just add values
         if instantiation in self.config['intentions'][intention][context]:
             self.config['intentions'][intention][context][instantiation] = value
             self.__init__(self.config)
@@ -673,14 +709,15 @@ class BayesNet():
             raise ValueError(
                 'change_influence_value can only change values that exist already')
 
-    def add_combined_influence(self, intention: str, contexts: tuple, instantiations: tuple, value: int):
+    def add_combined_influence(self, intention: str, contexts: tuple, 
+                    instantiations: tuple, value: int):
         """
         Adds an influence value for a combination of context instantiations.
 
         Args:
             intention: Name of the intention
             contexts: tuple containing the names of the contexts
-            instantiations: tuple of context instantiations for which the influence value should be set
+            instantiations: Tuple of context instances to set influence value for.
             value: influence value. Can be one out of [0, 1, 2, 3, 4, 5]
         Raises:
             ValueError: Raises a ValueError if the instantiation does not exists in the config
@@ -707,12 +744,13 @@ class BayesNet():
         """
         if instantiations not in self.config['intentions'][intention][contexts]:
             raise ValueError(
-                'remove_combined_influence can only remove combined context instantiations that already exist')
-        del (self.config['intentions'][intention][contexts])
+                'Combined context instantiations must exist to be removed.')
+        del self.config['intentions'][intention][contexts]
 
     def _transport_context_into_intentions(self):
         """
-        Transports contexts and their instantiations defined in the config['contexts'] into config['intentions'] as influencing context if not present.
+        Transports contexts and their instantiations defined in the config['contexts'] into 
+            config['intentions'] as influencing context if not present.
         """
         for context in self.config['contexts']:
             for instantiation in self.config['contexts'][context]:
@@ -723,7 +761,7 @@ class BayesNet():
 
     def _remove_context_from_intentions(self):
         """
-        This removes context or instantiations after removing/changing instantiations and/or context.
+        This removes context or instantiation after removing/changing instantiations and/or context.
         """
         # This is a hack because you can't edit while iterating a dict
         contexts_to_remove_from_intentions = []
@@ -739,9 +777,9 @@ class BayesNet():
                             context_instantiations_to_remove_from_intentions.append(
                                 (intention, context, instantiation))
         for intention, context in contexts_to_remove_from_intentions:
-            del (self.config['intentions'][intention][context])
+            del self.config['intentions'][intention][context]
         for intention, context, instantiation in context_instantiations_to_remove_from_intentions:
-            del (self.config['intentions'][intention][context][instantiation])
+            del self.config['intentions'][intention][context][instantiation]
 
     def change_decision_threshold(self, decision_threshold):
         """
@@ -803,11 +841,11 @@ def load_config(path):
     # if os.path.splitext(path)[-1] != ".yml":
     #     raise TypeError(
     #         'Invalid format file - only supporting yml files')
-    with open(path) as stream:
+    with open(path, encoding='utf-8') as stream:
         return config_to_default_dict(yaml.load(stream, Loader=PrettySafeLoader))
 
-# https://stackoverflow.com/questions/26496831/how-to-convert-defaultdict-of-defaultdicts-of-defaultdicts-to-dict-of-dicts-o
 
+# https://stackoverflow.com/questions/26496831/how-to-convert-defaultdict-of-defaultdicts-of-defaultdicts-to-dict-of-dicts-o
 
 def default_to_regular(d):
     """
@@ -819,8 +857,8 @@ def default_to_regular(d):
         dict:
             a regular dict casted from the defaultdict
     """
-    # casts dicts or default dicts because otherwise it will stop at the first dict and if that has another defaultdict in it - that won't cast
+    # casts dicts or default dicts because otherwise it will stop at the first dict and 
+    # if that has another defaultdict in it - that won't cast
     if isinstance(d, defaultdict) or isinstance(d, dict):
-        d = {k: default_to_regular(
-            v) for k, v in d.items() if not isinstance(v, dict) or v}
+        d = {k: default_to_regular(v) for k, v in d.items() if not isinstance(v, dict) or v}
     return d
