@@ -17,6 +17,7 @@ from PyQt5.QtWidgets import QDialog, QLabel, QLineEdit, QComboBox, QPushButton,\
       QFrame, QGridLayout, QSizePolicy, QSlider, QFileDialog
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont, QFontMetrics
+import numpy as np
 
 # local imports
 from .bayes_net import BayesNet
@@ -156,7 +157,7 @@ class NewCombinedContextDialog(QDialog):
         self.context_menus = []
         self.instantiation_selections = []
         self.instantiation_menus = []
-        for i in range(2):
+        for _ in range(2):
             self.new_instantiation()
 
     def context_selected(self, context: str, i: int):
@@ -464,6 +465,10 @@ class Configurator(QtWidgets.QMainWindow):
         self.view = self.win.addViewBox()
         self.graph_item = TwoLayerGraph()
         self.view.addItem(self.graph_item)
+        self.advanced_folded = False
+        self.advanced_table = None
+        self.context_instantiations = defaultdict(dict)
+        self.intention_instantiations = defaultdict(lambda: defaultdict(dict))
         self.setup_layout()
         self.bayes_net = BayesNet(config)
         self.create_fields()
@@ -473,8 +478,7 @@ class Configurator(QtWidgets.QMainWindow):
         """
         setting the alignment and color of the error label
         """
-        self.error_label.setAlignment(
-            Qt.AlignCenter)  # TODO: no changes of style in functional code!
+        self.error_label.setAlignment(Qt.AlignCenter) 
         self.error_label.setStyleSheet("color: red")
 
     def create_fields(self):
@@ -584,8 +588,6 @@ class Configurator(QtWidgets.QMainWindow):
         The GUI can only handle strings for now. 
         This means every instantiation name will be casted to a string upon editing.
         """
-        # TODO: renaming instantiations should not neccesarily put influence values to zero - check cases
-        # TODO: this will always set the instantiations as Strings
         # Open the new Context dialog with prefilled values
         # open small dialog to create context
 
@@ -909,8 +911,8 @@ class Configurator(QtWidgets.QMainWindow):
                 float(value))
         except AssertionError as error_message:
             self.error_label.setText(f"{error_message}")
-        except ValueError as error_message:
-            self.error_label.setText(f'Decision Threshold must be a number')
+        except ValueError:
+            self.error_label.setText('Decision Threshold must be a number')
 
     def set_context_dropdown(self, options: list, command: function = None):
         '''
@@ -971,7 +973,8 @@ class Configurator(QtWidgets.QMainWindow):
 
     def set_intention_dropdown(self, options: list, command: function = None):
         '''
-        This sets the options for a intention optionMenu with the options and the corresponding command
+        This sets the options for a intention optionMenu with the options 
+            and the corresponding command
 
         Args:
             options: A list containing the options in the intention dropdown
@@ -1003,16 +1006,16 @@ class Configurator(QtWidgets.QMainWindow):
             context: name of the clicked context
         """
 
-        for active_context, instantiations in self.context_instantiations.items():
+        for instantiations in self.context_instantiations.items():
             for instantiation, widgets in instantiations.items():
                 for widget in widgets:
                     try:
                         widget.deleteLater()
                     except AttributeError:
                         pass  # can not destroy StringVars
-                    except Exception as e:
+                    except Exception as error_message:
                         # TODO: better logging
-                        print(f"couldn't destroy: {e}")
+                        print(f"couldn't destroy: {error_message}")
 
         self.context_instantiations = defaultdict(dict)
 
@@ -1053,7 +1056,7 @@ class Configurator(QtWidgets.QMainWindow):
         Args:
             context_or_intention: name of the clicked context
         """
-        for active_intention, active_context in self.intention_instantiations.items():
+        for active_context in self.intention_instantiations.items():
             for active_context, instantiations in active_context.items():
                 for instantiation, widgets in instantiations.items():
                     for widget in widgets:
@@ -1119,10 +1122,10 @@ class Configurator(QtWidgets.QMainWindow):
                 self.error_label.setText("loading BayesNet...")
                 self.bayesNet.load(fileName)
                 self.error_label.setText("")
-            except AssertionError as e:
-                self.error_label.setText(str(e))
-            except Exception as e:
-                self.error_label.setText(str(e))
+            except AssertionError as error_message:
+                self.error_label.setText(str(error_message))
+            except Exception as error_message:
+                self.error_label.setText(str(error_message))
         self.create_fields()
 
     def save(self):
@@ -1146,11 +1149,11 @@ class Configurator(QtWidgets.QMainWindow):
         # update config
         self.error_label.setText("")
         try:
-            self.bayesNet.change_context_apriori_value(context=context, instantiation=instantiation, value=float(
-                self.context_instantiations[context][instantiation][1].text()))
-        except AssertionError as e:
-            self.error_label.setText(str(e))
-        except ValueError as e:
+            self.bayesNet.change_context_apriori_value(context=context, instantiation=instantiation, 
+                value=float(self.context_instantiations[context][instantiation][1].text()))
+        except AssertionError as error_message:
+            self.error_label.setText(str(error_message))
+        except ValueError:
             self.error_label.setText(
                 f'Apriori probability of context "{context}.{instantiation}" is not a number')
 
@@ -1179,14 +1182,17 @@ class TwoLayerGraph(pg.GraphItem):
     Graph Visualization for the two layer bayesian network
     """
 
-    def __init__(self, dist=10, size=3, line_width=[0, 25], pxMode=False, **kwds):
+    def __init__(self, dist=10, size=3, line_width=None, pxMode=False, **kwds):
         super().__init__(**kwds)
+        if line_width is None:
+            line_width = [0, 25]      
         self.dist = dist
         self.size = size
         self.line_width = line_width
         self.pxMode = pxMode
         self.unfolded_context = set()
         self.textItems = []
+
 
     def _set_pos(self):
         """
@@ -1265,8 +1271,8 @@ class TwoLayerGraph(pg.GraphItem):
             width = self.line_width[0] + \
                 (self.line_width[1] - self.line_width[0]) * normalized_mean
 
-            self.data["pen"].append(np.array([(red, green, blue, alpha, width)], dtype=[
-                ('red', np.uint8), ('green', np.uint8), ('blue', np.uint8), ('alpha', np.uint8), ('width', np.uint8)]))
+            self.data["pen"].append(np.array([(red, green, blue, alpha, width)], \
+                dtype=[('red', np.uint8), ('green', np.uint8), ('blue', np.uint8), ('alpha', np.uint8), ('width', np.uint8)]))
 
     def _set_text(self):
         """
@@ -1302,7 +1308,7 @@ class TwoLayerGraph(pg.GraphItem):
         self.setData(pos=np.array(self.data["pos"]), adj=np.array(
             self.data["adj"]), pen=np.array(self.data["pen"]), size=self.size, pxMode=self.pxMode)
 
-    def mousePressEvent(self, event):
+    def mouse_Press_Event(self, event):
         """
         Handler for the mouse click event
         """
