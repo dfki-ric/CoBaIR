@@ -709,7 +709,7 @@ class BayesNet():
             raise ValueError(
                 'change_influence_value can only change values that exist already')
 
-    def add_influence(self, intention: str, contexts: tuple, 
+    def add_combined_influence(self, intention: str, contexts: tuple, 
                     instantiations: tuple, value: int):
         """
         Adds an influence value for a combination of context instantiations.
