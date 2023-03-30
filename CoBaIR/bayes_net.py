@@ -1,6 +1,6 @@
-'''
+""" 
 This module provides a class for a two-layer bayes net for context based intention recognition.
-'''
+"""
 
 # System imports
 from __future__ import annotations
