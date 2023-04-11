@@ -92,7 +92,7 @@ class BayesNet():
         self._create_context_cpts()
         self._create_intention_cpts()
         if self.valid:
-            self.dag = bn.make_DAG(self.edges, CPD=self.cpts,
+            self.DAG = bn.make_DAG(self.edges, CPD=self.cpts,
                                    verbose=self.bn_verbosity)
 
     def _create_value_to_card(self):
