@@ -22,7 +22,7 @@ def test_infer_no_evidence():
     probabilities = {'pick up tool': 0.602803738317757,
                      'hand over tool': 0.397196261682243}
 
-    inference = dict(bn.infer({}))
+    inference = bn.infer({})
     for intention, probability in inference.items():
         assert round(abs(probability-probabilities[intention]), 7) == 0
 
