@@ -844,6 +844,7 @@ class Configurator(QtWidgets.QMainWindow):
         self.edit_intention_button = self.findChild(
             QPushButton, 'edit_intention_button')
         self.edit_intention_button.clicked.connect(self.edit_intention)
+        self.delete_intention_button.clicked.connect(self.delete_intention)
         self.delete_intention_button = self.findChild(
             QPushButton, 'delete_intention_button')
 
