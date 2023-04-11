@@ -33,11 +33,11 @@ def test_infer_unrelated_evidence():
     probabilities = {'pick up tool': 0.602803738317757,
                      'hand over tool': 0.397196261682243}
 
-    inference = dict(bn.infer({'some context': 'is not important',
+    inference = bn.infer({'some context': 'is not important',
                                         'another context': '',
                                         'unhashable context': {},
                                         'int context': 1,
-                                        'obj context': bn}))
+                                        'obj context': bn})
 
     for intention, probability in inference.items():
         assert round(abs(probability-probabilities[intention]), 7) == 0
