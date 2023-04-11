@@ -70,39 +70,41 @@ def test_new_combined_context_influence_from_existing_combined_context_influence
 
 def test_create_combined_context():
     """
-    Test creating combined context
+    Test creating combined context.
     """
-    
+
     bn = BayesNet()
     bn.load('small_example.yml')
-    combined_context = "{(0, 2): defaultdict(<class 'int'>, {('pickup', 'working'): 5}), (0, 1): defaultdict(<class 'int'>, {('pickup', True): 4})}"
-    #combined = json.loads(combined_context)
-    #combined_context = "{(0, 1): defaultdict(<class 'int'>, {('pickup', True): 4}), (0, 2): defaultdict(<class 'int'>, {('pickup', 'working'): 5})}"
+    combined_context = "{(0, 2): defaultdict(<class 'int'>, {('pickup', 'working'): 5}), " \
+                       "(0, 1): defaultdict(<class 'int'>, {('pickup', True): 4})}"
     for intention, context_influence in bn.config['intentions'].items():
-            bn._calculate_probability_values(context_influence)
+        bn._calculate_probability_values(context_influence)
     data = bn._create_combined_context(context_influence)
     assert combined_context == str(data)
 
+
 def test_alter_combined_context():
     """
-    Test alter existing combined context
+    Test alter existing combined context.
     """
-        
+
     bn = BayesNet()
     bn.load('small_example.yml')
-    combined_context = "{(0, 2): defaultdict(<class 'int'>, {('pickup', 'working'): 5}), (0, 1): defaultdict(<class 'int'>, {('pickup', True): 4})}"
-    altered_combined_context = "{(0, 2): defaultdict(<class 'int'>, {('pickup', 'working'): 2}), (0, 1): defaultdict(<class 'int'>, {('pickup', True): 4})}"
+    combined_context = "{(0, 2): defaultdict(<class 'int'>, {('pickup', 'working'): 5}), " \
+                       "(0, 1): defaultdict(<class 'int'>, {('pickup', True): 4})}"
+    altered_combined_context = "{(0, 2): defaultdict(<class 'int'>, {('pickup', 'working'): 2}), " \
+                                "(0, 1): defaultdict(<class 'int'>, {('pickup', True): 4})}"
     for intention, context_influence in bn.config['intentions'].items():
-            bn._calculate_probability_values(context_influence)
+        bn._calculate_probability_values(context_influence)
     data = bn._create_combined_context(context_influence)
-   # data = bn._calculate_probability_values(defaultdict(<function config_to_default_dict.<locals>.<lambda> at 0x0000017F41ED0A60>, {'speech commands': defaultdict(<class 'int'>, {'handover': 0, 'other': 0, 'pickup': 5}), 'human holding object': defaultdict(<class 'int'>, {False: 4, True: 1}), ('speech commands', 'human activity'): defaultdict(<class 'int'>, {('pickup', 'working'): 5}), 'human activity': defaultdict(<class 'int'>, {'idle': 4, 'working': 3}), ('speech commands', 'human holding object'): defaultdict(<class 'int'>, {('pickup', True): 4})}))
     assert combined_context == str(data)
     bn = BayesNet()
     bn.load('small_example_altered.yml')
     for intention, context_influence in bn.config['intentions'].items():
-            bn._calculate_probability_values(context_influence)
+        bn._calculate_probability_values(context_influence)
     data = bn._create_combined_context(context_influence)
     assert altered_combined_context == str(data)
+
 
 def test_calculate_probability_values():
     """
@@ -116,7 +118,7 @@ def test_calculate_probability_values():
            (pos,neg) = bn._calculate_probability_values(context_influence)
     print(pos,neg)
     bn = BayesNet()
-    bn.load('small_example_invalid.yml')
+    bn.load('small_example_altered.yml')
     for intention, context_influence in bn.config['intentions'].items():
            (alter_pos,alter_neg) = bn._calculate_probability_values(context_influence)
     print(alter_pos,alter_neg)
