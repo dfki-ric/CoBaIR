@@ -5,6 +5,7 @@ Tests for new combined context influence
 from copy import deepcopy
 from collections import defaultdict
 import pytest
+import copy
 
 # local imports
 from CoBaIR.bayes_net import BayesNet
@@ -49,12 +50,12 @@ def test_change_influence_value_in_existing_new_combined_context_influence():
 
 def test_new_combined_context_influence_from_existing_combined_context_influence():
     """
-    Test adding combined context influence from the 
+    Test adding combined context influence from the
         loaded config's existing combined context influence
     """
     bayes_net = BayesNet()
     bayes_net.load('small_example.yml')
-    original_config = bayes_net.config.copy()  # Make a copy of the original config
+    original_config = copy.deepcopy(bayes_net.config)  # Make a copy of the original config
 
     for intention, context_influence in bayes_net.config['intentions'].items():
         bayes_net._create_combined_context(context_influence)
@@ -67,6 +68,7 @@ def test_new_combined_context_influence_from_existing_combined_context_influence
 
     assert bayes_net.config != original_config  # Compare the updated config to the original config
 
+
 def test_create_combined_context():
     """
     Test creating combined context
@@ -74,12 +76,14 @@ def test_create_combined_context():
     bayes_net = BayesNet()
     bayes_net.load('small_example.yml')
     combined_context = "{(0, 2): defaultdict(<class 'int'>, {('pickup', 'working'): 5}),  \
-                    (0, 1): defaultdict(<class 'int'>, {('pickup', True): 4})}"
+                        (0, 1): defaultdict(<class 'int'>, {('pickup', True): 4})}"
     #combined = json.loads(combined_context)
     for context_influence in bayes_net.config['intentions'].items():
-            bayes_net._calculate_probability_values(context_influence)
+        print(context_influence)  # added for debugging purposes
+        bayes_net._calculate_probability_values(context_influence)
     data = bayes_net._create_combined_context(context_influence)
     assert combined_context == str(data)
+
 
 def test_alter_combined_context():
     """
