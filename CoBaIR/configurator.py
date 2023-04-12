@@ -744,8 +744,7 @@ class Configurator(QtWidgets.QMainWindow):
         Fill the content of the table containing combined influence values
         '''
 
-        font = QFont()
-        font.setPointSize(13)
+        font = QFont('Times New Roman', 13)
         self.advanced_table.setParent(None)
         self.advanced_table.deleteLater()
         self.advanced_table = QFrame(self.advanced_hidden_frame)
@@ -793,7 +792,7 @@ class Configurator(QtWidgets.QMainWindow):
         """
 
         uic.loadUi(Path(Path(__file__).parent, 'configurator.ui'), self)
-        self.grid_layout.setVerticalSpacing(5)
+        # self.grid_layout.setVerticalSpacing(5)
 
         self.load_button.clicked.connect(self.load)
         self.save_button.clicked.connect(self.save)
@@ -817,7 +816,6 @@ class Configurator(QtWidgets.QMainWindow):
         self.new_combined_influence_button.clicked.connect(
             self.new_combined_influence)
 
-        self.advanced_label.setText("advanced \u25BC")
         self.advanced_label.setParent(self.advanced_hidden_frame)
         self.advanced_folded = False
         self.advanced_label.clicked.connect(self.on_clicked_advanced)
@@ -831,7 +829,7 @@ class Configurator(QtWidgets.QMainWindow):
 
         # Adding the canvas
         layout = QGridLayout()
-        self.canvas_frame.setLayout(layout)
+        self.canvas_frame.setLayout(self.grid_layout)
         self.canvas_frame.layout().addWidget(self.win, 0, 0)
 
     def decision_threshold_changed(self, value):
