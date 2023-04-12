@@ -24,6 +24,7 @@ from PyQt5.QtGui import QFont, QFontMetrics
 import yaml
 import numpy as np
 
+from pyqtgraph import GraphicsLayoutWidget
 
 # local imports
 from .bayes_net import BayesNet, load_config
@@ -744,8 +745,7 @@ class Configurator(QtWidgets.QMainWindow):
         Fill the content of the table containing combined influence values
         '''
 
-        font = QFont()
-        font.setPointSize(13)
+        font = QFont("Times New Roman",13)
         self.advanced_table.setParent(None)
         self.advanced_table.deleteLater()
         self.advanced_table = QFrame(self.advanced_hidden_frame)
