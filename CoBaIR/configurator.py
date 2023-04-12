@@ -744,7 +744,8 @@ class Configurator(QtWidgets.QMainWindow):
         Fill the content of the table containing combined influence values
         '''
 
-        font = QFont('Times New Roman', 13)
+        font = QFont()
+        font.setPointSize(13)
         self.advanced_table.setParent(None)
         self.advanced_table.deleteLater()
         self.advanced_table = QFrame(self.advanced_hidden_frame)
@@ -792,18 +793,10 @@ class Configurator(QtWidgets.QMainWindow):
         """
 
         uic.loadUi(Path(Path(__file__).parent, 'configurator.ui'), self)
-        # self.grid_layout.setVerticalSpacing(5)
 
         self.load_button.clicked.connect(self.load)
         self.save_button.clicked.connect(self.save)
-        self.decision_threshold_entry.textChanged.connect(
-            self.decision_threshold_changed)
-
-        self.set_error_label_red()
-        self.error_label.setText("")
-
-        self.context_instantiations = defaultdict(dict)
-        self.intention_instantiations = defaultdict(lambda: defaultdict(dict))
+        self.decision_threshold_entry.textChanged.connect(self.decision_threshold_changed)
 
         self.new_context_button.clicked.connect(self.new_context)
         self.edit_context_button.clicked.connect(self.edit_context)
@@ -813,24 +806,19 @@ class Configurator(QtWidgets.QMainWindow):
         self.edit_intention_button.clicked.connect(self.edit_intention)
         self.delete_intention_button.clicked.connect(self.delete_intention)
 
-        self.new_combined_influence_button.clicked.connect(
-            self.new_combined_influence)
+        self.new_combined_influence_button.clicked.connect(self.new_combined_influence)
 
-        self.advanced_label.setParent(self.advanced_hidden_frame)
         self.advanced_folded = False
         self.advanced_label.clicked.connect(self.on_clicked_advanced)
-
-        self.advanced_table = QFrame(self.advanced_hidden_frame)
-        self.advanced_hidden_frame.setLayout(QGridLayout())
-        self.advanced_hidden_frame.layout().addWidget(self.advanced_table, 0, 0)
         self.on_clicked_advanced()
 
         self.grid_layout.addWidget(self.advanced_label, 5, 1)
 
-        # Adding the canvas
-        layout = QGridLayout()
-        self.canvas_frame.setLayout(self.grid_layout)
         self.canvas_frame.layout().addWidget(self.win, 0, 0)
+
+        self.set_error_label_red()
+        self.context_instantiations = defaultdict(dict)
+        self.intention_instantiations = defaultdict(lambda: defaultdict(dict))
 
     def decision_threshold_changed(self, value):
         """
