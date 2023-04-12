@@ -807,15 +807,13 @@ class Configurator(QtWidgets.QMainWindow):
         self.delete_intention_button.clicked.connect(self.delete_intention)
 
         self.new_combined_influence_button.clicked.connect(self.new_combined_influence)
-
         self.advanced_folded = False
+        self.advanced_hidden_frame.hide()
+        self.new_combined_influence_button.hide()
         self.advanced_label.clicked.connect(self.on_clicked_advanced)
-        self.on_clicked_advanced()
-
-        self.grid_layout.addWidget(self.advanced_label, 5, 1)
 
         self.canvas_frame.layout().addWidget(self.win, 0, 0)
-
+        
         self.set_error_label_red()
         self.context_instantiations = defaultdict(dict)
         self.intention_instantiations = defaultdict(lambda: defaultdict(dict))
