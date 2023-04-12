@@ -468,15 +468,7 @@ class Configurator(QtWidgets.QMainWindow):
         self.setup_layout()
         self.bayesNet = BayesNet(config)
         self.create_fields()
-        self.show()  # Show the GUI
-
-    def set_error_label_red(self):
-        """
-        setting the alignment and color of the error label
-        """
-        self.error_label.setAlignment(
-            Qt.AlignCenter)  # TODO: no changes of style in functional code!
-        self.error_label.setStyleSheet("color: red")
+        self.show()  # Show the GU
 
     def create_fields(self):
         """
@@ -814,7 +806,6 @@ class Configurator(QtWidgets.QMainWindow):
 
         self.canvas_frame.layout().addWidget(self.win, 0, 0)
 
-        self.set_error_label_red()
         self.context_instantiations = defaultdict(dict)
         self.intention_instantiations = defaultdict(lambda: defaultdict(dict))
 
