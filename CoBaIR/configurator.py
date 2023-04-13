@@ -454,6 +454,7 @@ class Configurator(QtWidgets.QMainWindow):
         '''
         self.app = QtWidgets.QApplication(sys.argv)
         QtWidgets.QMainWindow.__init__(self, *args, **kwargs)
+        self.COLORS = {0: 'White', 1: 'Red', 2: 'Orange', 3: 'Yellow', 4: 'darkCyan', 5: 'Green'}
         # self.figure = plt.figure()
         # self.canvas = FigureCanvas(self.figure)
         # creating a graph item
@@ -1029,8 +1030,9 @@ class Configurator(QtWidgets.QMainWindow):
             label.setFont(QFont('Times New Roman', 13))
             line_edit = QLineEdit(str(value), self.context_selected_frame)
             line_edit.setFont(QFont('Times New Roman', 13))
-            line_edit.textChanged.connect(lambda text, context=context, instantiation=instantiation: self.apriori_values_changed(text, context=context, instantiation=instantiation)
-                                          )
+            line_edit.textChanged.connect(lambda text, context=context, instantiation=instantiation: 
+                                self.apriori_values_changed(text, context=context, instantiation=instantiation)
+                                )
 
             layout.addWidget(label, row_count, 0)
             layout.addWidget(line_edit, row_count, 1)
@@ -1073,7 +1075,7 @@ class Configurator(QtWidgets.QMainWindow):
         layout.setVerticalSpacing(10)
         row_count = layout.rowCount()
 
-        for i, (instantiation, value) in enumerate(self.bayesNet.config['intentions'][intention][context].items()):
+        for instantiation, value in self.bayesNet.config['intentions'][intention][context].items():
             instantiation_label = QLabel(
                 f'Influence of {context}:{instantiation} on {intention}: LOW', self.influencing_context_frame)
             instantiation_label.setFont(QFont('Times New Roman', 13))
@@ -1089,14 +1091,12 @@ class Configurator(QtWidgets.QMainWindow):
             slider.setMinimum(0)
             slider.setMaximum(5)
             slider.setTickInterval(1)
-
-            colors = {0: 'Red', 1: 'Orange', 2: 'Yellow', 3: 'light yellow', 4: 'turquoise', 5: 'Green'}
-            slider.setStyleSheet(f"QSlider::handle:horizontal {{background-color: {colors[value]}}}")
+            slider.setStyleSheet(f"QSlider::handle:horizontal {{background-color: {self.COLORS[value]}}}")
             slider.setValue(value)
 
             slider.valueChanged.connect(lambda value, context=context, intention=intention,
-                                        instantiation=instantiation, slider=slider, colors=colors:
-                                        self.influence_values_changed(value, context, intention, instantiation, slider, colors))
+                                        instantiation=instantiation, slider=slider:
+                                        self.influence_values_changed(value, context, intention, instantiation, slider))
 
             self.intention_instantiations[intention][context][instantiation] = (
                 instantiation_label,
@@ -1154,7 +1154,7 @@ class Configurator(QtWidgets.QMainWindow):
             self.error_label.setText(
                 f'Apriori probability of context "{context}.{instantiation}" is not a number')
 
-    def influence_values_changed(self, value, context, intention, instantiation, slider, colors):
+    def influence_values_changed(self, value, context, intention, instantiation, slider):
         """
         Callback for change of the influence values.
 
@@ -1168,10 +1168,9 @@ class Configurator(QtWidgets.QMainWindow):
         try:
             self.bayesNet.change_influence_value(
                 intention=intention, context=context, instantiation=instantiation, value=int(value))
+            slider.setStyleSheet(f"QSlider::handle:horizontal {{background-color: {self.COLORS[value]}}}")
         except AssertionError as e:
             self.error_label.setText(str(e))
-
-        slider.setStyleSheet(f"QSlider::handle:horizontal {{background-color: {colors[value]}}}")
 
         return value
 
