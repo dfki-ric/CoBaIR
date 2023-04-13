@@ -1089,9 +1089,10 @@ class Configurator(QtWidgets.QMainWindow):
             slider.setMinimum(0)
             slider.setMaximum(5)
             slider.setTickInterval(1)
-            slider.setValue(value)
 
-            colors = {0: 'Red', 1: 'Orange', 2: 'Yellow', 3: 'light yellow', 4: 'light green', 5: 'Green'}
+            colors = {0: 'Red', 1: 'Orange', 2: 'Yellow', 3: 'light yellow', 4: 'turquoise', 5: 'Green'}
+            slider.setStyleSheet(f"QSlider::handle:horizontal {{background-color: {colors[value]}}}")
+            slider.setValue(value)
 
             slider.valueChanged.connect(lambda value, context=context, intention=intention,
                                         instantiation=instantiation, slider=slider, colors=colors:
