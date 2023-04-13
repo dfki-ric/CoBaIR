@@ -454,7 +454,6 @@ class Configurator(QtWidgets.QMainWindow):
         '''
         self.app = QtWidgets.QApplication(sys.argv)
         QtWidgets.QMainWindow.__init__(self, *args, **kwargs)
-        self.COLORS = {0: 'White', 1: 'Red', 2: 'Orange', 3: 'Yellow', 4: 'darkCyan', 5: 'Green'}
         # self.figure = plt.figure()
         # self.canvas = FigureCanvas(self.figure)
         # creating a graph item
@@ -503,7 +502,7 @@ class Configurator(QtWidgets.QMainWindow):
         self.adjust_button_visibility()
         self.set_decision_threshold()
         self.fill_advanced_table()
-        # self.draw_graph()
+        self.draw_graph()
 
     def set_decision_threshold(self):
         """
@@ -890,6 +889,7 @@ class Configurator(QtWidgets.QMainWindow):
         self.grid_layout.addWidget(self.load_button, 9, 1)
         self.grid_layout.addWidget(self.save_button, 9, 2)
 
+        self.COLORS = {0: 'White', 1: 'Red', 2: 'Orange', 3: 'Yellow', 4: 'darkCyan', 5: 'Green'}
         # Adding the canvas
         layout = QGridLayout()
         self.canvas_frame.setLayout(layout)
@@ -1081,6 +1081,7 @@ class Configurator(QtWidgets.QMainWindow):
             instantiation_label.setFont(QFont('Times New Roman', 13))
             slider = QSlider(Qt.Horizontal, self.influencing_context_frame)
             slider.setFixedSize(100, 20)
+
             high_label = QLabel('HIGH', self.influencing_context_frame)
             high_label.setFont(QFont('Times New Roman', 13))
 
