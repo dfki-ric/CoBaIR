@@ -501,7 +501,7 @@ class Configurator(QtWidgets.QMainWindow):
         self.adjust_button_visibility()
         self.set_decision_threshold()
         self.fill_advanced_table()
-        self.draw_graph()
+        # self.draw_graph()
 
     def set_decision_threshold(self):
         """
@@ -721,6 +721,10 @@ class Configurator(QtWidgets.QMainWindow):
         Callback for the button
         """
         self.error_label.setText("")
+        intentions = self.bayesNet.config.get('intentions', {})
+        if not intentions:
+            self.error_label.setText("Error: Intentions not loaded.")
+            return
         dialog = NewCombinedContextDialog(
             self, intentions=self.bayesNet.config['intentions'])
 
