@@ -494,7 +494,7 @@ class Configurator(QtWidgets.QMainWindow):
         self.adjust_button_visibility()
         self.set_decision_threshold()
         self.fill_advanced_table()
-        # self.draw_graph()
+        self.draw_graph()
 
     def set_decision_threshold(self):
         """
