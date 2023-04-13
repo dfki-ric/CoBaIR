@@ -20,7 +20,8 @@ import pyqtgraph as pg
 from PyQt5 import QtWidgets, uic
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import Qt, QStringListModel
-from PyQt5.QtGui import QFont, QFontMetrics
+from PyQt5.QtGui import QFont, QFontMetrics,QLinearGradient, QColor
+
 import yaml
 import numpy as np
 
@@ -501,7 +502,7 @@ class Configurator(QtWidgets.QMainWindow):
         self.adjust_button_visibility()
         self.set_decision_threshold()
         self.fill_advanced_table()
-        self.draw_graph()
+        # self.draw_graph()
 
     def set_decision_threshold(self):
         """
@@ -1072,7 +1073,7 @@ class Configurator(QtWidgets.QMainWindow):
         layout.setVerticalSpacing(10)
         row_count = layout.rowCount()
 
-        for instantiation, value in self.bayesNet.config['intentions'][intention][context].items():
+        for i, (instantiation, value) in enumerate(self.bayesNet.config['intentions'][intention][context].items()):
             instantiation_label = QLabel(
                 f'Influence of {context}:{instantiation} on {intention}: LOW', self.influencing_context_frame)
             instantiation_label.setFont(QFont('Times New Roman', 13))
@@ -1089,8 +1090,12 @@ class Configurator(QtWidgets.QMainWindow):
             slider.setMaximum(5)
             slider.setTickInterval(1)
             slider.setValue(value)
+
+            colors = {0: 'Red', 1: 'Orange', 2: 'Yellow', 3: 'light yellow', 4: 'light green', 5: 'Green'}
+
             slider.valueChanged.connect(lambda value, context=context, intention=intention,
-                                        instantiation=instantiation: self.influence_values_changed(value, context, intention, instantiation))
+                                        instantiation=instantiation, slider=slider, colors=colors:
+                                        self.influence_values_changed(value, context, intention, instantiation, slider, colors))
 
             self.intention_instantiations[intention][context][instantiation] = (
                 instantiation_label,
@@ -1148,7 +1153,7 @@ class Configurator(QtWidgets.QMainWindow):
             self.error_label.setText(
                 f'Apriori probability of context "{context}.{instantiation}" is not a number')
 
-    def influence_values_changed(self, value, context, intention, instantiation):
+    def influence_values_changed(self, value, context, intention, instantiation, slider, colors):
         """
         Callback for change of the influence values.
 
@@ -1164,6 +1169,8 @@ class Configurator(QtWidgets.QMainWindow):
                 intention=intention, context=context, instantiation=instantiation, value=int(value))
         except AssertionError as e:
             self.error_label.setText(str(e))
+
+        slider.setStyleSheet(f"QSlider::handle:horizontal {{background-color: {colors[value]}}}")
 
         return value
 
