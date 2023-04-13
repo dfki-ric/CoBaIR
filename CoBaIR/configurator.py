@@ -550,11 +550,9 @@ class Configurator(QtWidgets.QMainWindow):
             self.context_selected(old_context_name)
             dialog.accept()
 
-        ok_button = dialog.findChild(QPushButton, "ok_button")
-        ok_button.setDefault(True)
-        ok_button.clicked.connect(update_and_close)
-        cancel_button = dialog.findChild(QPushButton, "cancel_button")
-        cancel_button.clicked.connect(dialog.reject)
+        dialog.ok_button.setDefault(True)
+        dialog.ok_button.clicked.connect(update_and_close)
+        dialog.cancel_button.clicked.connect(dialog.reject)
         dialog.exec_()
 
     def edit_context(self):
@@ -596,11 +594,9 @@ class Configurator(QtWidgets.QMainWindow):
             self.context_selection.setCurrentText(old_context_name)
             self.context_selected(old_context_name)
             dialog.accept()
-        ok_button = dialog.findChild(QPushButton, "ok_button")
-        ok_button.setDefault(True)
-        ok_button.clicked.connect(update_and_close)
-        cancel_button = dialog.findChild(QPushButton, "cancel_button")
-        cancel_button.clicked.connect(dialog.reject)
+        dialog.ok_button.setDefault(True)
+        dialog.ok_button.clicked.connect(update_and_close)
+        dialog.cancel_button.clicked.connect(dialog.reject)
         dialog.exec_()
 
     def delete_context(self):
@@ -636,10 +632,8 @@ class Configurator(QtWidgets.QMainWindow):
             self.intention_dropdown.setCurrentText(result)
             # Explicit call is neccessary because set seems not to trigger the callback
             self.influencing_context_selected(result)
-        ok_button = dialog.findChild(QPushButton, 'ok')
-        ok_button.clicked.connect(update_and_close)
-        cancel_button = dialog.findChild(QPushButton, "cancel")
-        cancel_button.clicked.connect(dialog.reject)
+        dialog.ok_button.clicked.connect(update_and_close)
+        dialog.cancel_button.clicked.connect(dialog.reject)
         dialog.exec_()
 
     def edit_intention(self):
@@ -666,11 +660,9 @@ class Configurator(QtWidgets.QMainWindow):
             self.influencing_context_selected(result)
             dialog.accept()
 
-        ok_button = dialog.findChild(QPushButton, "ok")
-        ok_button.setDefault(True)
-        ok_button.clicked.connect(update_and_close)
-        cancel_button = dialog.findChild(QPushButton, "cancel")
-        cancel_button.clicked.connect(dialog.reject)
+        dialog.ok_button.setDefault(True)
+        dialog.ok_button.clicked.connect(update_and_close)
+        dialog.cancel_button.clicked.connect(dialog.reject)
         dialog.exec_()
 
     def delete_intention(self):
@@ -719,10 +711,8 @@ class Configurator(QtWidgets.QMainWindow):
                 self.error_label.setText(str(e))
             self.create_fields()
 
-        ok_button = dialog.findChild(QPushButton, "pushButton_2")
-        ok_button.clicked.connect(update_and_close)
-        cancel_button = dialog.findChild(QPushButton, "pushButton_3")
-        cancel_button.clicked.connect(dialog.reject)
+        dialog.ok_button.clicked.connect(update_and_close)
+        dialog.cancel_button.clicked.connect(dialog.reject)
         dialog.exec_()
 
     def fill_advanced_table(self):

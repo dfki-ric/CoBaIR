@@ -42,7 +42,7 @@
     </rect>
    </property>
   </widget>
-  <widget class="QPushButton" name="ok">
+  <widget class="QPushButton" name="ok_button">
    <property name="geometry">
     <rect>
      <x>40</x>
@@ -61,7 +61,7 @@
     <string>OK</string>
    </property>
   </widget>
-  <widget class="QPushButton" name="cancel">
+  <widget class="QPushButton" name="cancel_button">
    <property name="geometry">
     <rect>
      <x>130</x>
