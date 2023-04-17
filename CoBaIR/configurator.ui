@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>731</width>
+    <width>874</width>
     <height>584</height>
    </rect>
   </property>
@@ -19,9 +19,12 @@
    <string>Context Based Intention Recognition Configurator</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QGridLayout" name="gridLayout">
+   <property name="verticalSpacing" stdset="0">
+    <number>5</number>
+   </property>
+   <layout class="QGridLayout" name="grid_layout">
     <item row="0" column="0">
-     <widget class="QLabel" name="intention_label_frame_2">
+     <widget class="QLabel" name="context_label">
       <property name="font">
        <font>
         <family>Times New Roman</family>
@@ -36,7 +39,7 @@
       </property>
      </widget>
     </item>
-    <item row="0" column="1" colspan="3">
+    <item row="0" column="1">
      <widget class="QComboBox" name="context_selection">
       <property name="font">
        <font>
@@ -51,7 +54,7 @@
       </item>
      </widget>
     </item>
-    <item row="0" column="5" colspan="2">
+    <item row="0" column="2">
      <widget class="QPushButton" name="edit_context_button">
       <property name="font">
        <font>
@@ -64,7 +67,7 @@
       </property>
      </widget>
     </item>
-    <item row="0" column="7" colspan="2">
+    <item row="0" column="3">
      <widget class="QPushButton" name="delete_context_button">
       <property name="font">
        <font>
@@ -90,8 +93,8 @@
       </property>
      </widget>
     </item>
-    <item row="1" column="1" colspan="4">
-     <widget class="QFrame" name="frame_2">
+    <item row="1" column="1">
+     <widget class="QFrame" name="context_selected_frame">
       <property name="frameShape">
        <enum>QFrame::StyledPanel</enum>
       </property>
@@ -132,7 +135,7 @@
      </widget>
     </item>
     <item row="2" column="2">
-     <widget class="QLabel" name="label_3">
+     <widget class="QLabel" name="on_label">
       <property name="font">
        <font>
         <family>Times New Roman</family>
@@ -144,8 +147,8 @@
       </property>
      </widget>
     </item>
-    <item row="2" column="3" colspan="3">
-     <widget class="QComboBox" name="intention_selection">
+    <item row="2" column="3">
+     <widget class="QComboBox" name="intention_dropdown">
       <property name="font">
        <font>
         <family>Times New Roman</family>
@@ -159,7 +162,7 @@
       </item>
      </widget>
     </item>
-    <item row="2" column="6" colspan="2">
+    <item row="2" column="4">
      <widget class="QPushButton" name="edit_intention_button">
       <property name="font">
        <font>
@@ -172,7 +175,7 @@
       </property>
      </widget>
     </item>
-    <item row="2" column="8" colspan="2">
+    <item row="2" column="5">
      <widget class="QPushButton" name="delete_intention_button">
       <property name="font">
        <font>
@@ -199,7 +202,7 @@
      </widget>
     </item>
     <item row="3" column="0" colspan="11">
-     <widget class="QFrame" name="frame">
+     <widget class="QFrame" name="influencing_context_frame">
       <property name="frameShape">
        <enum>QFrame::StyledPanel</enum>
       </property>
@@ -208,7 +211,7 @@
       </property>
      </widget>
     </item>
-    <item row="4" column="1" colspan="4">
+    <item row="4" column="1">
      <widget class="QLabel" name="context_instantiations_3">
       <property name="font">
        <font>
@@ -221,7 +224,7 @@
       </property>
      </widget>
     </item>
-    <item row="4" column="5" colspan="3">
+    <item row="4" column="2">
      <widget class="QLineEdit" name="decision_threshold_entry">
       <property name="font">
        <font>
@@ -233,7 +236,7 @@
       </property>
      </widget>
     </item>
-    <item row="5" column="2" colspan="3">
+    <item row="5" column="1">
      <widget class="QPushButton" name="advanced_label">
       <property name="font">
        <font>
@@ -242,15 +245,15 @@
        </font>
       </property>
       <property name="text">
-       <string>advanced</string>
+       <string>advanced ▼</string>
       </property>
       <property name="checkable">
-       <bool>false</bool>
+       <bool>true</bool>
       </property>
      </widget>
     </item>
-    <item row="6" column="0" colspan="11">
-     <widget class="QFrame" name="frame_3">
+    <item row="6" column="0" colspan="10">
+     <widget class="QFrame" name="advanced_hidden_frame">
       <property name="enabled">
        <bool>true</bool>
       </property>
@@ -260,10 +263,21 @@
       <property name="frameShadow">
        <enum>QFrame::Raised</enum>
       </property>
+      <layout class="QGridLayout" name="gridLayout"/>
+      <widget class="QFrame" name="advanced_table">
+       <property name="geometry">
+        <rect>
+         <x>0</x>
+         <y>0</y>
+         <width>100</width>
+         <height>30</height>
+        </rect>
+       </property>
+      </widget>
      </widget>
     </item>
-    <item row="7" column="1" colspan="7">
-     <widget class="QPushButton" name="advanced_new_button">
+    <item row="7" column="1">
+     <widget class="QPushButton" name="new_combined_influence_button">
       <property name="font">
        <font>
         <family>Times New Roman</family>
@@ -283,10 +297,10 @@
       <property name="frameShadow">
        <enum>QFrame::Raised</enum>
       </property>
-      <zorder>frame</zorder>
+      <layout class="QGridLayout" name="gridLayout"/>
      </widget>
     </item>
-    <item row="9" column="1" colspan="3">
+    <item row="9" column="1">
      <widget class="QPushButton" name="load_button">
       <property name="font">
        <font>
@@ -299,7 +313,7 @@
       </property>
      </widget>
     </item>
-    <item row="9" column="4" colspan="2">
+    <item row="9" column="2">
      <widget class="QPushButton" name="save_button">
       <property name="font">
        <font>
@@ -320,8 +334,14 @@
         <pointsize>10</pointsize>
        </font>
       </property>
+      <property name="styleSheet">
+       <string notr="true">color: red</string>
+      </property>
       <property name="text">
-       <string>                                                                                                        Error label</string>
+       <string/>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
       </property>
      </widget>
     </item>
@@ -332,8 +352,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>731</width>
-     <height>11</height>
+     <width>874</width>
+     <height>21</height>
     </rect>
    </property>
   </widget>
@@ -347,10 +367,10 @@
   <tabstop>new_context_button</tabstop>
   <tabstop>new_intention_button</tabstop>
   <tabstop>advanced_label</tabstop>
-  <tabstop>advanced_new_button</tabstop>
+  <tabstop>new_combined_influence_button</tabstop>
   <tabstop>context_selection</tabstop>
   <tabstop>influencing_context_selection</tabstop>
-  <tabstop>intention_selection</tabstop>
+  <tabstop>intention_dropdown</tabstop>
   <tabstop>delete_intention_button</tabstop>
   <tabstop>edit_intention_button</tabstop>
  </tabstops>
