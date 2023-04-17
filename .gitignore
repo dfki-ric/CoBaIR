@@ -8,6 +8,7 @@ bnlearn_model.pkl
 .dev*
 test_report
 small_example_copy.yml
+public/*
 
 
 # Byte-compiled / optimized / DLL files
