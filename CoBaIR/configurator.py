@@ -713,7 +713,7 @@ class Configurator(QtWidgets.QMainWindow):
         Fill the content of the table containing combined influence values
         '''
 
-        font = QFont("Times New Roman",13)
+        font = QFont("Times New Roman", 13)
         self.advanced_table.setParent(None)
         self.advanced_table.deleteLater()
         self.advanced_table = QFrame(self.advanced_hidden_frame)
@@ -768,7 +768,6 @@ class Configurator(QtWidgets.QMainWindow):
         self.decision_threshold_entry.textChanged.connect(
             self.decision_threshold_changed)
 
-        self.set_error_label_red()
         self.error_label.setText("")
 
         self.context_instantiations = defaultdict(dict)
@@ -801,7 +800,6 @@ class Configurator(QtWidgets.QMainWindow):
         layout = QGridLayout()
         self.canvas_frame.setLayout(layout)
         self.canvas_frame.layout().addWidget(self.win, 0, 0)
-
 
     def decision_threshold_changed(self, value):
         """
@@ -845,7 +843,9 @@ class Configurator(QtWidgets.QMainWindow):
         '''
         This draws the graph from the current config.
         '''
-        self.graph_item.set_config(self.bayesNet.config)
+        # only if config is valid
+        if self.bayesNet.valid:
+            self.graph_item.set_config(self.bayesNet.config)
 
     def set_influencing_context_dropdown(self, options: list, command: function = None):
         '''

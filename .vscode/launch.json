@@ -12,7 +12,7 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "Configurator GUI",
+            "name": "Configurator GUI with file",
             "type": "python",
             "request": "launch",
             "program": "start_configurator.py",
@@ -21,6 +21,13 @@
                 "-f",
                 "small_example.yml"
             ]
+        },
+        {
+            "name": "Configurator GUI",
+            "type": "python",
+            "request": "launch",
+            "program": "start_configurator.py",
+            "console": "integratedTerminal"
         }
     ]
 }

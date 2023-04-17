@@ -384,7 +384,6 @@ class BayesNet():
         Raises:
             AssertionError: An AssertionError is raised if the config is not valid.
         '''
-        # TODO: add validation that decision_threshold is a float
         # TODO: add validation that apriorio values are float
         # contexts and intentions need to be defined
         assert 'contexts' in self.config, 'Field "contexts" must be defined in the config'
