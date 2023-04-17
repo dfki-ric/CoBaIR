@@ -18,6 +18,7 @@ __author__ = 'Arunima Gopikrishnan'
 
 config = {'intentions': defaultdict(lambda: defaultdict(
         lambda: defaultdict(int))), 'contexts': defaultdict(lambda: defaultdict(float))}
+
 def test_new_combined_influence_into_empty():
     """
     Test adding combined context influence on a non existing config
@@ -30,6 +31,17 @@ def test_new_combined_influence_into_empty():
     # I assume this will throw an Error!
     with pytest.raises(ValueError):
         bn.add_combined_influence(intention, contexts, instantiations,value)
+
+def test_new_combined_influence_no_intention():
+    """
+    Test that adding combined context influence raises an error when no intentions are found
+    """
+    bn = BayesNet()
+    with pytest.raises(ValueError) as excinfo:
+        bn.add_combined_influence("hand over tool", ["speech commands", "human activity"], ["pickup", "working"], 5)
+    assert str(excinfo.value) == "add_combined_influence can only combine context instantiations that already exist"
+
+
 
 
 def test_change_influence_value_in_existing_new_combined_context_influence():
