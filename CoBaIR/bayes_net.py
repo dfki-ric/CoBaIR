@@ -24,6 +24,7 @@ __author__ = 'Adrian Lubitz'
 
 class PrettySafeLoader(yaml.SafeLoader):
     """A YAML loader that constructs Python tuples from YAML sequences."""
+
     def construct_python_tuple(self, node):
         """
         Construct a Python tuple from a YAML sequence node.
@@ -138,10 +139,10 @@ class BayesNet():
             # create a TabularCPD
             self.cpts.append(
                 TabularCPD(variable=intention,
-                        variable_card=2,  # intentions are always binary
-                        values=values,
-                        evidence=self.evidence,
-                        evidence_card=self.evidence_card)
+                           variable_card=2,  # intentions are always binary
+                           values=values,
+                           evidence=self.evidence,
+                           evidence_card=self.evidence_card)
             )
 
     def _create_evidence_card(self):
@@ -181,7 +182,7 @@ class BayesNet():
         return combined_context
 
     def _alter_combined_context(self, count: Counter, context_influence: dict,
-                            combined_context: dict) -> dict:
+                                combined_context: dict) -> dict:
         """
         Overwrites the influence values for the cases of combined influence.
 
@@ -301,7 +302,7 @@ class BayesNet():
         if context not in self.config['contexts'] or instantiation is None:
             return False, 'ignore'
         if not isinstance(instantiation, Hashable) or \
-        not instantiation in self.config['contexts'][context].keys():
+                not instantiation in self.config['contexts'][context].keys():
             invalid_msg = f'{instantiation} is not a valid instantiation for {context}. '
             valid_options = list(self.config["contexts"][context].keys())
             valid_options_msg = f'Must be one of {valid_options}'
@@ -361,7 +362,7 @@ class BayesNet():
                 if valid:
                     card_evidence[context] = self.value_to_card[context][discrete_instantiation]
                 else:
-                    if not err_msg == 'ignore':  
+                    if not err_msg == 'ignore':
                         raise ValueError(err_msg)
             else:
                 if not err_msg == 'ignore':
@@ -412,6 +413,7 @@ class BayesNet():
         Raises:
             AssertionError: An AssertionError is raised if the config is not valid.
         '''
+        # TODO: add validation that apriorio values are float
         # contexts and intentions need to be defined
         assert 'contexts' in self.config, 'Field "contexts" must be defined in the config'
         assert 'intentions' in self.config, 'Field "intentions" must be defined in the config'
@@ -430,7 +432,7 @@ class BayesNet():
                     assert context in self.config['contexts'], \
                         f'Context influence {context} cannot be found in the defined contexts!'
                 # assert influences.keys() == self.config['contexts'][context].keys(
-                # ), f'An influence needs to be defined for all instantiations! 
+                # ), f'An influence needs to be defined for all instantiations!
                 # {intention}.{context} does not fit the defined instantiations for {context}'
 
                 for instantiation, influence in influences.items():
@@ -677,7 +679,7 @@ class BayesNet():
             ValueError: Raises a ValueError if the instantiation does not exists in the config
             AssertionError: An AssertionError is raised if the resulting config is not valid.
         """
-        # check if this value already exists because I'm using defaultdict 
+        # check if this value already exists because I'm using defaultdict
         # otherwise you can just add values
         if instantiation in self.config['contexts'][context]:
             self.config['contexts'][context][instantiation] = value
@@ -700,7 +702,7 @@ class BayesNet():
             ValueError: Raises a ValueError if the instantiation does not exists in the config
             AssertionError: An AssertionError is raised if the resulting config is not valid.
         """
-        # check if this value already exists because I'm using defaultdict 
+        # check if this value already exists because I'm using defaultdict
         # otherwise you can just add values
         if instantiation in self.config['intentions'][intention][context]:
             self.config['intentions'][intention][context][instantiation] = value
@@ -709,8 +711,8 @@ class BayesNet():
             raise ValueError(
                 'change_influence_value can only change values that exist already')
 
-    def add_combined_influence(self, intention: str, contexts: tuple, 
-                    instantiations: tuple, value: int):
+    def add_combined_influence(self, intention: str, contexts: tuple,
+                               instantiations: tuple, value: int):
         """
         Adds an influence value for a combination of context instantiations.
 
@@ -857,8 +859,9 @@ def default_to_regular(d):
         dict:
             a regular dict casted from the defaultdict
     """
-    # casts dicts or default dicts because otherwise it will stop at the first dict and 
+    # casts dicts or default dicts because otherwise it will stop at the first dict and
     # if that has another defaultdict in it - that won't cast
     if isinstance(d, defaultdict) or isinstance(d, dict):
-        d = {k: default_to_regular(v) for k, v in d.items() if not isinstance(v, dict) or v}
+        d = {k: default_to_regular(
+            v) for k, v in d.items() if not isinstance(v, dict) or v}
     return d

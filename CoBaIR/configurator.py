@@ -63,8 +63,6 @@ class NewIntentionDialog(QDialog):
                 the initial focus
         """
         uic.loadUi(Path(Path(__file__).parent, 'NewIntention.ui'), self)
-        self.intention_entry = self.findChild(QLineEdit, 'lineEdit')
-        self.error_label = self.findChild(QLabel, 'label_2')
         self.error_label.setAlignment(Qt.AlignCenter)
         self.error_label.setStyleSheet("color: red")
         if self.intention:
@@ -139,20 +137,14 @@ class NewCombinedContextDialog(QDialog):
 
         values = list(self.intentions.keys())
 
-        self.intention_selection = self.findChild(QComboBox, 'comboBox')
         self.intention_selection.addItems(values)
         self.intention_selection.setCurrentIndex(0)
-        # Value
-        self.value_selection = self.findChild(QComboBox, 'comboBox_2')
         # Button
-        self.additional_context = self.findChild(QPushButton, 'pushButton')
         self.additional_context.clicked.connect(self.new_instantiation)
-        self.error_label = self.findChild(QLabel, 'label_5')
         self.error_label.setAlignment(Qt.AlignCenter)
         self.error_label.setStyleSheet("color: red")
         # contexts
         self.contexts = {}
-        self.context_frame = self.findChild(QFrame, 'frame')
         self.grid_layout = QGridLayout()
         self.context_frame.setLayout(self.grid_layout)
         for context, instantiations in list(self.intentions.values())[0].items():
@@ -308,11 +300,6 @@ class NewContextDialog(QDialog):
                 the initial focus
         """
         uic.loadUi(Path(Path(__file__).parent, 'NewContext.ui'), self)
-        self.grid_layout_2 = self.findChild(QGridLayout, 'gridLayout_2')
-        self.context_entry = self.findChild(QLineEdit, 'context_entry')
-        self.instantiations_frame = self.findChild(
-            QFrame, 'instantiations_frame')
-        self.error_label = self.findChild(QLabel, 'label_5')
         self.error_label.setAlignment(Qt.AlignCenter)
         self.error_label.setStyleSheet("color: red")
         self.instantiations = []
@@ -355,7 +342,6 @@ class NewContextDialog(QDialog):
             self.instantiations.append(
                 (name_entry, probability_entry, remove_button))
             self.shown_instantiations += 1
-        self.more = self.findChild(QPushButton, 'pushButton')
         self.more.clicked.connect(self.new_instantiation)
         return self.context_entry
 
@@ -564,11 +550,9 @@ class Configurator(QtWidgets.QMainWindow):
             self.context_selected(old_context_name)
             dialog.accept()
 
-        ok_button = dialog.findChild(QPushButton, "pushButton_2")
-        ok_button.setDefault(True)
-        ok_button.clicked.connect(update_and_close)
-        cancel_button = dialog.findChild(QPushButton, "pushButton_3")
-        cancel_button.clicked.connect(dialog.reject)
+        dialog.ok_button.setDefault(True)
+        dialog.ok_button.clicked.connect(update_and_close)
+        dialog.cancel_button.clicked.connect(dialog.reject)
         dialog.exec_()
 
     def edit_context(self):
@@ -612,11 +596,9 @@ class Configurator(QtWidgets.QMainWindow):
             self.context_selection.setCurrentText(old_context_name)
             self.context_selected(old_context_name)
             dialog.accept()
-        ok_button = dialog.findChild(QPushButton, "pushButton_2")
-        ok_button.setDefault(True)
-        ok_button.clicked.connect(update_and_close)
-        cancel_button = dialog.findChild(QPushButton, "pushButton_3")
-        cancel_button.clicked.connect(dialog.reject)
+        dialog.ok_button.setDefault(True)
+        dialog.ok_button.clicked.connect(update_and_close)
+        dialog.cancel_button.clicked.connect(dialog.reject)
         dialog.exec_()
 
     def delete_context(self):
@@ -652,10 +634,8 @@ class Configurator(QtWidgets.QMainWindow):
             self.intention_dropdown.setCurrentText(result)
             # Explicit call is neccessary because set seems not to trigger the callback
             self.influencing_context_selected(result)
-        ok_button = dialog.findChild(QPushButton, 'ok')
-        ok_button.clicked.connect(update_and_close)
-        cancel_button = dialog.findChild(QPushButton, "cancel")
-        cancel_button.clicked.connect(dialog.reject)
+        dialog.ok_button.clicked.connect(update_and_close)
+        dialog.cancel_button.clicked.connect(dialog.reject)
         dialog.exec_()
 
     def edit_intention(self):
@@ -682,11 +662,9 @@ class Configurator(QtWidgets.QMainWindow):
             self.influencing_context_selected(result)
             dialog.accept()
 
-        ok_button = dialog.findChild(QPushButton, "ok")
-        ok_button.setDefault(True)
-        ok_button.clicked.connect(update_and_close)
-        cancel_button = dialog.findChild(QPushButton, "cancel")
-        cancel_button.clicked.connect(dialog.reject)
+        dialog.ok_button.setDefault(True)
+        dialog.ok_button.clicked.connect(update_and_close)
+        dialog.cancel_button.clicked.connect(dialog.reject)
         dialog.exec_()
 
     def delete_intention(self):
@@ -735,10 +713,8 @@ class Configurator(QtWidgets.QMainWindow):
                 self.error_label.setText(str(error_message))
             self.create_fields()
 
-        ok_button = dialog.findChild(QPushButton, "pushButton_2")
-        ok_button.clicked.connect(update_and_close)
-        cancel_button = dialog.findChild(QPushButton, "pushButton_3")
-        cancel_button.clicked.connect(dialog.reject)
+        dialog.ok_button.clicked.connect(update_and_close)
+        dialog.cancel_button.clicked.connect(dialog.reject)
         dialog.exec_()
 
     def fill_advanced_table(self):
@@ -800,11 +776,17 @@ class Configurator(QtWidgets.QMainWindow):
         """
 
         uic.loadUi(Path(Path(__file__).parent, 'configurator.ui'), self)
+        self.grid_layout.setVerticalSpacing(5)
 
         self.load_button.clicked.connect(self.load)
         self.save_button.clicked.connect(self.save)
         self.decision_threshold_entry.textChanged.connect(
             self.decision_threshold_changed)
+
+        self.error_label.setText("")
+
+        self.context_instantiations = defaultdict(dict)
+        self.intention_instantiations = defaultdict(lambda: defaultdict(dict))
 
         self.new_context_button.clicked.connect(self.new_context)
         self.edit_context_button.clicked.connect(self.edit_context)
@@ -816,9 +798,10 @@ class Configurator(QtWidgets.QMainWindow):
 
         self.new_combined_influence_button.clicked.connect(
             self.new_combined_influence)
-        self.advanced_folded = True
-        self.advanced_hidden_frame.hide()
-        self.new_combined_influence_button.hide()
+
+        self.advanced_label.setText("advanced \u25BC")
+        self.advanced_label.setParent(self.advanced_hidden_frame)
+        self.advanced_folded = False
         self.advanced_label.clicked.connect(self.on_clicked_advanced)
 
         self.COLORS = {0: 'White', 1: 'Red', 2: 'Orange',
@@ -828,8 +811,12 @@ class Configurator(QtWidgets.QMainWindow):
         self.canvas_frame.setLayout(layout)
         self.canvas_frame.layout().addWidget(self.win, 0, 0)
 
-        self.context_instantiations = defaultdict(dict)
-        self.intention_instantiations = defaultdict(lambda: defaultdict(dict))
+        self.grid_layout.addWidget(self.advanced_label, 5, 1)
+
+        # Adding the canvas
+        layout = QGridLayout()
+        self.canvas_frame.setLayout(layout)
+        self.canvas_frame.layout().addWidget(self.win, 0, 0)
 
     def decision_threshold_changed(self, value):
         """
@@ -873,7 +860,9 @@ class Configurator(QtWidgets.QMainWindow):
         '''
         This draws the graph from the current config.
         '''
-        self.graph_item.set_config(self.bayesNet.config)
+        # only if config is valid
+        if self.bayesNet.valid:
+            self.graph_item.set_config(self.bayesNet.config)
 
     def set_influencing_context_dropdown(self, options: list, command: function = None):
         '''
