@@ -721,10 +721,20 @@ class Configurator(QtWidgets.QMainWindow):
         Callback for the button
         """
         self.error_label.setText("")
-        intentions = self.bayesNet.config.get('intentions', {})
-        if not intentions:
-            self.error_label.setText("Error: Intentions not loaded.")
+        try:
+            intentions = self.bayesNet.config['intentions']
+            for intention in intentions.values():
+                if 'contexts' not in intention:
+                    raise ValueError("Error: No contexts found for an intention.")
+            if not intentions:
+                raise ValueError("Error: No intentions found.")
+        except KeyError:
+            self.error_label.setText("Error: Intentions not found.")
             return
+        except ValueError as e:
+            self.error_label.setText(str(e))
+            return
+
         dialog = NewCombinedContextDialog(
             self, intentions=self.bayesNet.config['intentions'])
 
