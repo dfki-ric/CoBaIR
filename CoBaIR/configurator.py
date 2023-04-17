@@ -722,21 +722,15 @@ class Configurator(QtWidgets.QMainWindow):
         """
         self.error_label.setText("")
         try:
-            intentions = self.bayesNet.config['intentions']
-            for intention in intentions.values():
-                if 'contexts' not in intention:
-                    raise ValueError("Error: No contexts found for an intention.")
-            if not intentions:
-                raise ValueError("Error: No intentions found.")
-        except KeyError:
-            self.error_label.setText("Error: Intentions not found.")
+            dialog = NewCombinedContextDialog(
+                self, intentions=self.bayesNet.config['intentions'])
+        except IndexError:
+            self.error_label.setText(
+                "Intentions and Contexts need to be defined before combining them")
             return
-        except ValueError as e:
+        except Exception as e:
             self.error_label.setText(str(e))
             return
-
-        dialog = NewCombinedContextDialog(
-            self, intentions=self.bayesNet.config['intentions'])
 
         def update_and_close():
             result = dialog.get_result()
