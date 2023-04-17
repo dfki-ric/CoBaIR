@@ -701,8 +701,16 @@ class Configurator(QtWidgets.QMainWindow):
         Callback for the button
         """
         self.error_label.setText("")
-        dialog = NewCombinedContextDialog(
-            self, intentions=self.bayesNet.config['intentions'])
+        try:
+            dialog = NewCombinedContextDialog(
+                self, intentions=self.bayesNet.config['intentions'])
+        except IndexError:
+            self.error_label.setText(
+                "Intentions and Contexts need to be defined before combining them")
+            return
+        except Exception as e:
+            self.error_label.setText(str(e))
+            return
 
         def update_and_close():
             result = dialog.get_result()
