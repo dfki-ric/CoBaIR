@@ -24,6 +24,7 @@ from PyQt5.QtGui import QFont, QFontMetrics
 import yaml
 import numpy as np
 
+from pyqtgraph import GraphicsLayoutWidget
 
 # local imports
 from .bayes_net import BayesNet, load_config
@@ -467,15 +468,7 @@ class Configurator(QtWidgets.QMainWindow):
         self.setup_layout()
         self.bayesNet = BayesNet(config)
         self.create_fields()
-        self.show()  # Show the GUI
-
-    def set_error_label_red(self):
-        """
-        setting the alignment and color of the error label
-        """
-        self.error_label.setAlignment(
-            Qt.AlignCenter)  # TODO: no changes of style in functional code!
-        self.error_label.setStyleSheet("color: red")
+        self.show()  # Show the GU
 
     def create_fields(self):
         """
@@ -744,8 +737,7 @@ class Configurator(QtWidgets.QMainWindow):
         Fill the content of the table containing combined influence values
         '''
 
-        font = QFont()
-        font.setPointSize(13)
+        font = QFont("Times New Roman",13)
         self.advanced_table.setParent(None)
         self.advanced_table.deleteLater()
         self.advanced_table = QFrame(self.advanced_hidden_frame)
@@ -793,56 +785,16 @@ class Configurator(QtWidgets.QMainWindow):
         """
 
         uic.loadUi(Path(Path(__file__).parent, 'configurator.ui'), self)
-        self.grid_layout = self.findChild(QGridLayout, 'gridLayout')
-        self.grid_layout.setVerticalSpacing(5)
 
         self.load_button.clicked.connect(self.load)
         self.save_button.clicked.connect(self.save)
-        self.decision_threshold_entry.textChanged.connect(
-            self.decision_threshold_changed)
+        self.decision_threshold_entry.textChanged.connect(self.decision_threshold_changed)
 
-        self.error_label = self.findChild(QLabel, 'error_label')
-        self.set_error_label_red()
-        self.error_label.setText("")
-
-        self.context_label = self.findChild(QLabel, 'intention_label_frame_2')
-        self.intention_label_frame = self.findChild(
-            QLabel, 'intention_label_frame')
-        self.on_label = self.findChild(QLabel, 'label_3')
-
-        self.context_dropdown = self.findChild(QComboBox, 'context_selection')
-        self.context_selection = self.context_dropdown
-
-        self.influencing_context_dropdown = self.findChild(
-            QComboBox, 'influencing_context_selection')
-        self.influencing_context_selection = self.influencing_context_dropdown
-
-        self.intention_dropdown = self.findChild(
-            QComboBox, 'intention_selection')
-
-        self.context_instantiations = defaultdict(dict)
-
-        self.context_selected_frame = self.findChild(QFrame, 'frame_2')
-        self.influencing_context_frame = self.findChild(QFrame, 'frame')
-
-        self.intention_instantiations = defaultdict(lambda: defaultdict(dict))
-
-        self.new_context_button = self.findChild(
-            QPushButton, 'new_context_button')
         self.new_context_button.clicked.connect(self.new_context)
-
-        self.edit_context_button = self.findChild(
-            QPushButton, 'edit_context_button')
         self.edit_context_button.clicked.connect(self.edit_context)
-        self.delete_context_button = self.findChild(
-            QPushButton, 'delete_context_button')
         self.delete_context_button.clicked.connect(self.delete_context)
 
-        self.new_intention_button = self.findChild(
-            QPushButton, 'new_intention_button')
         self.new_intention_button.clicked.connect(self.new_intention)
-        self.edit_intention_button = self.findChild(
-            QPushButton, 'edit_intention_button')
         self.edit_intention_button.clicked.connect(self.edit_intention)
         self.delete_intention_button.clicked.connect(self.delete_intention)
         self.delete_intention_button = self.findChild(
@@ -882,17 +834,16 @@ class Configurator(QtWidgets.QMainWindow):
         self.grid_layout.addWidget(self.context_instantiations_3, 4, 1)
         self.grid_layout.addWidget(self.decision_threshold_entry, 4, 2)
 
-        self.grid_layout.addWidget(self.advanced_label, 5, 1)
+        self.new_combined_influence_button.clicked.connect(self.new_combined_influence)
+        self.advanced_folded = True
+        self.advanced_hidden_frame.hide()
+        self.new_combined_influence_button.hide()
+        self.advanced_label.clicked.connect(self.on_clicked_advanced)
 
-        self.grid_layout.addWidget(self.advanced_new_button, 7, 1)
-
-        self.grid_layout.addWidget(self.load_button, 9, 1)
-        self.grid_layout.addWidget(self.save_button, 9, 2)
-
-        # Adding the canvas
-        layout = QGridLayout()
-        self.canvas_frame.setLayout(layout)
         self.canvas_frame.layout().addWidget(self.win, 0, 0)
+
+        self.context_instantiations = defaultdict(dict)
+        self.intention_instantiations = defaultdict(lambda: defaultdict(dict))
 
     def decision_threshold_changed(self, value):
         """
@@ -917,20 +868,20 @@ class Configurator(QtWidgets.QMainWindow):
         '''
         if not command:
             command = self.context_selected
-        self.context_dropdown.clear()
+        self.context_selection.clear()
 
         if options:
-            self.context_dropdown.addItems(list(options))
-            max_width = max([QFontMetrics(self.context_dropdown.font()).boundingRect(
+            self.context_selection.addItems(list(options))
+            max_width = max([QFontMetrics(self.context_selection.font()).boundingRect(
                 option).width() for option in options])
-            self.context_dropdown.setMinimumWidth(
+            self.context_selection.setMinimumWidth(
                 max_width + 25)
-            self.context_dropdown.setCurrentIndex(0)
-            self.context_dropdown.currentTextChanged.connect(command)
+            self.context_selection.setCurrentIndex(0)
+            self.context_selection.currentTextChanged.connect(command)
         else:
-            self.context_dropdown.addItem('Context')
-            self.context_dropdown.currentTextChanged.connect(command)
-        command(self.context_dropdown.currentText())
+            self.context_selection.addItem('Context')
+            self.context_selection.currentTextChanged.connect(command)
+        command(self.context_selection.currentText())
 
     def draw_graph(self):
         '''
@@ -948,21 +899,21 @@ class Configurator(QtWidgets.QMainWindow):
         '''
         if not command:
             command = self.influencing_context_selected
-        self.influencing_context_dropdown.clear()
+        self.influencing_context_selection.clear()
         if options:
-            self.influencing_context_dropdown.addItems(list(options))
-            max_width = max([QFontMetrics(self.influencing_context_dropdown.font(
+            self.influencing_context_selection.addItems(list(options))
+            max_width = max([QFontMetrics(self.influencing_context_selection.font(
             )).boundingRect(option).width() for option in options])
-            self.influencing_context_dropdown.setMinimumWidth(
+            self.influencing_context_selection.setMinimumWidth(
                 max_width + 25)  # add some padding
-            self.influencing_context_dropdown.setCurrentIndex(0)
-            self.influencing_context_dropdown.currentTextChanged.connect(
+            self.influencing_context_selection.setCurrentIndex(0)
+            self.influencing_context_selection.currentTextChanged.connect(
                 command)
         else:
-            self.influencing_context_dropdown.addItem('Context')
-            self.influencing_context_dropdown.currentIndexChanged.connect(
+            self.influencing_context_selection.addItem('Context')
+            self.influencing_context_selection.currentIndexChanged.connect(
                 command)
-        command(self.influencing_context_dropdown.currentText())
+        command(self.influencing_context_selection.currentText())
 
     def set_intention_dropdown(self, options: list, command: function = None):
         '''
