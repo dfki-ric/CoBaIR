@@ -2,3 +2,4 @@ pytest
 pytest-cov
 pytest-html
 pytest-timeout
+pylint-gitlab

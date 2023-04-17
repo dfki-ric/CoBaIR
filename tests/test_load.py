@@ -3,8 +3,9 @@ Tests for Loading yaml format config file
 '''
 
 # System imports
-import pytest
 from collections import defaultdict
+import pytest
+
 # 3rd party imports
 from yaml.parser import ParserError
 
@@ -55,18 +56,21 @@ def test_loading_invalid_yml_file():
 
     config = load_config('small_example_invalid.yml')
 
-    # I assume this will throw an Error!- AssertionError: Influence Value for pick up tool.speech commands.handover must be an integer between 0 and 5! Is 10
+    # I assume this will throw an Error!- 
+    # AssertionError: Influence Value for pick up tool.speech commands.
+    # handover must be an integer between 0 and 5! Is 10
     with pytest.raises(AssertionError):
         BayesNet(config)
-        assert BayesNet(config).valid == False
+        assert BayesNet(config).valid is False
 
 
 def test_loading_valid_yml_file():
     """
-    Test loading valid file name - validata_config() function will validate that the current config follows the correct format.
+    Test loading valid file name - validata_config() function will validate 
+        that the current config follows the correct format.
     """
 
     config = load_config('small_example.yml')
-    bn = BayesNet(config)
+    bayes_net = BayesNet(config)
     # valid config
-    assert bn.valid == True
+    assert bayes_net.valid is True
