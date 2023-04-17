@@ -28,7 +28,7 @@ from pyqtgraph import GraphicsLayoutWidget
 
 # local imports
 from .bayes_net import BayesNet, load_config
-
+import webbrowser
 
 # end file header
 __author__ = 'Adrian Lubitz'
@@ -494,7 +494,7 @@ class Configurator(QtWidgets.QMainWindow):
         self.adjust_button_visibility()
         self.set_decision_threshold()
         self.fill_advanced_table()
-        self.draw_graph()
+        # self.draw_graph()
 
     def set_decision_threshold(self):
         """
@@ -808,6 +808,13 @@ class Configurator(QtWidgets.QMainWindow):
 
         self.context_instantiations = defaultdict(dict)
         self.intention_instantiations = defaultdict(lambda: defaultdict(dict))
+        
+        self.actionOpen.triggered.connect(self.load)
+        self.actionAbout.triggered.connect(self.open_link)
+    
+    def open_link(checked):
+        url = "https://dfki-ric.github.io/CoBaIR/"
+        webbrowser.open_new_tab(url)
 
     def decision_threshold_changed(self, value):
         """
