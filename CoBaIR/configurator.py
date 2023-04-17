@@ -5,10 +5,6 @@ This module is a GUI configurator to create configurations for context based int
 # System imports
 import sys
 from collections import defaultdict
-import tkinter as tk
-from tkinter import filedialog as fd
-from tkinter.simpledialog import Dialog
-from tkinter import ttk
 from copy import deepcopy
 from types import FunctionType as function
 from pathlib import Path
@@ -18,14 +14,14 @@ import itertools
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import pyqtgraph as pg
 from PyQt5 import QtWidgets, uic
-from PyQt5.QtWidgets import *
+from PyQt5.QtWidgets import QDialog, QLabel, QLineEdit, QComboBox, QPushButton,\
+    QFrame, QGridLayout, QSizePolicy, QSlider, QFileDialog
+
 from PyQt5.QtCore import Qt, QStringListModel
 from PyQt5.QtGui import QFont, QFontMetrics, QLinearGradient, QColor
 
 import yaml
 import numpy as np
-
-from pyqtgraph import GraphicsLayoutWidget
 
 # local imports
 from .bayes_net import BayesNet, load_config
@@ -166,7 +162,7 @@ class NewCombinedContextDialog(QDialog):
         self.context_menus = []
         self.instantiation_selections = []
         self.instantiation_menus = []
-        for i in range(2):
+        for _ in range(2):
             self.new_instantiation()
 
     def context_selected(self, context: str, i: int):
@@ -263,7 +259,11 @@ class NewCombinedContextDialog(QDialog):
         for i, context_selection in enumerate(self.context_selections):
             contexts.append(context_selection.currentText())
             instantiations.append(
-                self.original_instantiations[context_selection.currentText()][self.instantiation_selections[i].currentText()])
+                self.original_instantiations[
+                    context_selection.currentText()
+                ][
+                    self.instantiation_selections[i].currentText()
+                ])
         # intention: str, contexts: tuple, instantiations: tuple, value: int
         result = {'intention': intention, 'value': int(value), 'contexts': tuple(
             contexts), 'instantiations': tuple(instantiations)}
@@ -276,9 +276,11 @@ class NewContextDialog(QDialog):
 
     def __init__(self, parent=None, predefined_context: dict = None) -> None:
         """
-        Extends the Constructor of Dialog to use already existing context and the corresponding instantiations and values.
+        Extends the Constructor of Dialog to use already existing context and 
+            the corresponding instantiations and values.
 
-        If context and their corresponding instantiations and values are given it will be filled in the corresponding text fields.
+        If context and their corresponding instantiations and values are given 
+            it will be filled in the corresponding text fields.
 
         Args:
             predefined_context:
@@ -343,7 +345,7 @@ class NewContextDialog(QDialog):
                 name_entry.setText(str(name))
                 probability_entry.setText(str(value))
                 # del entry
-                del(instantiations[name])
+                del instantiations[name]
             self.grid_layout.addWidget(
                 name_entry, self.shown_instantiations+1, 0)
             self.grid_layout.addWidget(
@@ -409,6 +411,9 @@ class NewContextDialog(QDialog):
             self.error_label.setText("Probability cannot be empty.")
 
     def get_result(self):
+        """
+        Get the result of the New Context dialog.
+        """
         result = defaultdict(lambda: defaultdict(dict))
         errors = []
         context_entry = self.context_entry.text().strip()
@@ -446,7 +451,7 @@ class Configurator(QtWidgets.QMainWindow):
     It can as well be used in a live mode to test the configuration
     '''
 
-    def __init__(self, config: dict = None, *args, **kwargs):
+    def __init__(self, *args, config: dict = None, **kwargs):
         '''
         Setting up the GUI
 
@@ -495,7 +500,7 @@ class Configurator(QtWidgets.QMainWindow):
         self.adjust_button_visibility()
         self.set_decision_threshold()
         self.fill_advanced_table()
-        self.draw_graph()
+        # self.draw_graph()
 
     def set_decision_threshold(self):
         """
@@ -508,7 +513,8 @@ class Configurator(QtWidgets.QMainWindow):
         """
         Adjusts if buttons are visible or not.
 
-        Buttons for edit and delete will only be visible if there is a corresponding intention or context already created.
+        Buttons for edit and delete will only be visible 
+            if there is a corresponding intention or context already created.
         """
         if self.bayesNet.config['contexts']:
             # set visible
@@ -549,8 +555,8 @@ class Configurator(QtWidgets.QMainWindow):
                 if new_instantiations:
                     self.bayesNet.add_context(
                         old_context_name, new_instantiations)
-            except AssertionError as e:
-                self.error_label.setText(str(e))
+            except AssertionError as error_message:
+                self.error_label.setText(str(error_message))
             # update view!
             self.create_fields()
             self.context_selection.setCurrentText(old_context_name)
@@ -570,10 +576,12 @@ class Configurator(QtWidgets.QMainWindow):
         Edit the currently selected context.
 
         !!! note
-        Changing the name of an instantiation will always set the influence value of this instantiation to zero for all intentions!
+        Changing the name of an instantiation will always set the influence value 
+            of this instantiation to zero for all intentions!
 
         !!! note
-        The GUI can only handle strings for now. This means every instantiation name will be casted to a string upon editing.
+        The GUI can only handle strings for now. 
+        This means every instantiation name will be casted to a string upon editing.
         """
         # TODO: renaming instantiations should not neccesarily put influence values to zero - check cases
         # TODO: this will always set the instantiations as Strings
@@ -598,8 +606,8 @@ class Configurator(QtWidgets.QMainWindow):
                 if new_instantiations:
                     self.bayesNet.edit_context(
                         context, new_instantiations, old_context_name)
-            except (ValueError, AssertionError) as e:
-                self.error_label.setText(str(e))
+            except (ValueError, AssertionError) as error_message:
+                self.error_label.setText(str(error_message))
             self.create_fields()
             self.context_selection.setCurrentText(old_context_name)
             self.context_selected(old_context_name)
@@ -619,8 +627,8 @@ class Configurator(QtWidgets.QMainWindow):
         context = self.context_dropdown.currentText()
         try:
             self.bayesNet.del_context(context)
-        except AssertionError as e:
-            self.error_label.setText(str(e))
+        except AssertionError as error_message:
+            self.error_label.setText(str(error_message))
         self.create_fields()
 
     def new_intention(self):
@@ -637,8 +645,8 @@ class Configurator(QtWidgets.QMainWindow):
             if result:
                 try:
                     self.bayesNet.add_intention(result)
-                except AssertionError as e:
-                    self.error_label.setText(str(e))
+                except AssertionError as error_message:
+                    self.error_label.setText(str(error_message))
             # update view!
             self.create_fields()
             self.intention_dropdown.setCurrentText(result)
@@ -666,8 +674,8 @@ class Configurator(QtWidgets.QMainWindow):
             if result:
                 try:
                     self.bayesNet.edit_intention(intention, result)
-                except ValueError as e:
-                    self.error_label.setText(str(e))
+                except ValueError as error_message:
+                    self.error_label.setText(str(error_message))
             self.create_fields()
             self.intention_dropdown.setCurrentText(result)
             # Explicit call is necessary because set seems not to trigger the callback
@@ -689,8 +697,8 @@ class Configurator(QtWidgets.QMainWindow):
         intention = self.intention_dropdown.currentText()
         try:
             self.bayesNet.del_intention(intention)
-        except AssertionError as e:
-            self.error_label.setText(str(e))
+        except AssertionError as error_message:
+            self.error_label.setText(str(error_message))
         self.create_fields()
 
     def on_clicked_advanced(self):
@@ -723,8 +731,8 @@ class Configurator(QtWidgets.QMainWindow):
             try:
                 self.bayesNet.add_combined_influence(
                     intention=result['intention'], contexts=result['contexts'], instantiations=result['instantiations'], value=result['value'])
-            except ValueError as e:
-                self.error_label.setText(str(e))
+            except ValueError as error_message:
+                self.error_label.setText(str(error_message))
             self.create_fields()
 
         ok_button = dialog.findChild(QPushButton, "pushButton_2")
@@ -755,7 +763,7 @@ class Configurator(QtWidgets.QMainWindow):
             for context in context_influence:
                 if isinstance(context, tuple):
                     for j in range(len(list(context_influence[context]))):
-                        key = (list(context_influence[context])[j])
+                        key = list(context_influence[context])[j]
                         # For every combined case make a label and a button
                         self.advanced_table.layout().addWidget(
                             QLabel(f'{intention}'), row, 0)
@@ -770,12 +778,18 @@ class Configurator(QtWidgets.QMainWindow):
                         self.advanced_table.layout().addWidget(
                             QLabel(f'{list(context_influence[context].values())[0]}'), row, 4)
                         remove_button = QPushButton('remove')
-                        remove_button.clicked.connect(lambda _, intention=intention, contexts=context, instantiations=list(
-                            context_influence[context].keys())[0]: self.remove_combined_influence(intention, contexts, instantiations))
+                        instantiations = list(
+                            context_influence[context].keys())[0]
+                        remove_button.clicked.connect(
+                            lambda _, intention=intention, contexts=context, instantiations=instantiations:
+                            self.remove_combined_influence(intention, contexts, instantiations))
                         self.advanced_table.layout().addWidget(remove_button, row, 5)
                         row += 1
 
     def remove_combined_influence(self, intention: str, contexts: tuple, instantiations: tuple):
+        """
+        Remove a combined influence from the BayesNet and update the advanced table.
+        """
         self.bayesNet.del_combined_influence(
             intention, contexts, instantiations)
         self.fill_advanced_table()
@@ -825,14 +839,14 @@ class Configurator(QtWidgets.QMainWindow):
         try:
             self.bayesNet.change_decision_threshold(
                 float(value))
-        except AssertionError as e:
-            self.error_label.setText(f"{e}")
-        except ValueError as e:
+        except AssertionError as error_message:
+            self.error_label.setText(f"{error_message}")
+        except ValueError:
             self.error_label.setText(f'Decision Threshold must be a number')
 
     def set_context_dropdown(self, options: list, command: function = None):
         '''
-        This sets the options for a context optionMenu with the options and the corresponding command.
+        This sets the options for a context optionMenu with the options and corresponding command.
 
         Args:
             options: A list containing the options in the context dropdown
@@ -863,7 +877,8 @@ class Configurator(QtWidgets.QMainWindow):
 
     def set_influencing_context_dropdown(self, options: list, command: function = None):
         '''
-        This sets the options for the influencing context optionMenu with the options and the corresponding command.
+        This sets the options for the influencing context optionMenu 
+            with the options and the corresponding command.
 
         Args:
             options: A list containing the options in the influencing context dropdown
@@ -889,7 +904,8 @@ class Configurator(QtWidgets.QMainWindow):
 
     def set_intention_dropdown(self, options: list, command: function = None):
         '''
-        This sets the options for a intention optionMenu with the options and the corresponding command
+        This sets the options for a intention optionMenu 
+            with the options and the corresponding command
 
         Args:
             options: A list containing the options in the intention dropdown
@@ -920,7 +936,6 @@ class Configurator(QtWidgets.QMainWindow):
         Args:
             context: name of the clicked context
         """
-
         for active_context, instantiations in self.context_instantiations.items():
             for instantiation, widgets in instantiations.items():
                 for widget in widgets:
@@ -986,7 +1001,8 @@ class Configurator(QtWidgets.QMainWindow):
                             print(f"couldn't destroy: {e}")
         intention = self.intention_dropdown.currentText()
         context = self.influencing_context_selection.currentText()
-        if context not in self.bayesNet.config['contexts'] or intention not in self.bayesNet.config['intentions']:
+        if context not in self.bayesNet.config['contexts'] or \
+                intention not in self.bayesNet.config['intentions']:
             return
 
         self.intention_instantiations = defaultdict(lambda: defaultdict(dict))
@@ -999,8 +1015,10 @@ class Configurator(QtWidgets.QMainWindow):
         row_count = layout.rowCount()
 
         for instantiation, value in self.bayesNet.config['intentions'][intention][context].items():
+            influence_text = f'Influence of {context}:{instantiation} on {intention}: LOW'
             instantiation_label = QLabel(
-                f'Influence of {context}:{instantiation} on {intention}: LOW', self.influencing_context_frame)
+                influence_text, self.influencing_context_frame)
+
             instantiation_label.setFont(QFont('Times New Roman', 13))
             slider = QSlider(Qt.Horizontal, self.influencing_context_frame)
             slider.setFixedSize(100, 20)
@@ -1044,10 +1062,10 @@ class Configurator(QtWidgets.QMainWindow):
                 self.error_label.setText("loading BayesNet...")
                 self.bayesNet.load(fileName)
                 self.error_label.setText("")
-            except AssertionError as e:
-                self.error_label.setText(str(e))
-            except Exception as e:
-                self.error_label.setText(str(e))
+            except AssertionError as error_message:
+                self.error_label.setText(str(error_message))
+            except Exception as error_message:
+                self.error_label.setText(str(error_message))
         self.create_fields()
 
     def save(self):
@@ -1073,9 +1091,9 @@ class Configurator(QtWidgets.QMainWindow):
         try:
             self.bayesNet.change_context_apriori_value(context=context, instantiation=instantiation, value=float(
                 self.context_instantiations[context][instantiation][1].text()))
-        except AssertionError as e:
-            self.error_label.setText(str(e))
-        except ValueError as e:
+        except AssertionError as error_message:
+            self.error_label.setText(str(error_message))
+        except ValueError:
             self.error_label.setText(
                 f'Apriori probability of context "{context}.{instantiation}" is not a number')
 
