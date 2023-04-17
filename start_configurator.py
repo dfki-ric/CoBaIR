@@ -20,7 +20,7 @@ parser.add_argument('-f', '--file', type=str,
                     help='Path to a config file to load upon start.')
 args = parser.parse_args()
 
-        
+
 # get file from args
 config_path = args.file
 if config_path:
@@ -28,5 +28,5 @@ if config_path:
 else:
     config = None
 
-configurator = Configurator(config)
+configurator = Configurator(config=config)
 configurator.app.exec_()
