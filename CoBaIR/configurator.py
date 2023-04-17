@@ -24,6 +24,7 @@ from PyQt5.QtGui import QFont, QFontMetrics
 import yaml
 import numpy as np
 
+from pyqtgraph import GraphicsLayoutWidget
 
 # local imports
 from .bayes_net import BayesNet, load_config
@@ -453,15 +454,7 @@ class Configurator(QtWidgets.QMainWindow):
         self.setup_layout()
         self.bayesNet = BayesNet(config)
         self.create_fields()
-        self.show()  # Show the GUI
-
-    def set_error_label_red(self):
-        """
-        setting the alignment and color of the error label
-        """
-        self.error_label.setAlignment(
-            Qt.AlignCenter)  # TODO: no changes of style in functional code!
-        self.error_label.setStyleSheet("color: red")
+        self.show()  # Show the GU
 
     def create_fields(self):
         """
@@ -720,8 +713,7 @@ class Configurator(QtWidgets.QMainWindow):
         Fill the content of the table containing combined influence values
         '''
 
-        font = QFont()
-        font.setPointSize(13)
+        font = QFont("Times New Roman",13)
         self.advanced_table.setParent(None)
         self.advanced_table.deleteLater()
         self.advanced_table = QFrame(self.advanced_hidden_frame)
@@ -849,7 +841,6 @@ class Configurator(QtWidgets.QMainWindow):
             self.context_selection.currentTextChanged.connect(command)
         command(self.context_selection.currentText())
 
-
     def draw_graph(self):
         '''
         This draws the graph from the current config.
@@ -881,7 +872,6 @@ class Configurator(QtWidgets.QMainWindow):
             self.influencing_context_selection.currentIndexChanged.connect(
                 command)
         command(self.influencing_context_selection.currentText())
-
 
     def set_intention_dropdown(self, options: list, command: function = None):
         '''
