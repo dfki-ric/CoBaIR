@@ -20,7 +20,7 @@ import pyqtgraph as pg
 from PyQt5 import QtWidgets, uic
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import Qt, QStringListModel
-from PyQt5.QtGui import QFont, QFontMetrics,QLinearGradient, QColor
+from PyQt5.QtGui import QFont, QFontMetrics, QLinearGradient, QColor
 
 import yaml
 import numpy as np
@@ -738,7 +738,7 @@ class Configurator(QtWidgets.QMainWindow):
         Fill the content of the table containing combined influence values
         '''
 
-        font = QFont("Times New Roman",13)
+        font = QFont("Times New Roman", 13)
         self.advanced_table.setParent(None)
         self.advanced_table.deleteLater()
         self.advanced_table = QFrame(self.advanced_hidden_frame)
@@ -789,7 +789,8 @@ class Configurator(QtWidgets.QMainWindow):
 
         self.load_button.clicked.connect(self.load)
         self.save_button.clicked.connect(self.save)
-        self.decision_threshold_entry.textChanged.connect(self.decision_threshold_changed)
+        self.decision_threshold_entry.textChanged.connect(
+            self.decision_threshold_changed)
 
         self.new_context_button.clicked.connect(self.new_context)
         self.edit_context_button.clicked.connect(self.edit_context)
@@ -799,13 +800,15 @@ class Configurator(QtWidgets.QMainWindow):
         self.edit_intention_button.clicked.connect(self.edit_intention)
         self.delete_intention_button.clicked.connect(self.delete_intention)
 
-        self.new_combined_influence_button.clicked.connect(self.new_combined_influence)
+        self.new_combined_influence_button.clicked.connect(
+            self.new_combined_influence)
         self.advanced_folded = True
         self.advanced_hidden_frame.hide()
         self.new_combined_influence_button.hide()
         self.advanced_label.clicked.connect(self.on_clicked_advanced)
 
-        self.COLORS = {0: 'White', 1: 'Red', 2: 'Orange', 3: 'Yellow', 4: 'darkCyan', 5: 'Green'}
+        self.COLORS = {0: 'White', 1: 'Red', 2: 'Orange',
+                       3: 'Yellow', 4: 'darkCyan', 5: 'Green'}
         # Adding the canvas
         layout = QGridLayout()
         self.canvas_frame.setLayout(layout)
@@ -949,9 +952,10 @@ class Configurator(QtWidgets.QMainWindow):
             label.setFont(QFont('Times New Roman', 13))
             line_edit = QLineEdit(str(value), self.context_selected_frame)
             line_edit.setFont(QFont('Times New Roman', 13))
-            line_edit.textChanged.connect(lambda text, context=context, instantiation=instantiation: 
-                                self.apriori_values_changed(text, context=context, instantiation=instantiation)
-                                )
+            line_edit.textChanged.connect(lambda text, context=context, instantiation=instantiation:
+                                          self.apriori_values_changed(
+                                              text, context=context, instantiation=instantiation)
+                                          )
 
             layout.addWidget(label, row_count, 0)
             layout.addWidget(line_edit, row_count, 1)
@@ -1011,7 +1015,8 @@ class Configurator(QtWidgets.QMainWindow):
             slider.setMinimum(0)
             slider.setMaximum(5)
             slider.setTickInterval(1)
-            slider.setStyleSheet(f"QSlider::handle:horizontal {{background-color: {self.COLORS[value]}}}")
+            slider.setStyleSheet(
+                f"QSlider::handle:horizontal {{background-color: {self.COLORS[value]}}}")
             slider.setValue(value)
 
             slider.valueChanged.connect(lambda value, context=context, intention=intention,
@@ -1083,12 +1088,14 @@ class Configurator(QtWidgets.QMainWindow):
             context: name of the context
             intention: name of the intention
             instantiation: name of the corresponding instantiation
+            slider: handle to the slider which should change its color
         """
         self.error_label.setText("")
         try:
             self.bayesNet.change_influence_value(
                 intention=intention, context=context, instantiation=instantiation, value=int(value))
-            slider.setStyleSheet(f"QSlider::handle:horizontal {{background-color: {self.COLORS[value]}}}")
+            slider.setStyleSheet(
+                f"QSlider::handle:horizontal {{background-color: {self.COLORS[value]}}}")
         except AssertionError as e:
             self.error_label.setText(str(e))
 
