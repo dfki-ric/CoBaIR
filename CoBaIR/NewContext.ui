@@ -21,9 +21,9 @@
     <widget class="QStatusBar" name="statusbar"/>
    </item>
    <item row="1" column="1">
-    <layout class="QGridLayout" name="gridLayout_2">
+    <layout class="QGridLayout" name="grid_layout_2">
      <item row="6" column="1">
-      <widget class="QPushButton" name="pushButton_3">
+      <widget class="QPushButton" name="cancel_button">
        <property name="font">
         <font>
          <family>Times New Roman</family>
@@ -46,7 +46,7 @@
       </widget>
      </item>
      <item row="6" column="0">
-      <widget class="QPushButton" name="pushButton_2">
+      <widget class="QPushButton" name="ok_button">
        <property name="font">
         <font>
          <family>Times New Roman</family>
@@ -104,7 +104,7 @@
       </widget>
      </item>
      <item row="3" column="0" colspan="2">
-      <widget class="QPushButton" name="pushButton">
+      <widget class="QPushButton" name="more">
        <property name="font">
         <font>
          <family>Times New Roman</family>
@@ -152,7 +152,7 @@
       </widget>
      </item>
      <item row="7" column="0" colspan="2">
-      <widget class="QLabel" name="label_5">
+      <widget class="QLabel" name="error_label">
        <property name="text">
         <string/>
        </property>

@@ -32,7 +32,7 @@
     <string>New Intention:</string>
    </property>
   </widget>
-  <widget class="QLineEdit" name="lineEdit">
+  <widget class="QLineEdit" name="intention_entry">
    <property name="geometry">
     <rect>
      <x>50</x>
@@ -42,7 +42,7 @@
     </rect>
    </property>
   </widget>
-  <widget class="QPushButton" name="ok">
+  <widget class="QPushButton" name="ok_button">
    <property name="geometry">
     <rect>
      <x>40</x>
@@ -61,7 +61,7 @@
     <string>OK</string>
    </property>
   </widget>
-  <widget class="QPushButton" name="cancel">
+  <widget class="QPushButton" name="cancel_button">
    <property name="geometry">
     <rect>
      <x>130</x>
@@ -80,7 +80,7 @@
     <string>Cancel</string>
    </property>
   </widget>
-  <widget class="QLabel" name="label_2">
+  <widget class="QLabel" name="error_label">
    <property name="geometry">
     <rect>
      <x>0</x>
