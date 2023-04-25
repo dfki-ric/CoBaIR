@@ -316,7 +316,7 @@ class NewContextDialog(QDialog):
             self.context_entry.setText(context)
         else:
             instantiations = {}
-        while(self.shown_instantiations < 2 or instantiations):
+        while (self.shown_instantiations < 2 or instantiations):
 
             name_entry = QLineEdit()
             probability_entry = QLineEdit()
