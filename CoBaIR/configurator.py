@@ -824,12 +824,15 @@ class Configurator(QtWidgets.QMainWindow):
         self.intention_instantiations = defaultdict(lambda: defaultdict(dict))
         
         self.actionOpen.triggered.connect(self.load)
+        self.actionOpen.setShortcut("Ctrl+O")
         self.actionAbout.triggered.connect(self.open_link)
         self.actionNew.triggered.connect(self.reset)
+        self.actionNew.setShortcut("Ctrl+N")
         self.actionSave.triggered.connect(self.save)
+        self.actionSave.setShortcut("Ctrl+S")
         self.actionSave_as.setEnabled(False)
         self.actionSave_as.triggered.connect(self.save_as)
-
+        self.actionSave_as.setShortcut("Ctrl+Shift+S")
     
     def reset(self):
         """
