@@ -666,6 +666,7 @@ class BayesNet():
         config = load_config(path)
         # reinizialize with config
         self.__init__(config)
+        self.file_name = path 
 
     def change_context_apriori_value(self, context: str, instantiation, value: float):
         """

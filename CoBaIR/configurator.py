@@ -4,6 +4,7 @@ This module is a GUI configurator to create configurations for context based int
 
 # System imports
 import sys
+import os
 from collections import defaultdict
 from copy import deepcopy
 from types import FunctionType as function
@@ -22,7 +23,7 @@ from PyQt5.QtGui import QFont, QFontMetrics, QLinearGradient, QColor
 
 import yaml
 import numpy as np
-
+import logging
 # local imports
 from .bayes_net import BayesNet, load_config
 import webbrowser
@@ -824,8 +825,20 @@ class Configurator(QtWidgets.QMainWindow):
         
         self.actionOpen.triggered.connect(self.load)
         self.actionAbout.triggered.connect(self.open_link)
+        self.actionNew.triggered.connect(self.reset)
+        self.actionSave.triggered.connect(self.save)
+        self.actionSave_as.setEnabled(False)
+        self.actionSave_as.triggered.connect(self.save_as)
+
     
-    def open_link(checked):
+    def reset(self):
+        """
+        Resets the state of the Configurator to its initial state.
+        """
+        self.bayesNet = BayesNet(None)  # replace None with the initial config if needed
+        self.create_fields()
+
+    def open_link(self):
         url = "https://dfki-ric.github.io/CoBaIR/"
         webbrowser.open_new_tab(url)
 
@@ -840,7 +853,7 @@ class Configurator(QtWidgets.QMainWindow):
         except AssertionError as error_message:
             self.error_label.setText(f"{error_message}")
         except ValueError:
-            self.error_label.setText(f'Decision Threshold must be a number')
+            self.error_label.setText('Decision Threshold must be a number')
 
     def set_context_dropdown(self, options: list, command: function = None):
         '''
@@ -856,8 +869,8 @@ class Configurator(QtWidgets.QMainWindow):
 
         if options:
             self.context_selection.addItems(list(options))
-            max_width = max([QFontMetrics(self.context_selection.font()).boundingRect(
-                option).width() for option in options])
+            max_width = max(QFontMetrics(self.context_selection.font()).boundingRect(option).width() 
+                            for option in options)
             self.context_selection.setMinimumWidth(
                 max_width + 25)
             self.context_selection.setCurrentIndex(0)
@@ -889,8 +902,8 @@ class Configurator(QtWidgets.QMainWindow):
         self.influencing_context_selection.clear()
         if options:
             self.influencing_context_selection.addItems(list(options))
-            max_width = max([QFontMetrics(self.influencing_context_selection.font(
-            )).boundingRect(option).width() for option in options])
+            max_width = max(QFontMetrics(self.influencing_context_selection.font()).boundingRect(option).width() 
+                            for option in options)
             self.influencing_context_selection.setMinimumWidth(
                 max_width + 25)  # add some padding
             self.influencing_context_selection.setCurrentIndex(0)
@@ -917,8 +930,8 @@ class Configurator(QtWidgets.QMainWindow):
 
         if options:
             self.intention_dropdown.addItems(list(options))
-            max_width = max([QFontMetrics(self.intention_dropdown.font()).boundingRect(
-                option).width() for option in options])
+            max_width = max(QFontMetrics(self.influencing_context_selection.font()).boundingRect(option).width() 
+                            for option in options)
             self.intention_dropdown.setMinimumWidth(
                 max_width + 25)  # add some padding
             self.intention_dropdown.setCurrentIndex(0)
@@ -936,16 +949,18 @@ class Configurator(QtWidgets.QMainWindow):
         Args:
             context: name of the clicked context
         """
-        for active_context, instantiations in self.context_instantiations.items():
+        logger = logging.getLogger(__name__)
+        for _, instantiations in self.context_instantiations.items():
             for instantiation, widgets in instantiations.items():
                 for widget in widgets:
                     try:
                         widget.deleteLater()
+                    except RuntimeError as e:
+                        logger.error(f"Failed to destroy widget {widget}: {type(e).__name__}: {str(e)}")
                     except AttributeError:
                         pass  # can not destroy StringVars
-                    except Exception as e:
-                        # TODO: better logging
-                        print(f"couldn't destroy: {e}")
+                    except TypeError as e:
+                        logger.error(f"Failed to destroy widget {widget}: {type(e).__name__}: {str(e)}")
 
         self.context_instantiations = defaultdict(dict)
 
@@ -1061,22 +1076,36 @@ class Configurator(QtWidgets.QMainWindow):
             try:
                 self.error_label.setText("loading BayesNet...")
                 self.bayesNet.load(fileName)
+                print(fileName)
                 self.error_label.setText("")
             except AssertionError as error_message:
                 self.error_label.setText(str(error_message))
             except Exception as error_message:
                 self.error_label.setText(str(error_message))
         self.create_fields()
+        self.actionSave_as.setEnabled(True)
 
     def save(self):
         """
-        opens a asksaveasfilename dialog to save a config
+        Opens a save file dialog to save the current configuration to a file.
         """
         filetypes = "Yaml files (*.yml);;All Files (*)"
         save_filepath, _ = QFileDialog.getSaveFileName(
             None, "Save Config", "", filetypes)
         if save_filepath:
             self.bayesNet.save(save_filepath)
+        self.actionSave_as.setEnabled(True)
+
+    def save_as(self):
+        """
+        Opens a save file dialog to save a configuration with a new name or at a new location.
+        If a filename has been previously loaded or saved, that filename will be used as the default.
+        """
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        current_file_name = self.bayesNet.file_name if hasattr(self.bayesNet, 'file_name') else ''
+        fileName, _ = QFileDialog.getSaveFileName(
+            None, "Save As", current_file_name, "Yaml files (*.yml);;All Files (*)", options=options)
 
     def apriori_values_changed(self, *args, context, instantiation):
         """

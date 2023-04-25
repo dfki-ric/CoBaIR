@@ -369,7 +369,10 @@
     <property name="title">
      <string>File</string>
     </property>
+    <addaction name="actionNew"/>
     <addaction name="actionOpen"/>
+    <addaction name="actionSave"/>
+    <addaction name="actionSave_as"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="font">
@@ -415,6 +418,33 @@
      <family>Times New Roman</family>
      <pointsize>12</pointsize>
     </font>
+   </property>
+  </action>
+  <action name="actionNew">
+   <property name="icon">
+    <iconset>
+     <normaloff>../../../icons/blue-document.png</normaloff>../../../icons/blue-document.png</iconset>
+   </property>
+   <property name="text">
+    <string>New</string>
+   </property>
+  </action>
+  <action name="actionSave">
+   <property name="icon">
+    <iconset>
+     <normaloff>../../../icons/disk.png</normaloff>../../../icons/disk.png</iconset>
+   </property>
+   <property name="text">
+    <string>Save</string>
+   </property>
+  </action>
+  <action name="actionSave_as">
+   <property name="icon">
+    <iconset>
+     <normaloff>../../../icons/disk--plus.png</normaloff>../../../icons/disk--plus.png</iconset>
+   </property>
+   <property name="text">
+    <string>Save as</string>
    </property>
   </action>
  </widget>
