@@ -831,7 +831,6 @@ class Configurator(QtWidgets.QMainWindow):
         self.actionNew.setShortcut("Ctrl+N")
         self.actionSave.triggered.connect(self.save)
         self.actionSave.setShortcut("Ctrl+S")
-        self.actionSave_as.setEnabled(False)
         self.actionSave_as.triggered.connect(self.save_as)
         self.actionSave_as.setShortcut("Ctrl+Shift+S")
     
@@ -1088,7 +1087,6 @@ class Configurator(QtWidgets.QMainWindow):
             except Exception as error_message:
                 self.error_label.setText(str(error_message))
         self.create_fields()
-        self.actionSave_as.setEnabled(True)
 
     def save(self):
         """
@@ -1099,7 +1097,6 @@ class Configurator(QtWidgets.QMainWindow):
             None, "Save Config", "", filetypes)
         if save_filepath:
             self.bayesNet.save(save_filepath)
-        self.actionSave_as.setEnabled(True)
 
     def save_as(self):
         """
