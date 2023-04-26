@@ -826,6 +826,7 @@ class Configurator(QtWidgets.QMainWindow):
         self.actionOpen.triggered.connect(self.load)
         self.actionOpen.setShortcut("Ctrl+O")
         self.actionAbout.triggered.connect(self.open_link)
+        self.actionAbout.setShortcut("F1")
         self.actionNew.triggered.connect(self.reset)
         self.actionNew.setShortcut("Ctrl+N")
         self.actionSave.triggered.connect(self.save)
