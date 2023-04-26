@@ -487,7 +487,7 @@ class Configurator(QtWidgets.QMainWindow):
         self.adjust_button_visibility()
         self.set_decision_threshold()
         self.fill_advanced_table()
-        # self.draw_graph()
+        self.draw_graph()
 
     def set_decision_threshold(self):
         """
@@ -834,12 +834,14 @@ class Configurator(QtWidgets.QMainWindow):
         self.actionSave_as.triggered.connect(self.save_as)
         self.actionSave_as.setShortcut("Ctrl+Shift+S")
     
+
     def reset(self):
         """
         Resets the state of the Configurator to its initial state.
         """
-        self.bayesNet = BayesNet(None)  # replace None with the initial config if needed
+        self.bayesNet = BayesNet(None)
         self.create_fields()
+        self.view.clear()
 
     def open_link(self):
         url = "https://dfki-ric.github.io/CoBaIR/"
@@ -1079,7 +1081,6 @@ class Configurator(QtWidgets.QMainWindow):
             try:
                 self.error_label.setText("loading BayesNet...")
                 self.bayesNet.load(fileName)
-                print(fileName)
                 self.error_label.setText("")
             except AssertionError as error_message:
                 self.error_label.setText(str(error_message))
@@ -1261,6 +1262,7 @@ class TwoLayerGraph(pg.GraphItem):
             text_item = pg.TextItem(label, anchor=(0.5, 0.5))
             text_item.setParentItem(self)
             text_item.setPos(*position)
+            text_item.setPlainText(label)
             self.textItems.append(text_item)
 
     def set_config(self, config):
