@@ -460,9 +460,6 @@ class Configurator(QtWidgets.QMainWindow):
         self.view.addItem(self.graph_item)
         self.setup_layout()
         self.bayesNet = BayesNet(config)
-        self.original_config = deepcopy(config)
-        self.configuration_modified = False 
-        print(config)
         self.create_fields()
         self.show()  # Show the GU
 
@@ -491,7 +488,8 @@ class Configurator(QtWidgets.QMainWindow):
         self.set_decision_threshold()
         self.fill_advanced_table()
         self.draw_graph()
-        # self.checkEvent()
+        self.original_config = deepcopy(self.bayesNet.config)
+        
 
     def set_decision_threshold(self):
         """
@@ -823,10 +821,6 @@ class Configurator(QtWidgets.QMainWindow):
         layout = QGridLayout()
         self.canvas_frame.setLayout(layout)
         self.canvas_frame.layout().addWidget(self.win, 0, 0)
-
-        self.context_instantiations = defaultdict(dict)
-        self.intention_instantiations = defaultdict(lambda: defaultdict(dict))
-        
         self.actionOpen.triggered.connect(self.load)
         self.actionOpen.setShortcut("Ctrl+O")
         self.actionAbout.triggered.connect(self.open_link)
@@ -837,8 +831,6 @@ class Configurator(QtWidgets.QMainWindow):
         self.actionSave.setShortcut("Ctrl+S")
         self.actionSave_as.triggered.connect(self.save_as)
         self.actionSave_as.setShortcut("Ctrl+Shift+S")
-
-
     def reset(self):
         """
         Resets the state of the Configurator to its initial state.
@@ -1112,8 +1104,17 @@ class Configurator(QtWidgets.QMainWindow):
         current_file_name = self.bayesNet.file_name if hasattr(self.bayesNet, 'file_name') else ''
         fileName, _ = QFileDialog.getSaveFileName(
             None, "Save As", current_file_name, "Yaml files (*.yml);;All Files (*)", options=options)
-        
+
     def closeEvent(self, event):
+        """
+        Override the closeEvent method to prompt the user to save changes made to the configuration
+        before closing the application.
+
+        :param event: The close event.
+        :type event: QtGui.QCloseEvent
+
+        :return: None
+        """
         if self.bayesNet.config != self.original_config:
             reply = QMessageBox.question(self, 'Save Changes', 'Do you want to save the changes made to the configuration?',
                                         QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel, QMessageBox.Cancel)
@@ -1162,9 +1163,7 @@ class Configurator(QtWidgets.QMainWindow):
                 f"QSlider::handle:horizontal {{background-color: {self.COLORS[value]}}}")
         except AssertionError as e:
             self.error_label.setText(str(e))
-
         return value
-
 
 class TwoLayerGraph(pg.GraphItem):
     """
