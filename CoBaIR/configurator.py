@@ -461,7 +461,7 @@ class Configurator(QtWidgets.QMainWindow):
         self.setup_layout()
         self.bayesNet = BayesNet(config)
         self.create_fields()
-        self.show()  # Show the GU
+        self.show()  # Show the GUI
 
     def create_fields(self):
         """
@@ -489,7 +489,7 @@ class Configurator(QtWidgets.QMainWindow):
         self.fill_advanced_table()
         self.draw_graph()
         self.original_config = deepcopy(self.bayesNet.config)
-        
+        self.valid_bayesNet()
 
     def set_decision_threshold(self):
         """
@@ -829,8 +829,10 @@ class Configurator(QtWidgets.QMainWindow):
         self.actionNew.setShortcut("Ctrl+N")
         self.actionSave.triggered.connect(self.save)
         self.actionSave.setShortcut("Ctrl+S")
+        self.actionSave_as.setEnabled(False)
         self.actionSave_as.triggered.connect(self.save_as)
         self.actionSave_as.setShortcut("Ctrl+Shift+S")
+        
     def reset(self):
         """
         Resets the state of the Configurator to its initial state.
@@ -1093,6 +1095,12 @@ class Configurator(QtWidgets.QMainWindow):
             None, "Save Config", "", filetypes)
         if save_filepath:
             self.bayesNet.save(save_filepath)
+    
+    def valid_bayesNet(self):
+        if self.bayesNet.valid:
+            self.actionSave_as.setEnabled(True)
+        else:
+            self.actionSave_as.setEnabled(False)
 
     def save_as(self):
         """
@@ -1104,6 +1112,7 @@ class Configurator(QtWidgets.QMainWindow):
         current_file_name = self.bayesNet.file_name if hasattr(self.bayesNet, 'file_name') else ''
         fileName, _ = QFileDialog.getSaveFileName(
             None, "Save As", current_file_name, "Yaml files (*.yml);;All Files (*)", options=options)
+        self.valid_bayesNet()
 
     def closeEvent(self, event):
         """
