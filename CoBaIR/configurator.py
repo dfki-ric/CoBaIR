@@ -460,6 +460,7 @@ class Configurator(QtWidgets.QMainWindow):
         self.view.addItem(self.graph_item)
         self.setup_layout()
         self.bayesNet = BayesNet(config)
+        self.bayesNetCopy = self.bayesNet.config
         self.create_fields()
         self.show()  # Show the GUI
 
@@ -489,7 +490,7 @@ class Configurator(QtWidgets.QMainWindow):
         self.fill_advanced_table()
         self.draw_graph()
         self.original_config = deepcopy(self.bayesNet.config)
-        self.valid_bayesNet()
+        self.saveas_action()
 
     def set_decision_threshold(self):
         """
@@ -1096,8 +1097,8 @@ class Configurator(QtWidgets.QMainWindow):
         if save_filepath:
             self.bayesNet.save(save_filepath)
     
-    def valid_bayesNet(self):
-        if self.bayesNet.valid:
+    def saveas_action(self):
+        if self.bayesNet.config != self.bayesNetCopy:
             self.actionSave_as.setEnabled(True)
         else:
             self.actionSave_as.setEnabled(False)
@@ -1108,11 +1109,10 @@ class Configurator(QtWidgets.QMainWindow):
         If a filename has been previously loaded or saved, that filename will be used as the default.
         """
         options = QFileDialog.Options()
-        options |= QFileDialog.DontUseNativeDialog
         current_file_name = self.bayesNet.file_name if hasattr(self.bayesNet, 'file_name') else ''
         fileName, _ = QFileDialog.getSaveFileName(
             None, "Save As", current_file_name, "Yaml files (*.yml);;All Files (*)", options=options)
-        self.valid_bayesNet()
+        self.saveas_action()
 
     def closeEvent(self, event):
         """
