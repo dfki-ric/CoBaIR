@@ -16,7 +16,7 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import pyqtgraph as pg
 from PyQt5 import QtWidgets, uic
 from PyQt5.QtWidgets import QDialog, QLabel, QLineEdit, QComboBox, QPushButton,\
-    QFrame, QGridLayout, QSizePolicy, QSlider, QFileDialog
+    QFrame, QGridLayout, QSizePolicy, QSlider, QFileDialog, QMessageBox
 
 from PyQt5.QtCore import Qt, QStringListModel
 from PyQt5.QtGui import QFont, QFontMetrics, QLinearGradient, QColor
@@ -460,6 +460,9 @@ class Configurator(QtWidgets.QMainWindow):
         self.view.addItem(self.graph_item)
         self.setup_layout()
         self.bayesNet = BayesNet(config)
+        self.original_config = deepcopy(config)
+        self.configuration_modified = False 
+        print(config)
         self.create_fields()
         self.show()  # Show the GU
 
@@ -488,6 +491,7 @@ class Configurator(QtWidgets.QMainWindow):
         self.set_decision_threshold()
         self.fill_advanced_table()
         self.draw_graph()
+        # self.checkEvent()
 
     def set_decision_threshold(self):
         """
@@ -833,7 +837,7 @@ class Configurator(QtWidgets.QMainWindow):
         self.actionSave.setShortcut("Ctrl+S")
         self.actionSave_as.triggered.connect(self.save_as)
         self.actionSave_as.setShortcut("Ctrl+Shift+S")
-    
+
 
     def reset(self):
         """
@@ -1108,6 +1112,17 @@ class Configurator(QtWidgets.QMainWindow):
         current_file_name = self.bayesNet.file_name if hasattr(self.bayesNet, 'file_name') else ''
         fileName, _ = QFileDialog.getSaveFileName(
             None, "Save As", current_file_name, "Yaml files (*.yml);;All Files (*)", options=options)
+        
+    def closeEvent(self, event):
+        if self.bayesNet.config != self.original_config:
+            reply = QMessageBox.question(self, 'Save Changes', 'Do you want to save the changes made to the configuration?',
+                                        QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel, QMessageBox.Cancel)
+            if reply == QMessageBox.Save:
+                self.save()
+            elif reply == QMessageBox.Cancel:
+                event.ignore()
+                return
+        event.accept()
 
     def apriori_values_changed(self, *args, context, instantiation):
         """
