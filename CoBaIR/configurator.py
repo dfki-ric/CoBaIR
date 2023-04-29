@@ -460,9 +460,9 @@ class Configurator(QtWidgets.QMainWindow):
         self.view.addItem(self.graph_item)
         self.setup_layout()
         self.bayesNet = BayesNet(config)
-        self.bayesNetCopy = self.bayesNet.config
         self.create_fields()
         self.show()  # Show the GUI
+        
 
     def create_fields(self):
         """
@@ -1098,18 +1098,18 @@ class Configurator(QtWidgets.QMainWindow):
             self.bayesNet.save(save_filepath)
     
     def saveas_action(self):
-        if self.bayesNet.config != self.bayesNetCopy:
+        if self.bayesNet.config['intentions'] or self.bayesNet.config['contexts'] or self.bayesNet.config['decision_threshold'] > 0:
             self.actionSave_as.setEnabled(True)
         else:
             self.actionSave_as.setEnabled(False)
-
-    def save_as(self):
+    
+    def save_as(self,):
         """
         Opens a save file dialog to save a configuration with a new name or at a new location.
         If a filename has been previously loaded or saved, that filename will be used as the default.
         """
         options = QFileDialog.Options()
-        current_file_name = self.bayesNet.file_name if hasattr(self.bayesNet, 'file_name') else ''
+        current_file_name = self.bayesNet.file_name if hasattr(self.bayesNet, 'file_name') else None
         fileName, _ = QFileDialog.getSaveFileName(
             None, "Save As", current_file_name, "Yaml files (*.yml);;All Files (*)", options=options)
         self.saveas_action()
