@@ -10,7 +10,7 @@ from copy import deepcopy
 from types import FunctionType as function
 from pathlib import Path
 import itertools
-
+import argparse
 # 3rd party imports
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import pyqtgraph as pg
@@ -1103,13 +1103,19 @@ class Configurator(QtWidgets.QMainWindow):
         else:
             self.actionSave_as.setEnabled(False)
     
-    def save_as(self,):
+    def save_as(self):
         """
         Opens a save file dialog to save a configuration with a new name or at a new location.
         If a filename has been previously loaded or saved, that filename will be used as the default.
         """
+        parser = argparse.ArgumentParser(description='Process YAML file path.')
+        parser.add_argument('--file', type=str, help='path of YAML file')
+        args = parser.parse_args()
+        yaml_file_path = args.file
         options = QFileDialog.Options()
         current_file_name = self.bayesNet.file_name if hasattr(self.bayesNet, 'file_name') else None
+        if current_file_name is None:
+            current_file_name = os.path.basename(yaml_file_path)
         fileName, _ = QFileDialog.getSaveFileName(
             None, "Save As", current_file_name, "Yaml files (*.yml);;All Files (*)", options=options)
         self.saveas_action()
