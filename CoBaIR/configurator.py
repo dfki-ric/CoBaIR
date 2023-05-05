@@ -13,10 +13,11 @@ import itertools
 # 3rd party imports
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import pyqtgraph as pg
-from PyQt5 import QtWidgets, uic
+from PyQt5 import QtWidgets, uic, QtCore
 from PyQt5.QtWidgets import QDialog, QLabel, QLineEdit, QComboBox, QPushButton,\
     QFrame, QGridLayout, QSizePolicy, QSlider, QFileDialog
 
+from PyQt5 import sip
 from PyQt5.QtCore import Qt, QStringListModel
 from PyQt5.QtGui import QFont, QFontMetrics, QLinearGradient, QColor
 
@@ -815,16 +816,8 @@ class Configurator(QtWidgets.QMainWindow):
         self.COLORS = {0: 'White', 1: 'Red', 2: 'Orange',
                        3: 'Yellow', 4: 'darkCyan', 5: 'Green'}
         # Adding the canvas
-        layout = QGridLayout()
-        self.canvas_frame.setLayout(layout)
         self.canvas_frame.layout().addWidget(self.win, 0, 0)
-
         self.grid_layout.addWidget(self.advanced_label, 5, 1)
-
-        # Adding the canvas
-        layout = QGridLayout()
-        self.canvas_frame.setLayout(layout)
-        self.canvas_frame.layout().addWidget(self.win, 0, 0)
 
     def decision_threshold_changed(self, value):
         """
@@ -950,10 +943,19 @@ class Configurator(QtWidgets.QMainWindow):
             return
         config = self.bayesNet.config
 
+        existing_layout = self.context_selected_frame.layout()
+        if existing_layout:
+            for i in reversed(range(existing_layout.count())):
+                existing_layout_item = existing_layout.itemAt(i)
+                existing_layout.takeAt(i)
+                if existing_layout_item.widget():
+                    existing_layout_item.widget().deleteLater()
+                elif existing_layout_item.layout():
+                    existing_layout_item.layout().deleteLater()
+            sip.delete(existing_layout)
+
         layout = QGridLayout()
         self.context_selected_frame.setLayout(layout)
-        layout = self.context_selected_frame.layout()
-
         layout.setVerticalSpacing(10)
         row_count = layout.rowCount()
 
@@ -1004,9 +1006,19 @@ class Configurator(QtWidgets.QMainWindow):
 
         self.intention_instantiations = defaultdict(lambda: defaultdict(dict))
 
+        existing_layout = self.influencing_context_frame.layout()
+        if existing_layout:
+            for i in reversed(range(existing_layout.count())):
+                existing_layout_item = existing_layout.itemAt(i)
+                existing_layout.takeAt(i)
+                if existing_layout_item.widget():
+                    existing_layout_item.widget().deleteLater()
+                elif existing_layout_item.layout():
+                    existing_layout_item.layout().deleteLater()
+            sip.delete(existing_layout)
+
         layout = QGridLayout()
         self.influencing_context_frame.setLayout(layout)
-        layout = self.influencing_context_frame.layout()
 
         layout.setVerticalSpacing(10)
         row_count = layout.rowCount()
