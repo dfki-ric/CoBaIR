@@ -943,13 +943,7 @@ class Configurator(QtWidgets.QMainWindow):
             return
         config = self.bayesNet.config
 
-        existing_layout = self.context_selected_frame.layout()
-        if existing_layout:
-            sip.delete(existing_layout)
-
-        layout = QGridLayout()
-        self.context_selected_frame.setLayout(layout)
-        layout.setVerticalSpacing(10)
+        layout = self.gridLayout_2
         row_count = layout.rowCount()
 
         for instantiation, value in config['contexts'][context].items():
@@ -999,14 +993,7 @@ class Configurator(QtWidgets.QMainWindow):
 
         self.intention_instantiations = defaultdict(lambda: defaultdict(dict))
 
-        existing_layout = self.influencing_context_frame.layout()
-        if existing_layout:
-            sip.delete(existing_layout)
-
-        layout = QGridLayout()
-        self.influencing_context_frame.setLayout(layout)
-
-        layout.setVerticalSpacing(10)
+        layout = self.gridLayout_3
         row_count = layout.rowCount()
 
         for instantiation, value in self.bayesNet.config['intentions'][intention][context].items():
