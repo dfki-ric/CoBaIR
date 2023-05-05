@@ -945,13 +945,6 @@ class Configurator(QtWidgets.QMainWindow):
 
         existing_layout = self.context_selected_frame.layout()
         if existing_layout:
-            for i in reversed(range(existing_layout.count())):
-                existing_layout_item = existing_layout.itemAt(i)
-                existing_layout.takeAt(i)
-                if existing_layout_item.widget():
-                    existing_layout_item.widget().deleteLater()
-                elif existing_layout_item.layout():
-                    existing_layout_item.layout().deleteLater()
             sip.delete(existing_layout)
 
         layout = QGridLayout()
@@ -1008,13 +1001,6 @@ class Configurator(QtWidgets.QMainWindow):
 
         existing_layout = self.influencing_context_frame.layout()
         if existing_layout:
-            for i in reversed(range(existing_layout.count())):
-                existing_layout_item = existing_layout.itemAt(i)
-                existing_layout.takeAt(i)
-                if existing_layout_item.widget():
-                    existing_layout_item.widget().deleteLater()
-                elif existing_layout_item.layout():
-                    existing_layout_item.layout().deleteLater()
             sip.delete(existing_layout)
 
         layout = QGridLayout()
