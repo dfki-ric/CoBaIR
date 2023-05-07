@@ -1087,37 +1087,45 @@ class Configurator(QtWidgets.QMainWindow):
                 self.error_label.setText(str(error_message))
         self.create_fields()
 
-    def save(self):
+
+    def get_save_file_path(self, title, default_name, file_filter):
         """
-        Opens a save file dialog to save the current configuration to a file.
-        """
-        filetypes = "Yaml files (*.yml);;All Files (*)"
-        save_filepath, _ = QFileDialog.getSaveFileName(
-            None, "Save Config", "", filetypes)
-        if save_filepath:
-            self.bayesNet.save(save_filepath)
-    
-    def saveas_action(self):
-        if self.bayesNet.config['intentions'] or self.bayesNet.config['contexts'] or self.bayesNet.config['decision_threshold'] > 0:
-            self.actionSave_as.setEnabled(True)
-        else:
-            self.actionSave_as.setEnabled(False)
-    
-    def save_as(self):
-        """
-        Opens a save file dialog to save a configuration with a new name or at a new location.
-        If a filename has been previously loaded or saved, that filename will be used as the default.
+        Opens a save file dialog and returns the selected file path.
         """
         parser = argparse.ArgumentParser(description='Process YAML file path.')
         parser.add_argument('--file', type=str, help='path of YAML file')
         args = parser.parse_args()
         yaml_file_path = args.file
         options = QFileDialog.Options()
-        current_file_name = self.bayesNet.file_name if hasattr(self.bayesNet, 'file_name') else None
+        current_file_name = getattr(self.bayesNet, 'file_name', None)
         if current_file_name is None:
-            current_file_name = os.path.basename(yaml_file_path)
-        fileName, _ = QFileDialog.getSaveFileName(
-            None, "Save As", current_file_name, "Yaml files (*.yml);;All Files (*)", options=options)
+            current_file_name = os.path.basename(yaml_file_path) if yaml_file_path else default_name
+        file_path, _ = QFileDialog.getSaveFileName(
+            None, title, current_file_name, file_filter, options=options)
+        return file_path, yaml_file_path
+
+    def save(self):
+        """
+        Opens a save file dialog to save the current configuration to a file.
+        """
+        filetypes = "Yaml files (*.yml);;All Files (*)"
+        save_filepath, _ = self.get_save_file_path("Save Config", ".yml", filetypes)
+        if save_filepath:
+            self.bayesNet.save(save_filepath)
+
+    def saveas_action(self):
+        if self.bayesNet.config['intentions'] or self.bayesNet.config['contexts'] or self.bayesNet.config['decision_threshold'] > 0:
+            self.actionSave_as.setEnabled(True)
+        else:
+            self.actionSave_as.setEnabled(False)
+
+    def save_as(self):
+        """
+        Opens a save file dialog to save a configuration with a new name or at a new location.
+        If a filename has been previously loaded or saved, that filename will be used as the default.
+        """
+        filetypes = "Yaml files (*.yml);;All Files (*)"
+        save_filepath, _ = self.get_save_file_path("Save As", "default_name.yml", filetypes)
         self.saveas_action()
 
     def closeEvent(self, event):
