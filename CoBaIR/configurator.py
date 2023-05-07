@@ -1112,6 +1112,7 @@ class Configurator(QtWidgets.QMainWindow):
         save_filepath, _ = self.get_save_file_path("Save Config", ".yml", filetypes)
         if save_filepath:
             self.bayesNet.save(save_filepath)
+            self.original_config = self.bayesNet.config 
 
     def saveas_action(self):
         if self.bayesNet.config['intentions'] or self.bayesNet.config['contexts'] or self.bayesNet.config['decision_threshold'] > 0:
