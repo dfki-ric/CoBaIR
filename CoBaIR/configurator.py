@@ -457,7 +457,7 @@ class Configurator(QtWidgets.QMainWindow):
         # adding view box to the graphic layout widget
         self.view = self.win.addViewBox()
         self.graph_item = TwoLayerGraph()
-        self.view.addItem(self.graph_item)
+        
         self.setup_layout()
         self.bayesNet = BayesNet(config)
         self.create_fields()
@@ -839,6 +839,7 @@ class Configurator(QtWidgets.QMainWindow):
         self.bayesNet = BayesNet(None)
         self.create_fields()
         self.view.clear()
+        
 
     def open_link(self):
         url = "https://dfki-ric.github.io/CoBaIR/"
@@ -889,6 +890,7 @@ class Configurator(QtWidgets.QMainWindow):
         # only if config is valid
         if self.bayesNet.valid:
             self.graph_item.set_config(self.bayesNet.config)
+            self.view.addItem(self.graph_item)
 
     def set_influencing_context_dropdown(self, options: list, command: function = None):
         '''
@@ -1285,10 +1287,11 @@ class TwoLayerGraph(pg.GraphItem):
         """
         Place all the texts for Context and Intention Names
         """
+        self.textItems = []  # Move the initialization here
         for i in self.textItems:
-            i.scene().removeItem(i)
-        self.textItems = []
-        # self.data["mapping"].items():
+            if i is not None:
+                i.scene().removeItem(i)
+
         for position, label in zip(self.data["pos"], self.data["names"]):
             # TODO: change color
             if isinstance(label, tuple):
@@ -1304,7 +1307,7 @@ class TwoLayerGraph(pg.GraphItem):
         Uses the config to set the data
         """
         # extract every needed field for setData from config
-
+        
         self.config = config
         self.data = {"mapping": {}, "pos": [],
                      "adj": [], "pen": [], "names": [], "context_indices": [], "intention_indices": [], "instantiation_indices": []}
@@ -1312,7 +1315,6 @@ class TwoLayerGraph(pg.GraphItem):
         self._set_adj()
         self._set_pen()
         self._set_text()
-
         self.setData(pos=np.array(self.data["pos"]), adj=np.array(
             self.data["adj"]), pen=np.array(self.data["pen"]), size=self.size, pxMode=self.pxMode)
 
