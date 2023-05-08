@@ -1090,14 +1090,15 @@ class Configurator(QtWidgets.QMainWindow):
 
     def parse_yaml_file(self):
         parser = argparse.ArgumentParser(description='Process YAML file path.')
-        parser.add_argument('--file', type=str, default='default.yaml', help='path of YAML file')
+        parser.add_argument('--file', type=str, default=None, help='path of YAML file')
         args = parser.parse_args()
         return args.file
     
-    def get_current_file_name(self,yaml_file_path):
-        current_file_name = getattr(self.bayesNet, 'file_name', None)
-        if current_file_name is None:
+    def get_current_file_name(self, yaml_file_path):
+        if yaml_file_path is not None:
             current_file_name = os.path.basename(yaml_file_path)
+        else:
+            current_file_name = None
         return current_file_name
 
     def save(self):
@@ -1107,15 +1108,15 @@ class Configurator(QtWidgets.QMainWindow):
         """
         yaml_file_path = self.parse_yaml_file()
         current_file_name = self.get_current_file_name(yaml_file_path)
+
         if current_file_name is None:
-            current_file_name = ""
             options = QFileDialog.Options()
             current_file_name, _ = QFileDialog.getSaveFileName(
-                None, "Save", current_file_name, "Yaml files (*.yml);;All Files (*)", options=options)
+                None, "Save", "", "Yaml files (*.yml);;All Files (*)", options=options)
         
-        self.bayesNet.save(current_file_name)
-        self.original_config = self.bayesNet.config
-
+        if current_file_name:
+            self.bayesNet.save(current_file_name)
+            self.original_config = self.bayesNet.config
 
     def save_as(self):
         """
@@ -1128,40 +1129,6 @@ class Configurator(QtWidgets.QMainWindow):
         options = QFileDialog.Options()
         fileName, _ = QFileDialog.getSaveFileName(
             None, "Save As", current_file_name, "Yaml files (*.yml);;All Files (*)", options=options)
-
-
-    # def save(self):
-    #     """
-    #     Saves the current configuration to a file without asking for confirmation if it exists,
-    #     or asks for a filename if it's a new configuration.
-    #     """
-    #     parser = argparse.ArgumentParser(description='Process YAML file path.')
-    #     parser.add_argument('--file', type=str, help='path of YAML file')
-    #     args = parser.parse_args()
-    #     yaml_file_path = args.file
-    #     current_file_name = getattr(self.bayesNet, 'file_name', None)
-    #     if current_file_name is None:
-    #         current_file_name = os.path.basename(yaml_file_path) 
-                
-    #     self.bayesNet.save(current_file_name)
-    #     self.original_config = self.bayesNet.config
-            
-    # def save_as(self):
-    #     """
-    #     Opens a save file dialog to save a configuration with a new name or at a new location.
-    #     If a filename has been previously loaded or saved, that filename will be used as the default.
-    #     """
-
-    #     parser = argparse.ArgumentParser(description='Process YAML file path.')
-    #     parser.add_argument('--file', type=str, help='path of YAML file')
-    #     args = parser.parse_args()
-    #     yaml_file_path = args.file
-    #     options = QFileDialog.Options()
-    #     current_file_name = getattr(self.bayesNet, 'file_name', None)
-    #     if current_file_name is None:
-    #         current_file_name = os.path.basename(yaml_file_path)
-    #     fileName, _ = QFileDialog.getSaveFileName(
-    #         None, "Save As", current_file_name, "Yaml files (*.yml);;All Files (*)", options=options)
 
 
     def closeEvent(self, event):
