@@ -17,6 +17,7 @@ from PyQt5 import QtWidgets, uic
 from PyQt5.QtWidgets import QDialog, QLabel, QLineEdit, QComboBox, QPushButton,\
     QFrame, QGridLayout, QSizePolicy, QSlider, QFileDialog
 
+from PyQt5 import sip
 from PyQt5.QtCore import Qt, QStringListModel
 from PyQt5.QtGui import QFont, QFontMetrics, QLinearGradient, QColor
 
@@ -815,16 +816,8 @@ class Configurator(QtWidgets.QMainWindow):
         self.COLORS = {0: 'White', 1: 'Red', 2: 'Orange',
                        3: 'Yellow', 4: 'darkCyan', 5: 'Green'}
         # Adding the canvas
-        layout = QGridLayout()
-        self.canvas_frame.setLayout(layout)
         self.canvas_frame.layout().addWidget(self.win, 0, 0)
-
         self.grid_layout.addWidget(self.advanced_label, 5, 1)
-
-        # Adding the canvas
-        layout = QGridLayout()
-        self.canvas_frame.setLayout(layout)
-        self.canvas_frame.layout().addWidget(self.win, 0, 0)
 
     def decision_threshold_changed(self, value):
         """
@@ -950,11 +943,7 @@ class Configurator(QtWidgets.QMainWindow):
             return
         config = self.bayesNet.config
 
-        layout = QGridLayout()
-        self.context_selected_frame.setLayout(layout)
-        layout = self.context_selected_frame.layout()
-
-        layout.setVerticalSpacing(10)
+        layout = self.gridLayout_2
         row_count = layout.rowCount()
 
         for instantiation, value in config['contexts'][context].items():
@@ -1004,11 +993,7 @@ class Configurator(QtWidgets.QMainWindow):
 
         self.intention_instantiations = defaultdict(lambda: defaultdict(dict))
 
-        layout = QGridLayout()
-        self.influencing_context_frame.setLayout(layout)
-        layout = self.influencing_context_frame.layout()
-
-        layout.setVerticalSpacing(10)
+        layout = self.gridLayout_3
         row_count = layout.rowCount()
 
         for instantiation, value in self.bayesNet.config['intentions'][intention][context].items():
