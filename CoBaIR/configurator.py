@@ -1104,14 +1104,20 @@ class Configurator(QtWidgets.QMainWindow):
 
     def save(self):
         """
-        Opens a save file dialog to save the current configuration to a file.
+        Saves the current configuration to a file without asking for confirmation if it exists,
+        or asks for a filename if it's a new configuration.
         """
         filetypes = "Yaml files (*.yml);;All Files (*)"
-        save_filepath, _ = self.get_save_file_path("Save Config", ".yml", filetypes)
+        current_file_name = getattr(self.bayesNet, 'file_name', None)
+        if current_file_name:
+            save_filepath = current_file_name
+        else:
+            save_filepath, _ = self.get_save_file_path("Save Config", ".yml", filetypes)
+
         if save_filepath:
             self.bayesNet.save(save_filepath)
-            self.original_config = self.bayesNet.config 
-
+            self.original_config = self.bayesNet.config
+            
     def save_as(self):
         """
         Opens a save file dialog to save a configuration with a new name or at a new location.
