@@ -490,7 +490,6 @@ class Configurator(QtWidgets.QMainWindow):
         self.fill_advanced_table()
         self.draw_graph()
         self.original_config = deepcopy(self.bayesNet.config)
-        self.saveas_action()
 
     def set_decision_threshold(self):
         """
@@ -815,7 +814,7 @@ class Configurator(QtWidgets.QMainWindow):
         self.advanced_label.setParent(self.advanced_hidden_frame)
         self.advanced_folded = False
         self.advanced_label.clicked.connect(self.on_clicked_advanced)
-
+        
         self.COLORS = {0: 'White', 1: 'Red', 2: 'Orange',
                        3: 'Yellow', 4: 'darkCyan', 5: 'Green'}
         # Adding the canvas
@@ -830,7 +829,6 @@ class Configurator(QtWidgets.QMainWindow):
         self.actionNew.setShortcut("Ctrl+N")
         self.actionSave.triggered.connect(self.save)
         self.actionSave.setShortcut("Ctrl+S")
-        self.actionSave_as.setEnabled(False)
         self.actionSave_as.triggered.connect(self.save_as)
         self.actionSave_as.setShortcut("Ctrl+Shift+S")
         
@@ -1114,12 +1112,6 @@ class Configurator(QtWidgets.QMainWindow):
             self.bayesNet.save(save_filepath)
             self.original_config = self.bayesNet.config 
 
-    def saveas_action(self):
-        if self.bayesNet.config['intentions'] or self.bayesNet.config['contexts'] or self.bayesNet.config['decision_threshold'] > 0:
-            self.actionSave_as.setEnabled(True)
-        else:
-            self.actionSave_as.setEnabled(False)
-
     def save_as(self):
         """
         Opens a save file dialog to save a configuration with a new name or at a new location.
@@ -1127,7 +1119,7 @@ class Configurator(QtWidgets.QMainWindow):
         """
         filetypes = "Yaml files (*.yml);;All Files (*)"
         save_filepath, _ = self.get_save_file_path("Save As", "default_name.yml", filetypes)
-        self.saveas_action()
+
 
     def closeEvent(self, event):
         """
