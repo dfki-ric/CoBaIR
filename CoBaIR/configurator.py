@@ -1143,7 +1143,7 @@ class Configurator(QtWidgets.QMainWindow):
             reply = QMessageBox.question(self, 'Save Changes', 'Do you want to save the changes made to the configuration?',
                                         QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel, QMessageBox.Cancel)
             if reply == QMessageBox.Save:
-                self.save_as()
+                self.save()
             elif reply == QMessageBox.Cancel:
                 event.ignore()
                 return
