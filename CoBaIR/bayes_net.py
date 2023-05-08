@@ -636,21 +636,15 @@ class BayesNet():
         # reinizialize
         self.__init__(self.config)
 
-    def save(self, path: str, save_invalid: bool = False):
+    def save(self, path: str):
         """
         saves the config of the bayesNet to a yml file.
 
         Args:
             path: path to the file the config will be saved in
             save_invalid: Flag to decide if invalid configs can be saved
-        Raises:
-            ValueError: 
-                A ValueError is raised if `save_invalid` is `False` and the config is not valid
-        """
-        if not self.valid and not save_invalid:
-            raise ValueError(
-                "saving invalid config is only possible if save_invalid is set to True")
 
+        """
         with open(path, 'w', encoding='utf-8') as save_file:
             yaml.dump(default_to_regular(self.config), save_file)
 
