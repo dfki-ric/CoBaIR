@@ -383,7 +383,7 @@ class BayesNet():
                 inference = self.normalize_inference(inference)
             max_intention = max(inference, key=inference.get)
             max_intention = max_intention if inference[max_intention] > decision_threshold else None
-            return max_intention, inference
+            return max_intention, decision_threshold, inference
         else:
             raise ValueError('Invalid configuration')
 
