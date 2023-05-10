@@ -1542,7 +1542,6 @@ class Configurator(QtWidgets.QMainWindow):
         self.bayesNet = BayesNet(config)
         self.create_fields()
         self.show()  # Show the GUI
-        
 
     def create_fields(self):
         """
@@ -2208,6 +2207,9 @@ class Configurator(QtWidgets.QMainWindow):
         fileName, _ = QFileDialog.getSaveFileName(
             None, "Save As", current_file_name, "Yaml files (*.yml);;All Files (*)", options=options)
 
+        if fileName:
+            self.bayesNet.save(fileName)
+            self.original_config = self.bayesNet.config
 
     def closeEvent(self, event):
         """

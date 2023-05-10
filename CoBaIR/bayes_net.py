@@ -636,7 +636,7 @@ class BayesNet():
         # reinizialize
         self.__init__(self.config)
 
-    def save(self, path: str, save_invalid: bool = False):
+    def save(self, path: str, save_invalid: bool = True):
         """
         saves the config of the bayesNet to a yml file.
 
@@ -648,8 +648,7 @@ class BayesNet():
                 A ValueError is raised if `save_invalid` is `False` and the config is not valid
         """
         if not self.valid and not save_invalid:
-            raise ValueError(
-                "saving invalid config is only possible if save_invalid is set to True")
+            print("Warning: Invalid configuration will not be saved.")
 
         with open(path, 'w', encoding='utf-8') as save_file:
             yaml.dump(default_to_regular(self.config), save_file)
@@ -863,6 +862,9 @@ def default_to_regular(d):
     # casts dicts or default dicts because otherwise it will stop at the first dict and
     # if that has another defaultdict in it - that won't cast
     if isinstance(d, defaultdict) or isinstance(d, dict):
-        d = {k: default_to_regular(
-            v) for k, v in d.items() if not isinstance(v, dict) or v}
+        d = {
+            k: default_to_regular(v)
+            for k, v in d.items()
+            if not isinstance(v, dict) or v or isinstance(v, defaultdict)
+        }
     return d
