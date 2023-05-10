@@ -1187,9 +1187,12 @@ class TwoLayerGraph(pg.GraphItem):
                 normalized_mean = self.config["intentions"][intention][context][instantiation] / 5.0
             alpha = color.alpha()
             # TODO: Maybe color can even be scaled with the normalized mean
-            red = color.red() if normalized_mean else 255
-            green = color.green() if normalized_mean else 0
-            blue = color.blue() if normalized_mean else 0
+            start_color = QColor(255, 0, 0)  # Start color (e.g., red)
+            end_color = QColor(0, 255, 0)  # End color (e.g., green)
+
+            red = start_color.red() + (normalized_mean * (end_color.red() - start_color.red()))
+            green = start_color.green() + (normalized_mean * (end_color.green() - start_color.green()))
+            blue = start_color.blue() + (normalized_mean * (end_color.blue() - start_color.blue()))
             width = self.line_width[0] + \
                 (self.line_width[1] - self.line_width[0]) * normalized_mean
 
