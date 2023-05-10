@@ -1004,7 +1004,6 @@ class Configurator(QtWidgets.QMainWindow):
             instantiation_label.setFont(QFont('Times New Roman', 13))
             slider = QSlider(Qt.Horizontal, self.influencing_context_frame)
             slider.setFixedSize(100, 20)
-
             high_label = QLabel('HIGH', self.influencing_context_frame)
             high_label.setFont(QFont('Times New Roman', 13))
 
@@ -1098,9 +1097,10 @@ class Configurator(QtWidgets.QMainWindow):
                 f"QSlider::handle:horizontal {{background-color: {self.COLORS[value]}}}")
         except AssertionError as e:
             self.error_label.setText(str(e))
-
+        normalized_mean = np.mean(
+            list(self.bayesNet.config["intentions"][intention][context].values())) / 5.0
+        self.graph_item.update_value(normalized_mean) 
         return value
-
 
 class TwoLayerGraph(pg.GraphItem):
     """
@@ -1115,6 +1115,8 @@ class TwoLayerGraph(pg.GraphItem):
         self.pxMode = pxMode
         self.unfolded_context = set()
         self.textItems = []
+        self.normalized_mean = None
+        self.test = None
 
     def _set_pos(self):
         """
@@ -1164,7 +1166,12 @@ class TwoLayerGraph(pg.GraphItem):
             self.data["instantiation_indices"]
         self.data["adj"] = list(itertools.product(
             left_side, self.data["intention_indices"]))
-
+        
+    def update_value(self,normalized_mean):
+        self.test = normalized_mean
+        print("update_value", self.test)
+        self._set_pen()
+    
     def _set_pen(self):
         """
         Add all the pens for the connections in the pen array 
@@ -1177,28 +1184,39 @@ class TwoLayerGraph(pg.GraphItem):
                 context = self.data["names"][end]
                 intention = self.data["names"][start]
             color = pg.mkPen().color()
-            normalized_mean = np.mean(
-                list(self.config["intentions"][intention][context].values()))/5.0
-
+            self.normalized_mean = self.test
+            # self.normalized_mean = False
+            # if self.test is not None:
+            #     self.normalized_mean = self.test
+            # else:
+            #     while not self.normalized_mean:
+            #         self.normalized_mean = np.mean(list(self.config["intentions"][intention][context].values())) / 5.0
+            #         self.normalized_mean = True
+            while not self.normalized_mean:
+                self.normalized_mean = np.mean(list(self.config["intentions"][intention][context].values())) / 5.0
+                self.normalized_mean = True
             if start in self.data["instantiation_indices"]:
                 # HAck: TODO: this is problematic if the context has a colon in name
                 context, instantiation = self.data["names"][start]
                 # TODO. problem with default dict or problem with type - for "human holding object" bool is used and it does not work...
-                normalized_mean = self.config["intentions"][intention][context][instantiation] / 5.0
+                self.normalized_mean = self.config["intentions"][intention][context][instantiation] / 5.0
             alpha = color.alpha()
             # TODO: Maybe color can even be scaled with the normalized mean
             start_color = QColor(255, 0, 0)  # Start color (e.g., red)
             end_color = QColor(0, 255, 0)  # End color (e.g., green)
 
-            red = start_color.red() + (normalized_mean * (end_color.red() - start_color.red()))
-            green = start_color.green() + (normalized_mean * (end_color.green() - start_color.green()))
-            blue = start_color.blue() + (normalized_mean * (end_color.blue() - start_color.blue()))
+            red = start_color.red() + self.normalized_mean * (end_color.red() - start_color.red())
+            print("red", red)
+            green = start_color.green() + self.normalized_mean * (end_color.green() - start_color.green())
+            print("green", green)
+            blue = start_color.blue() + self.normalized_mean * (end_color.blue() - start_color.blue())
+            print("blue", blue)
             width = self.line_width[0] + \
-                (self.line_width[1] - self.line_width[0]) * normalized_mean
+                (self.line_width[1] - self.line_width[0]) * self.normalized_mean
 
             self.data["pen"].append(np.array([(red, green, blue, alpha, width)], dtype=[
                 ('red', np.uint8), ('green', np.uint8), ('blue', np.uint8), ('alpha', np.uint8), ('width', np.uint8)]))
-
+        
     def _set_text(self):
         """
         Place all the texts for Context and Intention Names
