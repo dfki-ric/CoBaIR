@@ -864,6 +864,7 @@ class Configurator(QtWidgets.QMainWindow):
         # only if config is valid
         if self.bayesNet.valid:
             self.graph_item.set_config(self.bayesNet.config)
+        
 
     def set_influencing_context_dropdown(self, options: list, command: function = None):
         '''
@@ -1185,16 +1186,8 @@ class TwoLayerGraph(pg.GraphItem):
                 intention = self.data["names"][start]
             color = pg.mkPen().color()
             self.normalized_mean = self.test
-            # self.normalized_mean = False
-            # if self.test is not None:
-            #     self.normalized_mean = self.test
-            # else:
-            #     while not self.normalized_mean:
-            #         self.normalized_mean = np.mean(list(self.config["intentions"][intention][context].values())) / 5.0
-            #         self.normalized_mean = True
             while not self.normalized_mean:
                 self.normalized_mean = np.mean(list(self.config["intentions"][intention][context].values())) / 5.0
-                self.normalized_mean = True
             if start in self.data["instantiation_indices"]:
                 # HAck: TODO: this is problematic if the context has a colon in name
                 context, instantiation = self.data["names"][start]
@@ -1205,17 +1198,18 @@ class TwoLayerGraph(pg.GraphItem):
             start_color = QColor(255, 0, 0)  # Start color (e.g., red)
             end_color = QColor(0, 255, 0)  # End color (e.g., green)
 
-            red = start_color.red() + self.normalized_mean * (end_color.red() - start_color.red())
-            print("red", red)
-            green = start_color.green() + self.normalized_mean * (end_color.green() - start_color.green())
-            print("green", green)
-            blue = start_color.blue() + self.normalized_mean * (end_color.blue() - start_color.blue())
-            print("blue", blue)
+            self.red = start_color.red() + self.normalized_mean * (end_color.red() - start_color.red())
+            print("red", self.red)
+            self.green = start_color.green() + self.normalized_mean * (end_color.green() - start_color.green())
+            print("green", self.green)
+            self.blue = start_color.blue() + self.normalized_mean * (end_color.blue() - start_color.blue())
+            print("blue", self.blue)
             width = self.line_width[0] + \
                 (self.line_width[1] - self.line_width[0]) * self.normalized_mean
 
-            self.data["pen"].append(np.array([(red, green, blue, alpha, width)], dtype=[
+            self.data["pen"].append(np.array([(self.red, self.green, self.blue, alpha, width)], dtype=[
                 ('red', np.uint8), ('green', np.uint8), ('blue', np.uint8), ('alpha', np.uint8), ('width', np.uint8)]))
+            
         
     def _set_text(self):
         """
