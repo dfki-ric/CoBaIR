@@ -9,7 +9,7 @@ from copy import deepcopy
 from types import FunctionType as function
 from pathlib import Path
 import itertools
-
+import pprint
 # 3rd party imports
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import pyqtgraph as pg
@@ -998,6 +998,7 @@ class Configurator(QtWidgets.QMainWindow):
         row_count = layout.rowCount()
 
         for instantiation, value in self.bayesNet.config['intentions'][intention][context].items():
+            
             influence_text = f'Influence of {context}:{instantiation} on {intention}: LOW'
             instantiation_label = QLabel(
                 influence_text, self.influencing_context_frame)
@@ -1096,11 +1097,15 @@ class Configurator(QtWidgets.QMainWindow):
                 intention=intention, context=context, instantiation=instantiation, value=int(value))
             slider.setStyleSheet(
                 f"QSlider::handle:horizontal {{background-color: {self.COLORS[value]}}}")
+            intention_context = context, intention
         except AssertionError as e:
             self.error_label.setText(str(e))
         normalized_mean = np.mean(
             list(self.bayesNet.config["intentions"][intention][context].values())) / 5.0
-        self.graph_item.update_value(normalized_mean) 
+        
+        self.graph_item.update_value(normalized_mean,intention_context) 
+        if normalized_mean is not None:
+            self.graph_item.set_config(self.bayesNet.config)
         return value
 
 class TwoLayerGraph(pg.GraphItem):
@@ -1116,8 +1121,7 @@ class TwoLayerGraph(pg.GraphItem):
         self.pxMode = pxMode
         self.unfolded_context = set()
         self.textItems = []
-        self.normalized_mean = None
-        self.test = None
+        self.context_intention = None
 
     def _set_pos(self):
         """
@@ -1168,15 +1172,18 @@ class TwoLayerGraph(pg.GraphItem):
         self.data["adj"] = list(itertools.product(
             left_side, self.data["intention_indices"]))
         
-    def update_value(self,normalized_mean):
-        self.test = normalized_mean
-        print("update_value", self.test)
+    def update_value(self,normalized_mean, intention_context):
+        self.nomalised_mean = normalized_mean
+        self.context_intention = intention_context
         self._set_pen()
     
     def _set_pen(self):
         """
         Add all the pens for the connections in the pen array 
         """
+        start_color = QColor(255, 0, 0)  # Start color (e.g., red)
+        end_color = QColor(0, 255, 0)  # End color (e.g., green)
+        datas = []
         for start, end in self.data["adj"]:
             if start in self.data["context_indices"] or start in self.data["instantiation_indices"]:
                 context = self.data["names"][start]
@@ -1185,31 +1192,50 @@ class TwoLayerGraph(pg.GraphItem):
                 context = self.data["names"][end]
                 intention = self.data["names"][start]
             color = pg.mkPen().color()
-            self.normalized_mean = self.test
-            while not self.normalized_mean:
-                self.normalized_mean = np.mean(list(self.config["intentions"][intention][context].values())) / 5.0
+            normalized_mean = np.mean(list(self.config["intentions"][intention][context].values())) / 5.0
             if start in self.data["instantiation_indices"]:
                 # HAck: TODO: this is problematic if the context has a colon in name
                 context, instantiation = self.data["names"][start]
                 # TODO. problem with default dict or problem with type - for "human holding object" bool is used and it does not work...
-                self.normalized_mean = self.config["intentions"][intention][context][instantiation] / 5.0
+                normalized_mean = self.config["intentions"][intention][context][instantiation] / 5.0
             alpha = color.alpha()
             # TODO: Maybe color can even be scaled with the normalized mean
-            start_color = QColor(255, 0, 0)  # Start color (e.g., red)
-            end_color = QColor(0, 255, 0)  # End color (e.g., green)
-
-            self.red = start_color.red() + self.normalized_mean * (end_color.red() - start_color.red())
-            print("red", self.red)
-            self.green = start_color.green() + self.normalized_mean * (end_color.green() - start_color.green())
-            print("green", self.green)
-            self.blue = start_color.blue() + self.normalized_mean * (end_color.blue() - start_color.blue())
-            print("blue", self.blue)
+            red = start_color.red() + normalized_mean * (end_color.red() - start_color.red())
+            green = start_color.green() + normalized_mean * (end_color.green() - start_color.green())
+            blue = start_color.blue() + normalized_mean * (end_color.blue() - start_color.blue())
             width = self.line_width[0] + \
-                (self.line_width[1] - self.line_width[0]) * self.normalized_mean
-
-            self.data["pen"].append(np.array([(self.red, self.green, self.blue, alpha, width)], dtype=[
+                (self.line_width[1] - self.line_width[0]) * normalized_mean            
+            self.data["pen"].append(np.array([(red, green, blue, alpha, width)], dtype=[
                 ('red', np.uint8), ('green', np.uint8), ('blue', np.uint8), ('alpha', np.uint8), ('width', np.uint8)]))
-            
+            datas.append({
+                "Context": context,
+                "Intention": intention,
+                "Color": f"RGB({red}, {green}, {blue})"
+            })
+        
+        if self.context_intention is not None:
+            normalized_mean = self.nomalised_mean
+            context , intention = self.context_intention
+            for entry in datas:
+                if entry['Context'] == context and entry['Intention'] == intention:
+                    color_str = entry['Color']
+                    red, green, blue = map(float, color_str[4:-1].split(', '))
+                    red = start_color.red() + normalized_mean * (end_color.red() - start_color.red())
+                    green = start_color.green() + normalized_mean * (end_color.green() - start_color.green())
+                    blue = start_color.blue() + normalized_mean * (end_color.blue() - start_color.blue())
+                    datas.remove(entry)
+                    break  
+            width = self.line_width[0] + \
+                (self.line_width[1] - self.line_width[0]) * normalized_mean            
+            self.data["pen"].append(np.array([(red, green, blue, alpha, width)], dtype=[
+                ('red', np.uint8), ('green', np.uint8), ('blue', np.uint8), ('alpha', np.uint8), ('width', np.uint8)]))
+
+
+
+
+
+        
+    
         
     def _set_text(self):
         """
@@ -1239,12 +1265,12 @@ class TwoLayerGraph(pg.GraphItem):
                      "adj": [], "pen": [], "names": [], "context_indices": [], "intention_indices": [], "instantiation_indices": []}
         self._set_pos()
         self._set_adj()
-        self._set_pen()
+        self._set_pen() 
         self._set_text()
 
         self.setData(pos=np.array(self.data["pos"]), adj=np.array(
             self.data["adj"]), pen=np.array(self.data["pen"]), size=self.size, pxMode=self.pxMode)
-
+        
     def mousePressEvent(self, event):
         """
         Handler for the mouse click event
