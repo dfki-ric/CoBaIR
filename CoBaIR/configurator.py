@@ -18,11 +18,9 @@ from PyQt5 import QtWidgets, uic
 from PyQt5.QtWidgets import QDialog, QLabel, QLineEdit, QComboBox, QPushButton,\
     QFrame, QGridLayout, QSizePolicy, QSlider, QFileDialog, QMessageBox
 
-from PyQt5 import sip
-from PyQt5.QtCore import Qt, QStringListModel
-from PyQt5.QtGui import QFont, QFontMetrics, QLinearGradient, QColor
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QFont, QFontMetrics
 import logging
-import yaml
 import numpy as np
 # local imports
 from .bayes_net import BayesNet, load_config
@@ -81,7 +79,6 @@ class NewIntentionDialog(QDialog):
         else:
             self.accept()
         return result
-
 
 class NewCombinedContextDialog(QDialog):
     """Dialog Window for new combined Context influence"""
@@ -431,7 +428,6 @@ class NewContextDialog(QDialog):
             self.accept()
         return result
 
-
 class Configurator(QtWidgets.QMainWindow):
     '''
     GUI configurator to create configurations for context based intention recognition.
@@ -457,7 +453,6 @@ class Configurator(QtWidgets.QMainWindow):
         # adding view box to the graphic layout widget
         self.view = self.win.addViewBox()
         self.graph_item = TwoLayerGraph()
-        
         self.setup_layout()
         self.bayesNet = BayesNet(config)
         self.create_fields()
@@ -809,9 +804,6 @@ class Configurator(QtWidgets.QMainWindow):
 
         self.new_combined_influence_button.clicked.connect(
             self.new_combined_influence)
-
-        self.advanced_label.setText("advanced \u25BC")
-        self.advanced_label.setParent(self.advanced_hidden_frame)
         self.advanced_folded = False
         self.advanced_label.clicked.connect(self.on_clicked_advanced)
         
@@ -840,6 +832,12 @@ class Configurator(QtWidgets.QMainWindow):
         
 
     def open_link(self):
+        """
+        Opens a web link in a new browser tab.
+
+        This method opens the specified URL in a new browser tab using the default web browser of the system.
+
+        """
         url = "https://dfki-ric.github.io/CoBaIR/"
         webbrowser.open_new_tab(url)
 
@@ -1078,12 +1076,32 @@ class Configurator(QtWidgets.QMainWindow):
         self.create_fields()
 
     def parse_yaml_file(self):
+        """Parse YAML file path.
+
+        This function uses the argparse module to process the command-line arguments and retrieve the path of a YAML file.
+        
+        Returns:
+            str or None: The path of the YAML file specified using the --file argument. If no file is provided, returns None.
+        """
         parser = argparse.ArgumentParser(description='Process YAML file path.')
         parser.add_argument('--file', type=str, default=None, help='path of YAML file')
         args = parser.parse_args()
         return args.file
     
     def get_current_file_name(self, yaml_file_path):
+        """Get the current file name.
+
+        This function retrieves the current file name based on the provided YAML file path. If no path is provided, it tries
+        to retrieve the file name from the `file_name` attribute of the `bayesNet` object.
+
+        Args:
+            yaml_file_path (str or None): The path of the YAML file.
+
+        Returns:
+            str or None: The current file name. If a YAML file path is provided, returns the base name of the file. If no
+            path is provided or it's None, tries to retrieve the file name from the `file_name` attribute of `bayesNet`.
+            Returns None if no file name can be determined.
+        """
         if yaml_file_path is not None:
             current_file_name = os.path.basename(yaml_file_path)
         else:
