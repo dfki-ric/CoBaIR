@@ -1230,13 +1230,6 @@ class TwoLayerGraph(pg.GraphItem):
             self.data["pen"].append(np.array([(red, green, blue, alpha, width)], dtype=[
                 ('red', np.uint8), ('green', np.uint8), ('blue', np.uint8), ('alpha', np.uint8), ('width', np.uint8)]))
 
-
-
-
-
-        
-    
-        
     def _set_text(self):
         """
         Place all the texts for Context and Intention Names
