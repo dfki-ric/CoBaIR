@@ -1173,6 +1173,9 @@ class TwoLayerGraph(pg.GraphItem):
             left_side, self.data["intention_indices"]))
         
     def update_value(self,normalized_mean, intention_context):
+        """
+        Gets the values from configurator when slider is modified by the user 
+        """
         self.nomalised_mean = normalized_mean
         self.context_intention = intention_context
         self._set_pen()
