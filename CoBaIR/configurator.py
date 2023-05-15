@@ -1121,9 +1121,16 @@ class TwoLayerGraph(pg.GraphItem):
         Add all the data points in the pos array
         """
         i = 0
+        num_intentions = len(self.config['intentions'])
+        gap = self.dist / (num_intentions - 1) 
+        self.data["pos"] = []  
+        self.data["names"] = [] 
+        self.data["intention_indices"] = []  
+
         added_context = set()
         for intention, context_dict in self.config['intentions'].items():
-            position = (self.dist, self.dist/2 + i*self.dist)
+            position = (self.dist, self.dist / 2 + i * gap) 
+            print(position)
             self.data["pos"].append(position)
             self.data["names"].append(intention)
             self.data["intention_indices"].append(i)
