@@ -1123,9 +1123,6 @@ class TwoLayerGraph(pg.GraphItem):
         i = 0
         num_intentions = len(self.config['intentions'])
         gap = self.dist / (num_intentions - 1)
-        self.data["pos"] = []  
-        self.data["names"] = [] 
-        self.data["intention_indices"] = []  
         added_context = set()
         j = 0
         for intention, context_dict in self.config['intentions'].items():
