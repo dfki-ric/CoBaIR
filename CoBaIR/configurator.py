@@ -22,6 +22,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont, QFontMetrics
 import logging
 import numpy as np
+
 # local imports
 from .bayes_net import BayesNet, load_config
 import webbrowser
@@ -457,7 +458,6 @@ class Configurator(QtWidgets.QMainWindow):
         self.bayesNet = BayesNet(config)
         self.create_fields()
         self.show()  # Show the GUI
-        
 
     def create_fields(self):
         """
@@ -793,7 +793,6 @@ class Configurator(QtWidgets.QMainWindow):
 
         self.context_instantiations = defaultdict(dict)
         self.intention_instantiations = defaultdict(lambda: defaultdict(dict))
-
         self.new_context_button.clicked.connect(self.new_context)
         self.edit_context_button.clicked.connect(self.edit_context)
         self.delete_context_button.clicked.connect(self.delete_context)
@@ -806,7 +805,7 @@ class Configurator(QtWidgets.QMainWindow):
             self.new_combined_influence)
         self.advanced_folded = False
         self.advanced_label.clicked.connect(self.on_clicked_advanced)
-        
+
         self.COLORS = {0: 'White', 1: 'Red', 2: 'Orange',
                        3: 'Yellow', 4: 'darkCyan', 5: 'Green'}
         # Adding the canvas
@@ -826,10 +825,32 @@ class Configurator(QtWidgets.QMainWindow):
         """
         Resets the state of the Configurator to its initial state.
         """
+        config = self.bayesNet.config
+        if self.is_config_empty(config):
+            reply = QMessageBox.question(
+                self,
+                "Unsaved Changes",
+                "You have unsaved changes. Do you want to discard them?",
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.No
+            )
+            if reply == QMessageBox.No:
+                return
+        else:
+            return
         self.bayesNet = BayesNet(None)
         self.create_fields()
         self.view.clear()
-        
+
+    def is_config_empty(self, config):
+        """
+        Check if any key in the config dictionary is not empty.
+        """
+        keys_to_check = ['intentions', 'contexts', 'decision_threshold']
+        for key in keys_to_check:
+            if config.get(key):
+                return True
+        return False
 
     def open_link(self):
         """
@@ -1107,7 +1128,17 @@ class Configurator(QtWidgets.QMainWindow):
         else:
             current_file_name = getattr(self.bayesNet, 'file_name', None)
         return current_file_name
+    
+    def config_status(self):
+        """
+        Check the status of the configuration.
 
+        Returns:
+            bool: True if the current configuration differs from the original configuration, False otherwise.
+        """
+        if self.bayesNet.config != self.original_config:
+            return True
+        
     def save(self):
         """
         Saves the current configuration to a file without asking for confirmation if it exists,
@@ -1150,7 +1181,7 @@ class Configurator(QtWidgets.QMainWindow):
 
         :return: None
         """
-        if self.bayesNet.config != self.original_config:
+        if self.config_status() is True:
             reply = QMessageBox.question(self, 'Save Changes', 'Do you want to save the changes made to the configuration?',
                                         QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel, QMessageBox.Cancel)
             if reply == QMessageBox.Save:
