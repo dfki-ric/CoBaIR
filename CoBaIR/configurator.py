@@ -1125,12 +1125,11 @@ class Configurator(QtWidgets.QMainWindow):
             Returns None if no file name can be determined.
         """
         if yaml_file_path is not None:
-            return os.path.basename(yaml_file_path)
-        elif self.current_file_name is not None:
-            return self.current_file_name
+            current_file_name = os.path.basename(yaml_file_path)
         else:
-            return None
-            
+            current_file_name = getattr(self.bayesNet, 'file_name', None)
+        return current_file_name
+
     def config_status(self):
         """
         Check the status of the configuration.
