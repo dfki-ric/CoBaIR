@@ -782,6 +782,7 @@ class Configurator(QtWidgets.QMainWindow):
         """
 
         uic.loadUi(Path(Path(__file__).parent, 'configurator.ui'), self)
+        self.current_file_name = None
         self.grid_layout.setVerticalSpacing(5)
 
         self.load_button.clicked.connect(self.load)
@@ -1124,11 +1125,12 @@ class Configurator(QtWidgets.QMainWindow):
             Returns None if no file name can be determined.
         """
         if yaml_file_path is not None:
-            current_file_name = os.path.basename(yaml_file_path)
+            return os.path.basename(yaml_file_path)
+        elif self.current_file_name is not None:
+            return self.current_file_name
         else:
-            current_file_name = getattr(self.bayesNet, 'file_name', None)
-        return current_file_name
-    
+            return None
+            
     def config_status(self):
         """
         Check the status of the configuration.
@@ -1145,14 +1147,14 @@ class Configurator(QtWidgets.QMainWindow):
         or asks for a filename if it's a new configuration.
         """
         yaml_file_path = self.parse_yaml_file()
-        current_file_name = self.get_current_file_name(yaml_file_path)
-        if current_file_name is None:
+        self.current_file_name = self.get_current_file_name(yaml_file_path)
+        if self.current_file_name is None: 
             options = QFileDialog.Options()
-            current_file_name, _ = QFileDialog.getSaveFileName(
+            self.current_file_name, _ = QFileDialog.getSaveFileName(
                 None, "Save", "", "Yaml files (*.yml);;All Files (*)", options=options)
         
-        if current_file_name:
-            self.bayesNet.save(current_file_name)
+        if self.current_file_name:
+            self.bayesNet.save(self.current_file_name)
             self.original_config = self.bayesNet.config
 
     def save_as(self):
@@ -1161,11 +1163,11 @@ class Configurator(QtWidgets.QMainWindow):
         If a filename has been previously loaded or saved, that filename will be used as the default.
         """
         yaml_file_path = self.parse_yaml_file()
-        current_file_name = self.get_current_file_name(yaml_file_path)
+        self.current_file_name = self.get_current_file_name(yaml_file_path)
 
         options = QFileDialog.Options()
         fileName, _ = QFileDialog.getSaveFileName(
-            None, "Save As", current_file_name, "Yaml files (*.yml);;All Files (*)", options=options)
+            None, "Save As", self.current_file_name, "Yaml files (*.yml);;All Files (*)", options=options)
 
         if fileName:
             self.bayesNet.save(fileName)
