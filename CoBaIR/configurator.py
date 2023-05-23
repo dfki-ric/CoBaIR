@@ -1127,7 +1127,9 @@ class Configurator(QtWidgets.QMainWindow):
         if yaml_file_path is not None:
             current_file_name = os.path.basename(yaml_file_path)
         else:
-            current_file_name = getattr(self.bayesNet, 'file_name', None)
+            current_file_name = self.bayesNet.file_name if hasattr(self.bayesNet, 'file_name') else None
+            if current_file_name is not None:
+                current_file_name = os.path.basename(current_file_name)
         return current_file_name
 
     def config_status(self):
