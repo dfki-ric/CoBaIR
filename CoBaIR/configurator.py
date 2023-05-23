@@ -1185,9 +1185,16 @@ class Configurator(QtWidgets.QMainWindow):
         :return: None
         """
         if self.config_status() is True:
-            reply = QMessageBox.question(self, 'Save Changes', 'Do you want to save the changes made to the configuration?',
-                                        QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel, QMessageBox.Cancel)
-            if reply == QMessageBox.Save:
+            custom_box = QMessageBox()
+            custom_box.setWindowTitle("Save Changes")
+            custom_box.setText("Do you want to save the changes made to the configuration?")
+            custom_box.setStandardButtons(QMessageBox.Discard | QMessageBox.Cancel)
+
+            save_and_close_button = QPushButton("Save and Close")
+            custom_box.addButton(save_and_close_button, QMessageBox.AcceptRole)
+
+            reply = custom_box.exec_()
+            if reply == QMessageBox.AcceptRole:
                 self.save()
             elif reply == QMessageBox.Cancel:
                 event.ignore()
