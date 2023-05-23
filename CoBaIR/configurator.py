@@ -839,7 +839,7 @@ class Configurator(QtWidgets.QMainWindow):
                 return
         else:
             return
-        self.bayesNet = BayesNet(None)
+        self.bayesNet = BayesNet()
         self.create_fields()
         self.view.clear()
 
@@ -1149,15 +1149,15 @@ class Configurator(QtWidgets.QMainWindow):
         """
         yaml_file_path = self.parse_yaml_file()
         self.current_file_name = self.get_current_file_name(yaml_file_path)
-        if self.current_file_name is None: 
+
+        if self.current_file_name is None:
             options = QFileDialog.Options()
             self.current_file_name, _ = QFileDialog.getSaveFileName(
                 None, "Save", "", "Yaml files (*.yml);;All Files (*)", options=options)
-        
         if self.current_file_name:
             self.bayesNet.save(self.current_file_name)
             self.original_config = self.bayesNet.config
-
+            
     def save_as(self):
         """
         Opens a save file dialog to save a configuration with a new name or at a new location.
