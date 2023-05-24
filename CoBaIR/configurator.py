@@ -457,7 +457,6 @@ class Configurator(QtWidgets.QMainWindow):
         # adding view box to the graphic layout widget
         self.view = self.win.addViewBox()
         self.graph_item = TwoLayerGraph()
-        self.view.addItem(self.graph_item)
         self.setup_layout()
         self.bayesNet = BayesNet(config)
         self.create_fields()
@@ -861,12 +860,13 @@ class Configurator(QtWidgets.QMainWindow):
         '''
         This draws the graph from the current config.
         '''
+        self.view.clear()  
         # only if config is valid
         if self.bayesNet.valid:
-            self.graph_item.set_config(self.bayesNet.config)
             self.view.addItem(self.graph_item)
+            self.graph_item.set_config(self.bayesNet.config)
         else:
-            self.view.clear()
+            self.graph_item.setParentItem(None)  
 
     def set_influencing_context_dropdown(self, options: list, command: function = None):
         '''
