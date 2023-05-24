@@ -1096,13 +1096,12 @@ class Configurator(QtWidgets.QMainWindow):
                 intention=intention, context=context, instantiation=instantiation, value=int(value))
             slider.setStyleSheet(
                 f"QSlider::handle:horizontal {{background-color: {self.COLORS[value]}}}")
-            intention_context = context, intention
         except AssertionError as e:
             self.error_label.setText(str(e))
         normalized_mean = np.mean(
             list(self.bayesNet.config["intentions"][intention][context].values())) / 5.0
 
-        self.graph_item.update_value(normalized_mean, intention_context)
+        self.graph_item.update_value(normalized_mean, context, intention)
         if normalized_mean is not None:
             self.graph_item.set_config(self.bayesNet.config)
         return value
@@ -1121,7 +1120,8 @@ class TwoLayerGraph(pg.GraphItem):
         self.pxMode = pxMode
         self.unfolded_context = set()
         self.textItems = []
-        self.context_intention = None
+        self.context = None
+        self.intention = None
 
     def _set_pos(self):
         """
@@ -1172,12 +1172,13 @@ class TwoLayerGraph(pg.GraphItem):
         self.data["adj"] = list(itertools.product(
             left_side, self.data["intention_indices"]))
 
-    def update_value(self, normalized_mean, intention_context):
+    def update_value(self, normalized_mean, context, intention):
         """
         Gets the values from configurator when slider is modified by the user 
         """
-        self.nomalised_mean = normalized_mean
-        self.context_intention = intention_context
+        self.normalized_mean = normalized_mean
+        self.context = context
+        self.intention = intention
         self._set_pen()
 
     def _set_pen(self):
@@ -1219,9 +1220,10 @@ class TwoLayerGraph(pg.GraphItem):
                 "Color": f"RGB({red}, {green}, {blue})"
             })
 
-        if self.context_intention is not None:
-            normalized_mean = self.nomalised_mean
-            context, intention = self.context_intention
+        if self.context or self.intention is not None:
+            normalized_mean = self.normalized_mean
+            context = self.context
+            intention = self.intention
             for entry in datas:
                 if entry['Context'] == context and entry['Intention'] == intention:
                     color_str = entry['Color']
