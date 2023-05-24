@@ -1108,6 +1108,17 @@ class TwoLayerGraph(pg.GraphItem):
     """
 
     def __init__(self, dist=10, size=3, line_width=[0, 25], pxMode=False, **kwds):
+        """
+        Initialize the TwoLayerGraph.
+
+        Args:
+            dist (int): The distance parameter.
+            size (int): The size parameter.
+            line_width (list): A list representing the line width.
+            pxMode (bool): A flag indicating whether the pxMode is enabled or not.
+            **kwds: Additional keyword arguments to be passed.
+
+        """
         super().__init__(**kwds)
         self.dist = dist
         self.size = size
