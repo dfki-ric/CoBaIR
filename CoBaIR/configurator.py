@@ -1179,7 +1179,7 @@ class TwoLayerGraph(pg.GraphItem):
         self.normalized_mean = normalized_mean
         self.context = context
         self.intention = intention
-        self._set_pen()
+        self.set_config(self.config)
 
     def _set_pen(self):
         """
