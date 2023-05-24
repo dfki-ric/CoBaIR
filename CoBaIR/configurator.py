@@ -1126,7 +1126,7 @@ class TwoLayerGraph(pg.GraphItem):
         added_context = set()
         j = 0
         for intention, context_dict in self.config['intentions'].items():
-            position = (self.dist, self.dist / 2 + ((j * gap * 4)))
+            position = (self.dist, self.dist / 2 + (j * self.dist))
             self.data["pos"].append(position)
             self.data["names"].append(intention)
             self.data["intention_indices"].append(i)
@@ -1139,7 +1139,6 @@ class TwoLayerGraph(pg.GraphItem):
                         for instatiation in instantiation_dict:
                             if f"{context}:{instatiation}" not in added_context and isinstance(context, str):
                                 position = (0, i*self.dist)
-                                print(position)
                                 self.data["pos"].append(position)
                                 self.data["names"].append(
                                     (context, instatiation))
