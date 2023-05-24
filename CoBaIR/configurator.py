@@ -997,20 +997,26 @@ class Configurator(QtWidgets.QMainWindow):
         row_count = layout.rowCount()
 
         for instantiation, value in self.bayesNet.config['intentions'][intention][context].items():
-            influence_text = f'Influence of {context}:{instantiation} on {intention}: LOW'
+            influence_text = f'Influence of {context}:{instantiation} on {intention}:'
             instantiation_label = QLabel(
                 influence_text, self.influencing_context_frame)
-
             instantiation_label.setFont(QFont('Times New Roman', 13))
+
+            low_label = QLabel('LOW', self.influencing_context_frame)
+            low_label.setFont(QFont('Times New Roman', 13))
+
             slider = QSlider(Qt.Horizontal, self.influencing_context_frame)
             slider.setFixedSize(100, 20)
 
             high_label = QLabel('HIGH', self.influencing_context_frame)
             high_label.setFont(QFont('Times New Roman', 13))
 
-            layout.addWidget(instantiation_label, row_count, 0)
-            layout.addWidget(slider, row_count, 1)
-            layout.addWidget(high_label, row_count, 2)
+            layout.setColumnStretch(0, 1)
+            layout.addWidget(instantiation_label, row_count, 1)
+            layout.addWidget(low_label, row_count, 2)
+            layout.addWidget(slider, row_count, 3)
+            layout.addWidget(high_label, row_count, 4)
+            layout.setColumnStretch(5, 1)
 
             slider.setMinimum(0)
             slider.setMaximum(5)
@@ -1025,6 +1031,7 @@ class Configurator(QtWidgets.QMainWindow):
 
             self.intention_instantiations[intention][context][instantiation] = (
                 instantiation_label,
+                low_label,
                 slider,
                 high_label,
             )
