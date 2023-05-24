@@ -1187,7 +1187,7 @@ class TwoLayerGraph(pg.GraphItem):
         """
         start_color = QColor(255, 0, 0)  # Start color (e.g., red)
         end_color = QColor(0, 255, 0)  # End color (e.g., green)
-        datas = []
+        data_entries = []
         for start, end in self.data["adj"]:
             if start in self.data["context_indices"] or start in self.data["instantiation_indices"]:
                 context = self.data["names"][start]
@@ -1214,29 +1214,29 @@ class TwoLayerGraph(pg.GraphItem):
                 (self.line_width[1] - self.line_width[0]) * normalized_mean
             self.data["pen"].append(np.array([(red, green, blue, alpha, width)], dtype=[
                 ('red', np.uint8), ('green', np.uint8), ('blue', np.uint8), ('alpha', np.uint8), ('width', np.uint8)]))
-            datas.append({
+            data_entries.append({
                 "Context": context,
                 "Intention": intention,
-                "Color": f"RGB({red}, {green}, {blue})"
+                "R" : red,
+                "G" : green,
+                "B" : blue
             })
 
         if self.context or self.intention is not None:
             normalized_mean = self.normalized_mean
             context = self.context
             intention = self.intention
-            for entry in datas:
+            for entry in data_entries:
                 if entry['Context'] == context and entry['Intention'] == intention:
-                    color_str = entry['Color']
-                    red, green, blue = map(float, color_str[4:-1].split(', '))
+                    red = entry['R']
+                    green = entry['G']
+                    blue = entry['B']
                     red = start_color.red() + normalized_mean * (end_color.red() - start_color.red())
-                    green = start_color.green() + normalized_mean * \
-                        (end_color.green() - start_color.green())
-                    blue = start_color.blue() + normalized_mean * \
-                        (end_color.blue() - start_color.blue())
-                    datas.remove(entry)
+                    green = start_color.green() + normalized_mean * (end_color.green() - start_color.green())
+                    blue = start_color.blue() + normalized_mean * (end_color.blue() - start_color.blue())
+                    data_entries.remove(entry)
                     break
-            width = self.line_width[0] + \
-                (self.line_width[1] - self.line_width[0]) * normalized_mean
+            width = self.line_width[0] + (self.line_width[1] - self.line_width[0]) * normalized_mean
             self.data["pen"].append(np.array([(red, green, blue, alpha, width)], dtype=[
                 ('red', np.uint8), ('green', np.uint8), ('blue', np.uint8), ('alpha', np.uint8), ('width', np.uint8)]))
 
