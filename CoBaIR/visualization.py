@@ -1,4 +1,6 @@
-
+""" 
+This module provides a class for a two-layer graph for context based intention recognition.
+"""
 # System imports
 import itertools
 
