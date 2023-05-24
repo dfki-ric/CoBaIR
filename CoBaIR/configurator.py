@@ -1196,7 +1196,11 @@ class TwoLayerGraph(pg.GraphItem):
 
         def calculate_width(normalized_mean):
             return self.line_width[0] + (self.line_width[1] - self.line_width[0]) * normalized_mean
-
+        
+        def calculate_normalized_mean(context, intention):
+            values = list(self.config["intentions"][intention][context].values())
+            return np.mean(values) / 5.0
+        
         for start, end in self.data["adj"]:
             if start in self.data["context_indices"] or start in self.data["instantiation_indices"]:
                 context = self.data["names"][start]
@@ -1206,13 +1210,14 @@ class TwoLayerGraph(pg.GraphItem):
                 intention = self.data["names"][start]
             
             color = pg.mkPen().color()
-            normalized_mean = np.mean(list(self.config["intentions"][intention][context].values())) / 5.0
             
             if start in self.data["instantiation_indices"]:
                 # Hack: TODO: this is problematic if the context has a colon in name
                 context, instantiation = self.data["names"][start]
                 # TODO. problem with default dict or problem with type - for "human holding object" bool is used and it does not work...
                 normalized_mean = self.config["intentions"][intention][context][instantiation] / 5.0
+            else:
+                normalized_mean = calculate_normalized_mean(context, intention)
             
             alpha = color.alpha()
             red, green, blue = calculate_color(normalized_mean)
@@ -1232,8 +1237,8 @@ class TwoLayerGraph(pg.GraphItem):
         if self.context or self.intention is not None:
             context = self.context
             intention = self.intention
-            normalized_mean = np.mean(
-                list(self.config["intentions"][intention][context].values())) / 5.0
+            normalized_mean = calculate_normalized_mean(context, intention)
+            
             for entry in data_entries:
                 if entry['Context'] == context and entry['Intention'] == intention:
                     red = entry['R']
@@ -1246,6 +1251,7 @@ class TwoLayerGraph(pg.GraphItem):
             width = calculate_width(normalized_mean)
             self.data["pen"].append(np.array([(red, green, blue, alpha, width)], dtype=[
                 ('red', np.uint8), ('green', np.uint8), ('blue', np.uint8), ('alpha', np.uint8), ('width', np.uint8)]))
+
 
     def _set_text(self):
         """
