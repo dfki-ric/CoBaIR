@@ -1098,9 +1098,7 @@ class Configurator(QtWidgets.QMainWindow):
                 f"QSlider::handle:horizontal {{background-color: {self.COLORS[value]}}}")
         except AssertionError as e:
             self.error_label.setText(str(e))
-        # normalized_mean = np.mean(
-        #     list(self.bayesNet.config["intentions"][intention][context].values())) / 5.0
-
+            
         self.graph_item.update_value(context, intention)
         if context or intention is not None:
             self.graph_item.set_config(self.bayesNet.config)
@@ -1186,18 +1184,26 @@ class TwoLayerGraph(pg.GraphItem):
         """
         start_color = QColor(255, 0, 0)  # Start color (e.g., red)
         end_color = QColor(0, 255, 0)  # End color (e.g., green)
-        data_entries = []
 
         def calculate_color(normalized_mean):
+            """
+            To calculate color value
+            """
             red = start_color.red() + normalized_mean * (end_color.red() - start_color.red())
             green = start_color.green() + normalized_mean * (end_color.green() - start_color.green())
             blue = start_color.blue() + normalized_mean * (end_color.blue() - start_color.blue())
             return red, green, blue
 
         def calculate_width(normalized_mean):
+            """
+            To calculate the width
+            """
             return self.line_width[0] + (self.line_width[1] - self.line_width[0]) * normalized_mean
         
         def calculate_normalized_mean(context, intention):
+            """
+            To calculate the normalized mean
+            """
             values = list(self.config["intentions"][intention][context].values())
             return np.mean(values) / 5.0
         
@@ -1226,32 +1232,20 @@ class TwoLayerGraph(pg.GraphItem):
             self.data["pen"].append(np.array([(red, green, blue, alpha, width)], dtype=[
                 ('red', np.uint8), ('green', np.uint8), ('blue', np.uint8), ('alpha', np.uint8), ('width', np.uint8)]))
             
-            data_entries.append({
-                "Context": context,
-                "Intention": intention,
-                "R": red,
-                "G": green,
-                "B": blue
-            })
-
         if self.context or self.intention is not None:
             context = self.context
             intention = self.intention
             normalized_mean = calculate_normalized_mean(context, intention)
-            
-            for entry in data_entries:
-                if entry['Context'] == context and entry['Intention'] == intention:
-                    red = entry['R']
-                    green = entry['G']
-                    blue = entry['B']
-                    red, green, blue = calculate_color(normalized_mean)
-                    data_entries.remove(entry)
-                    break
+            color_values = self.data['pen'][0][0]
+            if self.data["names"][start] == context and self.data["names"][end] == intention:
+                red = color_values[0]       
+                green  = color_values[1]     
+                blue = color_values[2] 
+                red, green, blue = calculate_color(normalized_mean)
             
             width = calculate_width(normalized_mean)
             self.data["pen"].append(np.array([(red, green, blue, alpha, width)], dtype=[
                 ('red', np.uint8), ('green', np.uint8), ('blue', np.uint8), ('alpha', np.uint8), ('width', np.uint8)]))
-
 
     def _set_text(self):
         """
