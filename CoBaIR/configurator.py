@@ -864,6 +864,9 @@ class Configurator(QtWidgets.QMainWindow):
         # only if config is valid
         if self.bayesNet.valid:
             self.graph_item.set_config(self.bayesNet.config)
+            self.view.addItem(self.graph_item)
+        else:
+            self.view.clear()
 
     def set_influencing_context_dropdown(self, options: list, command: function = None):
         '''
