@@ -9,7 +9,7 @@ from copy import deepcopy
 from types import FunctionType as function
 from pathlib import Path
 import itertools
-
+import copy
 # 3rd party imports
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import pyqtgraph as pg
@@ -460,6 +460,7 @@ class Configurator(QtWidgets.QMainWindow):
         self.view.addItem(self.graph_item)
         self.setup_layout()
         self.bayesNet = BayesNet(config)
+        self.original_config =  copy.deepcopy(self.bayesNet.config)
         self.create_fields()
         self.show()  # Show the GU
 
@@ -488,6 +489,7 @@ class Configurator(QtWidgets.QMainWindow):
         self.set_decision_threshold()
         self.fill_advanced_table()
         self.draw_graph()
+        self.title_update()
 
     def set_decision_threshold(self):
         """
@@ -495,6 +497,7 @@ class Configurator(QtWidgets.QMainWindow):
         """
         self.decision_threshold_entry.setText(
             str(self.bayesNet.config['decision_threshold']))
+        
 
     def adjust_button_visibility(self):
         """
@@ -638,6 +641,7 @@ class Configurator(QtWidgets.QMainWindow):
         dialog.ok_button.clicked.connect(update_and_close)
         dialog.cancel_button.clicked.connect(dialog.reject)
         dialog.exec_()
+        
 
     def edit_intention(self):
         """
@@ -817,7 +821,7 @@ class Configurator(QtWidgets.QMainWindow):
                        3: 'Yellow', 4: 'darkCyan', 5: 'Green'}
         # Adding the canvas
         self.canvas_frame.layout().addWidget(self.win, 0, 0)
-        self.grid_layout.addWidget(self.advanced_label, 5, 1)
+        self.grid_layout.addWidget(self.advanced_label, 5, 1)   
 
     def decision_threshold_changed(self, value):
         """
@@ -831,7 +835,7 @@ class Configurator(QtWidgets.QMainWindow):
             self.error_label.setText(f"{error_message}")
         except ValueError:
             self.error_label.setText(f'Decision Threshold must be a number')
-
+        
     def set_context_dropdown(self, options: list, command: function = None):
         '''
         This sets the options for a context optionMenu with the options and corresponding command.
@@ -1050,6 +1054,23 @@ class Configurator(QtWidgets.QMainWindow):
                 self.error_label.setText(str(error_message))
         self.create_fields()
 
+    def title_update(self):
+        if self.check_config_status():
+            self.setWindowTitle("Context Based Intention Recognition *")
+        else:
+            self.setWindowTitle("Context Based Intention Recognition")
+
+    def check_config_status(self):
+        """
+        Check the status of the configuration.
+
+        Returns:
+            bool: True if the current configuration differs from the original configuration, False otherwise.
+        """
+        if self.bayesNet.config != self.original_config:
+            return True
+        return False
+        
     def save(self):
         """
         opens a asksaveasfilename dialog to save a config
