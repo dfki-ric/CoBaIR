@@ -479,14 +479,6 @@ class Configurator(QtWidgets.QMainWindow):
         self.set_intention_dropdown(self.bayesNet.config['intentions'].keys())
         self.adjust_button_visibility()
         self.set_decision_threshold()
-        self.set_context_dropdown(self.bayesNet.config['contexts'].keys())
-
-        self.set_influencing_context_dropdown(
-            self.bayesNet.config['contexts'].keys())
-
-        self.set_intention_dropdown(self.bayesNet.config['intentions'].keys())
-        self.adjust_button_visibility()
-        self.set_decision_threshold()
         self.fill_advanced_table()
         self.draw_graph()
         self.title_update()
@@ -970,6 +962,7 @@ class Configurator(QtWidgets.QMainWindow):
                 line_edit,
             )
             row_count += 1
+        
 
     def influencing_context_selected(self, context_or_intention: str):
         """
@@ -1026,7 +1019,7 @@ class Configurator(QtWidgets.QMainWindow):
             slider.valueChanged.connect(lambda value, context=context, intention=intention,
                                         instantiation=instantiation, slider=slider:
                                         self.influence_values_changed(value, context, intention, instantiation, slider))
-
+            
             self.intention_instantiations[intention][context][instantiation] = (
                 instantiation_label,
                 slider,
@@ -1034,7 +1027,7 @@ class Configurator(QtWidgets.QMainWindow):
             )
 
             row_count += 1
-
+        
     def load(self):
         """
         opens a askopenfilename dialog to load a config
@@ -1120,7 +1113,7 @@ class Configurator(QtWidgets.QMainWindow):
                 f"QSlider::handle:horizontal {{background-color: {self.COLORS[value]}}}")
         except AssertionError as e:
             self.error_label.setText(str(e))
-
+        self.title_update()
         return value
 
 
