@@ -766,6 +766,7 @@ class Configurator(QtWidgets.QMainWindow):
                             self.remove_combined_influence(intention, contexts, instantiations))
                         self.advanced_table.layout().addWidget(remove_button, row, 5)
                         row += 1
+        self.title_update()
 
     def remove_combined_influence(self, intention: str, contexts: tuple, instantiations: tuple):
         """
@@ -827,6 +828,7 @@ class Configurator(QtWidgets.QMainWindow):
             self.error_label.setText(f"{error_message}")
         except ValueError:
             self.error_label.setText(f'Decision Threshold must be a number')
+        self.title_update()
         
     def set_context_dropdown(self, options: list, command: function = None):
         '''
@@ -1049,6 +1051,9 @@ class Configurator(QtWidgets.QMainWindow):
         self.create_fields()
 
     def title_update(self):
+        """
+        Updates the title of the application window based on the configuration status.
+        """
         if self.check_config_status():
             self.setWindowTitle("Context Based Intention Recognition *")
         else:
@@ -1093,6 +1098,7 @@ class Configurator(QtWidgets.QMainWindow):
         except ValueError:
             self.error_label.setText(
                 f'Apriori probability of context "{context}.{instantiation}" is not a number')
+        self.title_update()
 
     def influence_values_changed(self, value, context, intention, instantiation, slider):
         """
