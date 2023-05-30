@@ -460,7 +460,7 @@ class Configurator(QtWidgets.QMainWindow):
         self.view.addItem(self.graph_item)
         self.setup_layout()
         self.bayesNet = BayesNet(config)
-        self.original_config =  copy.deepcopy(self.bayesNet.config)
+        self.original_config =  deepcopy(self.bayesNet.config)
         self.create_fields()
         self.show()  # Show the GU
 
@@ -1047,6 +1047,7 @@ class Configurator(QtWidgets.QMainWindow):
             try:
                 self.error_label.setText("loading BayesNet...")
                 self.bayesNet.load(fileName)
+                self.original_config =  deepcopy(self.bayesNet.config)
                 self.error_label.setText("")
             except AssertionError as error_message:
                 self.error_label.setText(str(error_message))
