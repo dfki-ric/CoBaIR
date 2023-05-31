@@ -649,7 +649,6 @@ class BayesNet():
         """
         if not self.valid and not save_invalid:
             print("Warning: Invalid configuration will not be saved.")
-        self.file_name = path
         with open(path, 'w', encoding='utf-8') as save_file:
             yaml.dump(default_to_regular(self.config), save_file)
 
@@ -663,7 +662,6 @@ class BayesNet():
             AssertionError: An AssertionError is raised if the resulting config is not valid.
         """
         config = load_config(path)
-        self.file_name = path
         # reinitialize with config
         self.__init__(config)
 
