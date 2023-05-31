@@ -8,7 +8,8 @@ from collections import defaultdict
 from copy import deepcopy
 from types import FunctionType as function
 from pathlib import Path
-
+import itertools
+import copy
 # 3rd party imports
 import pyqtgraph as pg
 from PyQt5 import QtWidgets, uic
@@ -21,7 +22,7 @@ from PyQt5.QtGui import QFont, QFontMetrics
 import numpy as np
 
 # local imports
-from .bayes_net import BayesNet, load_config
+from .bayes_net import BayesNet
 from .visualization import TwoLayerGraph
 
 # end file header
@@ -456,6 +457,7 @@ class Configurator(QtWidgets.QMainWindow):
         self.view.addItem(self.graph_item)
         self.setup_layout()
         self.bayesNet = BayesNet(config)
+        self.original_config = deepcopy(self.bayesNet.config)
         self.create_fields()
         self.show()  # Show the GU
 
@@ -474,16 +476,9 @@ class Configurator(QtWidgets.QMainWindow):
         self.set_intention_dropdown(self.bayesNet.config['intentions'].keys())
         self.adjust_button_visibility()
         self.set_decision_threshold()
-        self.set_context_dropdown(self.bayesNet.config['contexts'].keys())
-
-        self.set_influencing_context_dropdown(
-            self.bayesNet.config['contexts'].keys())
-
-        self.set_intention_dropdown(self.bayesNet.config['intentions'].keys())
-        self.adjust_button_visibility()
-        self.set_decision_threshold()
         self.fill_advanced_table()
         self.draw_graph()
+        self.title_update()
 
     def set_decision_threshold(self):
         """
@@ -766,6 +761,7 @@ class Configurator(QtWidgets.QMainWindow):
                             self.remove_combined_influence(intention, contexts, instantiations))
                         self.advanced_table.layout().addWidget(remove_button, row, 5)
                         row += 1
+        self.title_update()
 
     def remove_combined_influence(self, intention: str, contexts: tuple, instantiations: tuple):
         """
@@ -827,6 +823,7 @@ class Configurator(QtWidgets.QMainWindow):
             self.error_label.setText(f"{error_message}")
         except ValueError:
             self.error_label.setText(f'Decision Threshold must be a number')
+        self.title_update()
 
     def set_context_dropdown(self, options: list, command: function = None):
         '''
@@ -1039,12 +1036,33 @@ class Configurator(QtWidgets.QMainWindow):
             try:
                 self.error_label.setText("loading BayesNet...")
                 self.bayesNet.load(fileName)
+                self.original_config = deepcopy(self.bayesNet.config)
                 self.error_label.setText("")
             except AssertionError as error_message:
                 self.error_label.setText(str(error_message))
             except Exception as error_message:
                 self.error_label.setText(str(error_message))
         self.create_fields()
+
+    def title_update(self):
+        """
+        Updates the title of the application window based on the configuration status.
+        """
+        if self.check_config_status():
+            self.setWindowTitle("Context Based Intention Recognition *")
+        else:
+            self.setWindowTitle("Context Based Intention Recognition")
+
+    def check_config_status(self):
+        """
+        Check the status of the configuration.
+
+        Returns:
+            bool: True if the current configuration differs from the original configuration, False otherwise.
+        """
+        if self.bayesNet.config != self.original_config:
+            return True
+        return False
 
     def save(self):
         """
@@ -1074,6 +1092,7 @@ class Configurator(QtWidgets.QMainWindow):
         except ValueError:
             self.error_label.setText(
                 f'Apriori probability of context "{context}.{instantiation}" is not a number')
+        self.title_update()
 
     def influence_values_changed(self, value, context, intention, instantiation, slider):
         """
@@ -1094,5 +1113,5 @@ class Configurator(QtWidgets.QMainWindow):
                 f"QSlider::handle:horizontal {{background-color: {self.COLORS[value]}}}")
         except AssertionError as e:
             self.error_label.setText(str(e))
-
+        self.title_update()
         return value
