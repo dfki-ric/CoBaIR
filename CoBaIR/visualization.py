@@ -3,6 +3,7 @@ This module provides a class for a two-layer graph for context based intention r
 """
 # System imports
 import itertools
+from copy import deepcopy
 
 # 3rd party imports
 import pyqtgraph as pg
@@ -133,7 +134,7 @@ class TwoLayerGraph(pg.GraphItem):
         """
         # extract every needed field for setData from config
 
-        self.config = config
+        self.config = deepcopy(config)
         self.data = {"mapping": {}, "pos": [],
                      "adj": [], "pen": [], "names": [], "context_indices": [], "intention_indices": [], "instantiation_indices": []}
         self._set_pos()
