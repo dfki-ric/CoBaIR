@@ -4,26 +4,29 @@ This module is a GUI configurator to create configurations for context based int
 
 # System imports
 import sys
+import os
 from collections import defaultdict
 from copy import deepcopy
 from types import FunctionType as function
 from pathlib import Path
 import itertools
 import copy
+import argparse
 # 3rd party imports
 import pyqtgraph as pg
 from PyQt5 import QtWidgets, uic
 from PyQt5.QtWidgets import QDialog, QLabel, QLineEdit, QComboBox, QPushButton,\
-    QFrame, QGridLayout, QSizePolicy, QSlider, QFileDialog
+    QFrame, QGridLayout, QSizePolicy, QSlider, QFileDialog, QMessageBox
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont, QFontMetrics
-
+import logging
 import numpy as np
 
 # local imports
-from .bayes_net import BayesNet
+from .bayes_net import BayesNet, load_config, config_to_default_dict
 from .visualization import TwoLayerGraph
+import webbrowser
 
 # end file header
 __author__ = 'Adrian Lubitz'
@@ -442,12 +445,9 @@ class Configurator(QtWidgets.QMainWindow):
         Args:
             config: A dict with a config following the config format.
         '''
+        # App specifics
         self.app = QtWidgets.QApplication(sys.argv)
         QtWidgets.QMainWindow.__init__(self, *args, **kwargs)
-        # self.figure = plt.figure()
-        # self.canvas = FigureCanvas(self.figure)
-        # creating a graph item
-        # setting configuration options
         pg.setConfigOptions(antialias=True)
         # creating graphics layout widget
         self.win = pg.GraphicsLayoutWidget()
@@ -455,11 +455,14 @@ class Configurator(QtWidgets.QMainWindow):
         self.view = self.win.addViewBox()
         self.graph_item = TwoLayerGraph()
         self.view.addItem(self.graph_item)
+
+        # settings for showing - TODO: maybe this can go to a separate method that can be called in load etc
+        self.current_file_name = Path()
         self.setup_layout()
         self.bayesNet = BayesNet(config)
         self.original_config = deepcopy(self.bayesNet.config)
         self.create_fields()
-        self.show()  # Show the GU
+        self.show()  # Show the GUI
 
     def create_fields(self):
         """
@@ -478,6 +481,8 @@ class Configurator(QtWidgets.QMainWindow):
         self.set_decision_threshold()
         self.fill_advanced_table()
         self.draw_graph()
+
+        self.original_config = deepcopy(self.bayesNet.config)
         self.title_update()
 
     def set_decision_threshold(self):
@@ -788,7 +793,6 @@ class Configurator(QtWidgets.QMainWindow):
 
         self.context_instantiations = defaultdict(dict)
         self.intention_instantiations = defaultdict(lambda: defaultdict(dict))
-
         self.new_context_button.clicked.connect(self.new_context)
         self.edit_context_button.clicked.connect(self.edit_context)
         self.delete_context_button.clicked.connect(self.delete_context)
@@ -799,9 +803,6 @@ class Configurator(QtWidgets.QMainWindow):
 
         self.new_combined_influence_button.clicked.connect(
             self.new_combined_influence)
-
-        self.advanced_label.setText("advanced \u25BC")
-        self.advanced_label.setParent(self.advanced_hidden_frame)
         self.advanced_folded = False
         self.advanced_label.clicked.connect(self.on_clicked_advanced)
 
@@ -809,7 +810,47 @@ class Configurator(QtWidgets.QMainWindow):
                        3: 'Yellow', 4: 'darkCyan', 5: 'Green'}
         # Adding the canvas
         self.canvas_frame.layout().addWidget(self.win, 0, 0)
-        self.grid_layout.addWidget(self.advanced_label, 5, 1)
+        self.actionOpen.triggered.connect(self.load)
+        self.actionOpen.setShortcut("Ctrl+O")
+        self.actionAbout.triggered.connect(self.open_link)
+        self.actionAbout.setShortcut("F1")
+        self.actionNew.triggered.connect(self.reset)
+        self.actionNew.setShortcut("Ctrl+N")
+        self.actionSave.triggered.connect(self.save)
+        self.actionSave.setShortcut("Ctrl+S")
+        self.actionSave_as.triggered.connect(self.save_as)
+        self.actionSave_as.setShortcut("Ctrl+Shift+S")
+
+    def reset(self):
+        """
+        Resets the state of the Configurator to its initial state.
+        """
+        if self.config_status():
+            reply = QMessageBox.question(
+                self,
+                "Unsaved Changes",
+                "You have unsaved changes. Do you want to discard them?",
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.No
+            )
+            if reply == QMessageBox.No:
+                return
+
+        self.bayesNet = BayesNet()
+        self.graph_item.clear()
+        self.current_file_name = Path()
+        self.error_label.setText("")
+        self.create_fields()
+
+    def open_link(self):
+        """
+        Opens a web link in a new browser tab.
+
+        This method opens the specified URL in a new browser tab using the default web browser of the system.
+
+        """
+        url = "https://dfki-ric.github.io/CoBaIR/"
+        webbrowser.open_new_tab(url)
 
     def decision_threshold_changed(self, value):
         """
@@ -839,8 +880,8 @@ class Configurator(QtWidgets.QMainWindow):
 
         if options:
             self.context_selection.addItems(list(options))
-            max_width = max([QFontMetrics(self.context_selection.font()).boundingRect(
-                option).width() for option in options])
+            max_width = max(QFontMetrics(self.context_selection.font()).boundingRect(option).width()
+                            for option in options)
             self.context_selection.setMinimumWidth(
                 max_width + 25)
             self.context_selection.setCurrentIndex(0)
@@ -854,6 +895,8 @@ class Configurator(QtWidgets.QMainWindow):
         '''
         This draws the graph from the current config.
         '''
+        # TODO: clearing graph
+        self.graph_item.clear()
         # only if config is valid
         if self.bayesNet.valid:
             self.graph_item.set_config(self.bayesNet.config)
@@ -872,8 +915,8 @@ class Configurator(QtWidgets.QMainWindow):
         self.influencing_context_selection.clear()
         if options:
             self.influencing_context_selection.addItems(list(options))
-            max_width = max([QFontMetrics(self.influencing_context_selection.font(
-            )).boundingRect(option).width() for option in options])
+            max_width = max(QFontMetrics(self.influencing_context_selection.font()).boundingRect(option).width()
+                            for option in options)
             self.influencing_context_selection.setMinimumWidth(
                 max_width + 25)  # add some padding
             self.influencing_context_selection.setCurrentIndex(0)
@@ -900,8 +943,8 @@ class Configurator(QtWidgets.QMainWindow):
 
         if options:
             self.intention_dropdown.addItems(list(options))
-            max_width = max([QFontMetrics(self.intention_dropdown.font()).boundingRect(
-                option).width() for option in options])
+            max_width = max(QFontMetrics(self.influencing_context_selection.font()).boundingRect(option).width()
+                            for option in options)
             self.intention_dropdown.setMinimumWidth(
                 max_width + 25)  # add some padding
             self.intention_dropdown.setCurrentIndex(0)
@@ -919,16 +962,20 @@ class Configurator(QtWidgets.QMainWindow):
         Args:
             context: name of the clicked context
         """
-        for active_context, instantiations in self.context_instantiations.items():
+        logger = logging.getLogger(__name__)
+        for _, instantiations in self.context_instantiations.items():
             for instantiation, widgets in instantiations.items():
                 for widget in widgets:
                     try:
                         widget.deleteLater()
+                    except RuntimeError as e:
+                        logger.error(
+                            f"Failed to destroy widget {widget}: {type(e).__name__}: {str(e)}")
                     except AttributeError:
                         pass  # can not destroy StringVars
-                    except Exception as e:
-                        # TODO: better logging
-                        print(f"couldn't destroy: {e}")
+                    except TypeError as e:
+                        logger.error(
+                            f"Failed to destroy widget {widget}: {type(e).__name__}: {str(e)}")
 
         self.context_instantiations = defaultdict(dict)
 
@@ -1042,11 +1089,13 @@ class Configurator(QtWidgets.QMainWindow):
         if fileName:
             try:
                 self.error_label.setText("loading BayesNet...")
+                self.current_file_name = Path(fileName).absolute()
                 self.bayesNet.load(fileName)
                 self.original_config = deepcopy(self.bayesNet.config)
                 self.error_label.setText("")
             except AssertionError as error_message:
                 self.error_label.setText(str(error_message))
+                self.original_config = deepcopy(self.bayesNet.config)
             except Exception as error_message:
                 self.error_label.setText(str(error_message))
         self.create_fields()
@@ -1055,31 +1104,127 @@ class Configurator(QtWidgets.QMainWindow):
         """
         Updates the title of the application window based on the configuration status.
         """
-        if self.check_config_status():
-            self.setWindowTitle("Context Based Intention Recognition *")
+        _ = '-' if self.current_file_name.name else ''
+        if self.config_status():
+            self.setWindowTitle(f"CoBaIR {_} {self.current_file_name.name} *")
         else:
-            self.setWindowTitle("Context Based Intention Recognition")
+            self.setWindowTitle(f"CoBaIR {_} {self.current_file_name.name} ")
 
-    def check_config_status(self):
+    # def check_config_status(self):
+    #     """
+    #     Check the status of the configuration.
+
+    #     Returns:
+    #         bool: True if the current configuration differs from the original configuration, False otherwise.
+    #     """
+    #     if self.bayesNet.config != self.original_config:
+    #         return True
+    #     return False
+
+    # def parse_yaml_file(self):
+    #     """Parse YAML file path.
+
+    #     This function uses the argparse module to process the command-line arguments and retrieve the path of a YAML file.
+
+    #     Returns:
+    #         str or None: The path of the YAML file specified using the --file argument. If no file is provided, returns None.
+    #     """
+    #     parser = argparse.ArgumentParser(description='Process YAML file path.')
+    #     parser.add_argument('--file', type=str, default=None, help='path of YAML file')
+    #     args = parser.parse_args()
+    #     return args.file
+
+    # def get_current_file_name(self, yaml_file_path):
+    #     """Get the current file name.
+
+    #     This function retrieves the current file name based on the provided YAML file path. If no path is provided, it tries
+    #     to retrieve the file name from the `file_name` attribute of the `bayesNet` object.
+
+    #     Args:
+    #         yaml_file_path (str or None): The path of the YAML file.
+
+    #     Returns:
+    #         str or None: The current file name. If a YAML file path is provided, returns the base name of the file. If no
+    #         path is provided or it's None, tries to retrieve the file name from the `file_name` attribute of `bayesNet`.
+    #         Returns None if no file name can be determined.
+    #     """
+    #     if yaml_file_path is not None:
+    #         current_file_name = os.path.basename(yaml_file_path)
+    #     else:
+    #         current_file_name = self.bayesNet.file_name if hasattr(self.bayesNet, 'file_name') else None
+    #         if current_file_name is not None:
+    #             current_file_name = os.path.basename(current_file_name)
+    #     return current_file_name
+
+    def config_status(self):
         """
         Check the status of the configuration.
 
         Returns:
             bool: True if the current configuration differs from the original configuration, False otherwise.
         """
-        if self.bayesNet.config != self.original_config:
-            return True
-        return False
+        return self.bayesNet.config != self.original_config
 
     def save(self):
         """
-        opens a asksaveasfilename dialog to save a config
+        Saves the current configuration to a file without asking for confirmation if it exists,
+        or asks for a filename if it's a new configuration.
         """
-        filetypes = "Yaml files (*.yml);;All Files (*)"
-        save_filepath, _ = QFileDialog.getSaveFileName(
-            None, "Save Config", "", filetypes)
-        if save_filepath:
-            self.bayesNet.save(save_filepath)
+
+        if self.current_file_name is None:
+            options = QFileDialog.Options()
+            self.current_file_name, _ = QFileDialog.getSaveFileName(
+                None, "Save", "", "Yaml files (*.yml);;All Files (*)", options=options)
+            self.current_file_name = Path(self.current_file_name).absolute()
+        if self.current_file_name:
+            self.bayesNet.save(self.current_file_name)
+            self.original_config = deepcopy(self.bayesNet.config)
+            self.title_update()
+
+    def save_as(self):
+        """
+        Opens a save file dialog to save a configuration with a new name or at a new location.
+        If a filename has been previously loaded or saved, that filename will be used as the default.
+        """
+
+        options = QFileDialog.Options()
+        fileName, _ = QFileDialog.getSaveFileName(
+            None, "Save As", str(self.current_file_name), "Yaml files (*.yml);;All Files (*)", options=options)
+
+        if fileName:
+            self.bayesNet.save(fileName)
+            self.current_file_name = Path(fileName).absolute()
+            self.original_config = deepcopy(self.bayesNet.config)
+            self.title_update()
+
+    def closeEvent(self, event):
+        """
+        Override the closeEvent method to prompt the user to save changes made to the configuration
+        before closing the application.
+
+        :param event: The close event.
+        :type event: QtGui.QCloseEvent
+
+        :return: None
+        """
+        if self.config_status():
+            custom_box = QMessageBox()
+            custom_box.setWindowTitle("Save Changes")
+            custom_box.setText(
+                "Do you want to save the changes made to the configuration?")
+            custom_box.setStandardButtons(
+                QMessageBox.Discard | QMessageBox.Cancel)
+
+            save_and_close_button = QPushButton("Save and Close")
+            custom_box.addButton(save_and_close_button, QMessageBox.AcceptRole)
+
+            reply = custom_box.exec_()
+            if reply == QMessageBox.AcceptRole:
+                self.save()
+            elif reply == QMessageBox.Cancel:
+                event.ignore()
+                return
+        event.accept()
 
     def apriori_values_changed(self, *args, context, instantiation):
         """
@@ -1122,3 +1267,26 @@ class Configurator(QtWidgets.QMainWindow):
             self.error_label.setText(str(e))
         self.title_update()
         return value
+
+
+# if __name__ == "__main__":
+
+#     parser = argparse.ArgumentParser()
+#     parser.add_argument('-f', '--file', type=str,
+#                         help='Path to a config file to load upon start.')
+#     args = parser.parse_args()
+
+#     # get file from args
+#     config_path = args.file
+#     if config_path:
+#         config = load_config(config_path)
+#     else:
+#         config = None
+
+#     configurator = Configurator(config=config)
+#     # TODO: this is slightly complicated - could be solved if the configurator can distinguish between String/Path and dict and behaves accordingly.
+#     if config_path:
+#         configurator.current_file_name = Path(args.file).absolute()
+#     configurator.title_update()
+
+#     configurator.app.exec_()

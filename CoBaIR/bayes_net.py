@@ -8,6 +8,7 @@ import itertools
 from collections import defaultdict
 from collections.abc import Hashable
 from copy import deepcopy
+import warnings
 
 # 3rd party imports
 import bnlearn as bn
@@ -636,17 +637,22 @@ class BayesNet():
         # reinizialize
         self.__init__(self.config)
 
-    def save(self, path: str):
+    def save(self, path: str, save_invalid: bool = True):
         """
         saves the config of the bayesNet to a yml file.
 
         Args:
             path: path to the file the config will be saved in
             save_invalid: Flag to decide if invalid configs can be saved
-
+        Raises:
+            ValueError: 
+                A ValueError is raised if `save_invalid` is `False` and the config is not valid
         """
-        with open(path, 'w', encoding='utf-8') as save_file:
-            yaml.dump(default_to_regular(self.config), save_file)
+        if not self.valid and not save_invalid:
+            warnings.warn("Invalid configuration will not be saved.")
+        else:
+            with open(path, 'w', encoding='utf-8') as save_file:
+                yaml.dump(default_to_regular(self.config), save_file)
 
     def load(self, path: str):
         """
@@ -658,7 +664,7 @@ class BayesNet():
             AssertionError: An AssertionError is raised if the resulting config is not valid.
         """
         config = load_config(path)
-        # reinizialize with config
+        # reinitialize with config
         self.__init__(config)
 
     def change_context_apriori_value(self, context: str, instantiation, value: float):
@@ -856,6 +862,9 @@ def default_to_regular(d):
     # casts dicts or default dicts because otherwise it will stop at the first dict and
     # if that has another defaultdict in it - that won't cast
     if isinstance(d, defaultdict) or isinstance(d, dict):
-        d = {k: default_to_regular(
-            v) for k, v in d.items() if not isinstance(v, dict) or v}
+        d = {
+            k: default_to_regular(v)
+            for k, v in d.items()
+            if not isinstance(v, dict) or v or isinstance(v, defaultdict)
+        }
     return d
