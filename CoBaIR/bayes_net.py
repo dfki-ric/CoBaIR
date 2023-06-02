@@ -8,6 +8,7 @@ import itertools
 from collections import defaultdict
 from collections.abc import Hashable
 from copy import deepcopy
+import warnings
 
 # 3rd party imports
 import bnlearn as bn
@@ -648,9 +649,10 @@ class BayesNet():
                 A ValueError is raised if `save_invalid` is `False` and the config is not valid
         """
         if not self.valid and not save_invalid:
-            print("Warning: Invalid configuration will not be saved.")
-        with open(path, 'w', encoding='utf-8') as save_file:
-            yaml.dump(default_to_regular(self.config), save_file)
+            warnings.warn("Invalid configuration will not be saved.")
+        else:
+            with open(path, 'w', encoding='utf-8') as save_file:
+                yaml.dump(default_to_regular(self.config), save_file)
 
     def load(self, path: str):
         """

@@ -24,7 +24,7 @@ import logging
 import numpy as np
 
 # local imports
-from .bayes_net import BayesNet, load_config
+from .bayes_net import BayesNet, load_config, config_to_default_dict
 from .visualization import TwoLayerGraph
 import webbrowser
 
@@ -445,18 +445,18 @@ class Configurator(QtWidgets.QMainWindow):
         Args:
             config: A dict with a config following the config format.
         '''
+        # App specifics
         self.app = QtWidgets.QApplication(sys.argv)
         QtWidgets.QMainWindow.__init__(self, *args, **kwargs)
-        # self.figure = plt.figure()
-        # self.canvas = FigureCanvas(self.figure)
-        # creating a graph item
-        # setting configuration options
         pg.setConfigOptions(antialias=True)
         # creating graphics layout widget
         self.win = pg.GraphicsLayoutWidget()
         # adding view box to the graphic layout widget
         self.view = self.win.addViewBox()
         self.graph_item = TwoLayerGraph()
+        self.view.addItem(self.graph_item)
+
+        # settings for showing - TODO: maybe this can go to a separate method that can be called in load etc
         self.current_file_name = Path()
         self.setup_layout()
         self.bayesNet = BayesNet(config)
@@ -825,8 +825,7 @@ class Configurator(QtWidgets.QMainWindow):
         """
         Resets the state of the Configurator to its initial state.
         """
-        config = self.bayesNet.config
-        if self.is_config_empty(config):
+        if self.config_status():
             reply = QMessageBox.question(
                 self,
                 "Unsaved Changes",
@@ -836,21 +835,12 @@ class Configurator(QtWidgets.QMainWindow):
             )
             if reply == QMessageBox.No:
                 return
-        else:
-            return
-        self.bayesNet = BayesNet()
-        self.create_fields()
-        self.view.clear()
 
-    def is_config_empty(self, config):
-        """
-        Check if any key in the config dictionary is not empty.
-        """
-        keys_to_check = ['intentions', 'contexts', 'decision_threshold']
-        for key in keys_to_check:
-            if config.get(key):
-                return True
-        return False
+        self.bayesNet = BayesNet()
+        self.graph_item.clear()
+        self.current_file_name = Path()
+        self.error_label.setText("")
+        self.create_fields()
 
     def open_link(self):
         """
@@ -905,10 +895,11 @@ class Configurator(QtWidgets.QMainWindow):
         '''
         This draws the graph from the current config.
         '''
+        # TODO: clearing graph
+        self.graph_item.clear()
         # only if config is valid
         if self.bayesNet.valid:
             self.graph_item.set_config(self.bayesNet.config)
-            self.view.addItem(self.graph_item)
 
     def set_influencing_context_dropdown(self, options: list, command: function = None):
         '''
@@ -1101,9 +1092,10 @@ class Configurator(QtWidgets.QMainWindow):
                 self.current_file_name = Path(fileName).absolute()
                 self.bayesNet.load(fileName)
                 self.original_config = deepcopy(self.bayesNet.config)
-                self.error_label.setText("")               
+                self.error_label.setText("")
             except AssertionError as error_message:
                 self.error_label.setText(str(error_message))
+                self.original_config = deepcopy(self.bayesNet.config)
             except Exception as error_message:
                 self.error_label.setText(str(error_message))
         self.create_fields()
@@ -1197,7 +1189,7 @@ class Configurator(QtWidgets.QMainWindow):
 
         options = QFileDialog.Options()
         fileName, _ = QFileDialog.getSaveFileName(
-            None, "Save As", self.current_file_name, "Yaml files (*.yml);;All Files (*)", options=options)
+            None, "Save As", str(self.current_file_name), "Yaml files (*.yml);;All Files (*)", options=options)
 
         if fileName:
             self.bayesNet.save(fileName)
@@ -1277,24 +1269,24 @@ class Configurator(QtWidgets.QMainWindow):
         return value
 
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-f', '--file', type=str,
-                        help='Path to a config file to load upon start.')
-    args = parser.parse_args()
+#     parser = argparse.ArgumentParser()
+#     parser.add_argument('-f', '--file', type=str,
+#                         help='Path to a config file to load upon start.')
+#     args = parser.parse_args()
 
-    # get file from args
-    config_path = args.file
-    if config_path:
-        config = load_config(config_path)
-    else:
-        config = None
+#     # get file from args
+#     config_path = args.file
+#     if config_path:
+#         config = load_config(config_path)
+#     else:
+#         config = None
 
-    configurator = Configurator(config=config)
-    # TODO: this is slightly complicated - could be solved if the configurator can distinguish between String/Path and dict and behaves accordingly.
-    if config_path:
-        configurator.current_file_name = Path(args.file).absolute()
-    configurator.title_update()
+#     configurator = Configurator(config=config)
+#     # TODO: this is slightly complicated - could be solved if the configurator can distinguish between String/Path and dict and behaves accordingly.
+#     if config_path:
+#         configurator.current_file_name = Path(args.file).absolute()
+#     configurator.title_update()
 
-    configurator.app.exec_()
+#     configurator.app.exec_()

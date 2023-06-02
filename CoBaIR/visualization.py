@@ -22,6 +22,7 @@ class TwoLayerGraph(pg.GraphItem):
         self.pxMode = pxMode
         self.unfolded_context = set()
         self.textItems = []
+        self.placeholder = True
 
     def _set_pos(self):
         """
@@ -103,13 +104,19 @@ class TwoLayerGraph(pg.GraphItem):
             self.data["pen"].append(np.array([(red, green, blue, alpha, width)], dtype=[
                 ('red', np.uint8), ('green', np.uint8), ('blue', np.uint8), ('alpha', np.uint8), ('width', np.uint8)]))
 
-    def _set_text(self):
+    def _clear_text(self):
         """
-        Place all the texts for Context and Intention Names
+        Clears all the texts for Context and Intention Names
         """
         for i in self.textItems:
             i.scene().removeItem(i)
         self.textItems = []
+
+    def _set_text(self):
+        """
+        Place all the texts for Context and Intention Names
+        """
+        self._clear_text()
         # self.data["mapping"].items():
         for position, label in zip(self.data["pos"], self.data["names"]):
             # TODO: change color
@@ -136,29 +143,62 @@ class TwoLayerGraph(pg.GraphItem):
 
         self.setData(pos=np.array(self.data["pos"]), adj=np.array(
             self.data["adj"]), pen=np.array(self.data["pen"]), size=self.size, pxMode=self.pxMode)
+        self.placeholder = False
 
     def mousePressEvent(self, event):
         """
         Handler for the mouse click event
         """
-        click_pos = event.pos()
-        # Context
-        if click_pos.x() > 0 - (self.size/2.0) and click_pos.x() < 0 + (self.size/2.0):
-            # self.data["mapping"].items():
-            i = 0
-            for position, name in zip(self.data["pos"], self.data["names"]):
-                if click_pos.y() > position[1] - (self.size/2.0) and click_pos.y() < position[1] + (self.size/2.0) and position[0] == 0:
-                    # click on folded context
-                    if i in self.data["context_indices"]:
-                        self.unfolded_context.add(name)
-                    # click on one of the instantiations of an unfolded context
-                    if i in self.data["instantiation_indices"]:
-                        # HAck: TODO: this is problematic if the context has a colon in name
-                        context, instantiation = self.data["names"][i]
-                        self.unfolded_context.remove(context)
-                i += 1
-        # Intention
-        if click_pos.x() > self.dist - (self.size/2.0) and click_pos.x() < self.dist + (self.size/2.0):
-            pass
-            # TODO: maybe set the focus to the corresponding field
-        self.set_config(self.config)
+        if not self.placeholder:
+            click_pos = event.pos()
+            # Context
+            if click_pos.x() > 0 - (self.size/2.0) and click_pos.x() < 0 + (self.size/2.0):
+                # self.data["mapping"].items():
+                i = 0
+                for position, name in zip(self.data["pos"], self.data["names"]):
+                    if click_pos.y() > position[1] - (self.size/2.0) and click_pos.y() < position[1] + (self.size/2.0) and position[0] == 0:
+                        # click on folded context
+                        if i in self.data["context_indices"]:
+                            self.unfolded_context.add(name)
+                        # click on one of the instantiations of an unfolded context
+                        if i in self.data["instantiation_indices"]:
+                            # HAck: TODO: this is problematic if the context has a colon in name
+                            context, instantiation = self.data["names"][i]
+                            self.unfolded_context.remove(context)
+                    i += 1
+            # Intention
+            if click_pos.x() > self.dist - (self.size/2.0) and click_pos.x() < self.dist + (self.size/2.0):
+                pass
+                # TODO: maybe set the focus to the corresponding field
+            self.set_config(self.config)
+
+    def clear(self):
+        """clears all the data points, text and connections from the Graph"""
+
+        ### Show a placeholder as hack because colored connections are not cleared ###
+        # TODO: implement a working clear method in parent
+        # self.setData(pos=np.array([(0, 0), (1, 1)]), adj=np.array(
+        # [(0, 1)]))  # Only removing points
+
+        config = {
+            'intentions': {
+                'Intention': {
+                    'Context': {
+                        'Instantiation A': 0,
+                        'Instantiation B': 0
+                    }
+                }
+            },
+            'contexts': {
+                'Context': {
+                    'Instantiation A': 0.5,
+                    'Instantiation B': 0.5
+                }
+            },
+            "decision_threshold": 0.0}
+
+        self.set_config(config)
+        self.placeholder = True
+        # self.scatter.clear()  # Only removing points - depends also somehow on the scaling!?!?
+        # super().setData()  # Only removing points - depends also somehow on the scaling?!?!
+        # self._clear_text()
