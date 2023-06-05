@@ -4,29 +4,29 @@ This module is a GUI configurator to create configurations for context based int
 
 # System imports
 import sys
+import os
 from collections import defaultdict
 from copy import deepcopy
 from types import FunctionType as function
 from pathlib import Path
 import itertools
-import pprint
+import copy
+import argparse
 # 3rd party imports
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import pyqtgraph as pg
 from PyQt5 import QtWidgets, uic
 from PyQt5.QtWidgets import QDialog, QLabel, QLineEdit, QComboBox, QPushButton,\
-    QFrame, QGridLayout, QSizePolicy, QSlider, QFileDialog
+    QFrame, QGridLayout, QSizePolicy, QSlider, QFileDialog, QMessageBox
 
-from PyQt5 import sip
-from PyQt5.QtCore import Qt, QStringListModel
-from PyQt5.QtGui import QFont, QFontMetrics, QLinearGradient, QColor
-
-import yaml
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QFont, QFontMetrics
+import logging
 import numpy as np
 
 # local imports
-from .bayes_net import BayesNet, load_config
-
+from .bayes_net import BayesNet, load_config, config_to_default_dict
+from .visualization import TwoLayerGraph
+import webbrowser
 
 # end file header
 __author__ = 'Adrian Lubitz'
@@ -445,12 +445,9 @@ class Configurator(QtWidgets.QMainWindow):
         Args:
             config: A dict with a config following the config format.
         '''
+        # App specifics
         self.app = QtWidgets.QApplication(sys.argv)
         QtWidgets.QMainWindow.__init__(self, *args, **kwargs)
-        # self.figure = plt.figure()
-        # self.canvas = FigureCanvas(self.figure)
-        # creating a graph item
-        # setting configuration options
         pg.setConfigOptions(antialias=True)
         # creating graphics layout widget
         self.win = pg.GraphicsLayoutWidget()
@@ -458,10 +455,14 @@ class Configurator(QtWidgets.QMainWindow):
         self.view = self.win.addViewBox()
         self.graph_item = TwoLayerGraph()
         self.view.addItem(self.graph_item)
+
+        # settings for showing - TODO: maybe this can go to a separate method that can be called in load etc
+        self.current_file_name = Path()
         self.setup_layout()
         self.bayesNet = BayesNet(config)
+        self.original_config = deepcopy(self.bayesNet.config)
         self.create_fields()
-        self.show()  # Show the GU
+        self.show()  # Show the GUI
 
     def create_fields(self):
         """
@@ -478,16 +479,11 @@ class Configurator(QtWidgets.QMainWindow):
         self.set_intention_dropdown(self.bayesNet.config['intentions'].keys())
         self.adjust_button_visibility()
         self.set_decision_threshold()
-        self.set_context_dropdown(self.bayesNet.config['contexts'].keys())
-
-        self.set_influencing_context_dropdown(
-            self.bayesNet.config['contexts'].keys())
-
-        self.set_intention_dropdown(self.bayesNet.config['intentions'].keys())
-        self.adjust_button_visibility()
-        self.set_decision_threshold()
         self.fill_advanced_table()
         self.draw_graph()
+
+        self.original_config = deepcopy(self.bayesNet.config)
+        self.title_update()
 
     def set_decision_threshold(self):
         """
@@ -770,6 +766,7 @@ class Configurator(QtWidgets.QMainWindow):
                             self.remove_combined_influence(intention, contexts, instantiations))
                         self.advanced_table.layout().addWidget(remove_button, row, 5)
                         row += 1
+        self.title_update()
 
     def remove_combined_influence(self, intention: str, contexts: tuple, instantiations: tuple):
         """
@@ -796,7 +793,6 @@ class Configurator(QtWidgets.QMainWindow):
 
         self.context_instantiations = defaultdict(dict)
         self.intention_instantiations = defaultdict(lambda: defaultdict(dict))
-
         self.new_context_button.clicked.connect(self.new_context)
         self.edit_context_button.clicked.connect(self.edit_context)
         self.delete_context_button.clicked.connect(self.delete_context)
@@ -807,9 +803,6 @@ class Configurator(QtWidgets.QMainWindow):
 
         self.new_combined_influence_button.clicked.connect(
             self.new_combined_influence)
-
-        self.advanced_label.setText("advanced \u25BC")
-        self.advanced_label.setParent(self.advanced_hidden_frame)
         self.advanced_folded = False
         self.advanced_label.clicked.connect(self.on_clicked_advanced)
 
@@ -817,7 +810,47 @@ class Configurator(QtWidgets.QMainWindow):
                        3: 'Yellow', 4: 'darkCyan', 5: 'Green'}
         # Adding the canvas
         self.canvas_frame.layout().addWidget(self.win, 0, 0)
-        self.grid_layout.addWidget(self.advanced_label, 5, 1)
+        self.actionOpen.triggered.connect(self.load)
+        self.actionOpen.setShortcut("Ctrl+O")
+        self.actionAbout.triggered.connect(self.open_link)
+        self.actionAbout.setShortcut("F1")
+        self.actionNew.triggered.connect(self.reset)
+        self.actionNew.setShortcut("Ctrl+N")
+        self.actionSave.triggered.connect(self.save)
+        self.actionSave.setShortcut("Ctrl+S")
+        self.actionSave_as.triggered.connect(self.save_as)
+        self.actionSave_as.setShortcut("Ctrl+Shift+S")
+
+    def reset(self):
+        """
+        Resets the state of the Configurator to its initial state.
+        """
+        if self.config_status():
+            reply = QMessageBox.question(
+                self,
+                "Unsaved Changes",
+                "You have unsaved changes. Do you want to discard them?",
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.No
+            )
+            if reply == QMessageBox.No:
+                return
+
+        self.bayesNet = BayesNet()
+        self.graph_item.clear()
+        self.current_file_name = Path()
+        self.error_label.setText("")
+        self.create_fields()
+
+    def open_link(self):
+        """
+        Opens a web link in a new browser tab.
+
+        This method opens the specified URL in a new browser tab using the default web browser of the system.
+
+        """
+        url = "https://dfki-ric.github.io/CoBaIR/"
+        webbrowser.open_new_tab(url)
 
     def decision_threshold_changed(self, value):
         """
@@ -831,6 +864,7 @@ class Configurator(QtWidgets.QMainWindow):
             self.error_label.setText(f"{error_message}")
         except ValueError:
             self.error_label.setText(f'Decision Threshold must be a number')
+        self.title_update()
 
     def set_context_dropdown(self, options: list, command: function = None):
         '''
@@ -846,8 +880,8 @@ class Configurator(QtWidgets.QMainWindow):
 
         if options:
             self.context_selection.addItems(list(options))
-            max_width = max([QFontMetrics(self.context_selection.font()).boundingRect(
-                option).width() for option in options])
+            max_width = max(QFontMetrics(self.context_selection.font()).boundingRect(option).width()
+                            for option in options)
             self.context_selection.setMinimumWidth(
                 max_width + 25)
             self.context_selection.setCurrentIndex(0)
@@ -861,6 +895,8 @@ class Configurator(QtWidgets.QMainWindow):
         '''
         This draws the graph from the current config.
         '''
+        # TODO: clearing graph
+        self.graph_item.clear()
         # only if config is valid
         if self.bayesNet.valid:
             self.graph_item.set_config(self.bayesNet.config)
@@ -879,8 +915,8 @@ class Configurator(QtWidgets.QMainWindow):
         self.influencing_context_selection.clear()
         if options:
             self.influencing_context_selection.addItems(list(options))
-            max_width = max([QFontMetrics(self.influencing_context_selection.font(
-            )).boundingRect(option).width() for option in options])
+            max_width = max(QFontMetrics(self.influencing_context_selection.font()).boundingRect(option).width()
+                            for option in options)
             self.influencing_context_selection.setMinimumWidth(
                 max_width + 25)  # add some padding
             self.influencing_context_selection.setCurrentIndex(0)
@@ -907,8 +943,8 @@ class Configurator(QtWidgets.QMainWindow):
 
         if options:
             self.intention_dropdown.addItems(list(options))
-            max_width = max([QFontMetrics(self.intention_dropdown.font()).boundingRect(
-                option).width() for option in options])
+            max_width = max(QFontMetrics(self.influencing_context_selection.font()).boundingRect(option).width()
+                            for option in options)
             self.intention_dropdown.setMinimumWidth(
                 max_width + 25)  # add some padding
             self.intention_dropdown.setCurrentIndex(0)
@@ -926,16 +962,20 @@ class Configurator(QtWidgets.QMainWindow):
         Args:
             context: name of the clicked context
         """
-        for active_context, instantiations in self.context_instantiations.items():
+        logger = logging.getLogger(__name__)
+        for _, instantiations in self.context_instantiations.items():
             for instantiation, widgets in instantiations.items():
                 for widget in widgets:
                     try:
                         widget.deleteLater()
+                    except RuntimeError as e:
+                        logger.error(
+                            f"Failed to destroy widget {widget}: {type(e).__name__}: {str(e)}")
                     except AttributeError:
                         pass  # can not destroy StringVars
-                    except Exception as e:
-                        # TODO: better logging
-                        print(f"couldn't destroy: {e}")
+                    except TypeError as e:
+                        logger.error(
+                            f"Failed to destroy widget {widget}: {type(e).__name__}: {str(e)}")
 
         self.context_instantiations = defaultdict(dict)
 
@@ -997,20 +1037,25 @@ class Configurator(QtWidgets.QMainWindow):
         row_count = layout.rowCount()
 
         for instantiation, value in self.bayesNet.config['intentions'][intention][context].items():
-
-            influence_text = f'Influence of {context}:{instantiation} on {intention}: LOW'
+            influence_text = f'Influence of {context}:{instantiation} on {intention}:'
             instantiation_label = QLabel(
                 influence_text, self.influencing_context_frame)
-
             instantiation_label.setFont(QFont('Times New Roman', 13))
+
+            low_label = QLabel('LOW', self.influencing_context_frame)
+            low_label.setFont(QFont('Times New Roman', 13))
+
             slider = QSlider(Qt.Horizontal, self.influencing_context_frame)
             slider.setFixedSize(100, 20)
             high_label = QLabel('HIGH', self.influencing_context_frame)
             high_label.setFont(QFont('Times New Roman', 13))
 
-            layout.addWidget(instantiation_label, row_count, 0)
-            layout.addWidget(slider, row_count, 1)
-            layout.addWidget(high_label, row_count, 2)
+            layout.setColumnStretch(0, 1)
+            layout.addWidget(instantiation_label, row_count, 1)
+            layout.addWidget(low_label, row_count, 2)
+            layout.addWidget(slider, row_count, 3)
+            layout.addWidget(high_label, row_count, 4)
+            layout.setColumnStretch(5, 1)
 
             slider.setMinimum(0)
             slider.setMaximum(5)
@@ -1025,6 +1070,7 @@ class Configurator(QtWidgets.QMainWindow):
 
             self.intention_instantiations[intention][context][instantiation] = (
                 instantiation_label,
+                low_label,
                 slider,
                 high_label,
             )
@@ -1042,23 +1088,142 @@ class Configurator(QtWidgets.QMainWindow):
         if fileName:
             try:
                 self.error_label.setText("loading BayesNet...")
+                self.current_file_name = Path(fileName).absolute()
                 self.bayesNet.load(fileName)
+                self.original_config = deepcopy(self.bayesNet.config)
                 self.error_label.setText("")
             except AssertionError as error_message:
                 self.error_label.setText(str(error_message))
+                self.original_config = deepcopy(self.bayesNet.config)
             except Exception as error_message:
                 self.error_label.setText(str(error_message))
         self.create_fields()
 
+    def title_update(self):
+        """
+        Updates the title of the application window based on the configuration status.
+        """
+        _ = '-' if self.current_file_name.name else ''
+        if self.config_status():
+            self.setWindowTitle(f"CoBaIR {_} {self.current_file_name.name} *")
+        else:
+            self.setWindowTitle(f"CoBaIR {_} {self.current_file_name.name} ")
+
+    # def check_config_status(self):
+    #     """
+    #     Check the status of the configuration.
+
+    #     Returns:
+    #         bool: True if the current configuration differs from the original configuration, False otherwise.
+    #     """
+    #     if self.bayesNet.config != self.original_config:
+    #         return True
+    #     return False
+
+    # def parse_yaml_file(self):
+    #     """Parse YAML file path.
+
+    #     This function uses the argparse module to process the command-line arguments and retrieve the path of a YAML file.
+
+    #     Returns:
+    #         str or None: The path of the YAML file specified using the --file argument. If no file is provided, returns None.
+    #     """
+    #     parser = argparse.ArgumentParser(description='Process YAML file path.')
+    #     parser.add_argument('--file', type=str, default=None, help='path of YAML file')
+    #     args = parser.parse_args()
+    #     return args.file
+
+    # def get_current_file_name(self, yaml_file_path):
+    #     """Get the current file name.
+
+    #     This function retrieves the current file name based on the provided YAML file path. If no path is provided, it tries
+    #     to retrieve the file name from the `file_name` attribute of the `bayesNet` object.
+
+    #     Args:
+    #         yaml_file_path (str or None): The path of the YAML file.
+
+    #     Returns:
+    #         str or None: The current file name. If a YAML file path is provided, returns the base name of the file. If no
+    #         path is provided or it's None, tries to retrieve the file name from the `file_name` attribute of `bayesNet`.
+    #         Returns None if no file name can be determined.
+    #     """
+    #     if yaml_file_path is not None:
+    #         current_file_name = os.path.basename(yaml_file_path)
+    #     else:
+    #         current_file_name = self.bayesNet.file_name if hasattr(self.bayesNet, 'file_name') else None
+    #         if current_file_name is not None:
+    #             current_file_name = os.path.basename(current_file_name)
+    #     return current_file_name
+
+    def config_status(self):
+        """
+        Check the status of the configuration.
+
+        Returns:
+            bool: True if the current configuration differs from the original configuration, False otherwise.
+        """
+        return self.bayesNet.config != self.original_config
+
     def save(self):
         """
-        opens a asksaveasfilename dialog to save a config
+        Saves the current configuration to a file without asking for confirmation if it exists,
+        or asks for a filename if it's a new configuration.
         """
-        filetypes = "Yaml files (*.yml);;All Files (*)"
-        save_filepath, _ = QFileDialog.getSaveFileName(
-            None, "Save Config", "", filetypes)
-        if save_filepath:
-            self.bayesNet.save(save_filepath)
+
+        if self.current_file_name is None:
+            options = QFileDialog.Options()
+            self.current_file_name, _ = QFileDialog.getSaveFileName(
+                None, "Save", "", "Yaml files (*.yml);;All Files (*)", options=options)
+            self.current_file_name = Path(self.current_file_name).absolute()
+        if self.current_file_name:
+            self.bayesNet.save(self.current_file_name)
+            self.original_config = deepcopy(self.bayesNet.config)
+            self.title_update()
+
+    def save_as(self):
+        """
+        Opens a save file dialog to save a configuration with a new name or at a new location.
+        If a filename has been previously loaded or saved, that filename will be used as the default.
+        """
+
+        options = QFileDialog.Options()
+        fileName, _ = QFileDialog.getSaveFileName(
+            None, "Save As", str(self.current_file_name), "Yaml files (*.yml);;All Files (*)", options=options)
+
+        if fileName:
+            self.bayesNet.save(fileName)
+            self.current_file_name = Path(fileName).absolute()
+            self.original_config = deepcopy(self.bayesNet.config)
+            self.title_update()
+
+    def closeEvent(self, event):
+        """
+        Override the closeEvent method to prompt the user to save changes made to the configuration
+        before closing the application.
+
+        :param event: The close event.
+        :type event: QtGui.QCloseEvent
+
+        :return: None
+        """
+        if self.config_status():
+            custom_box = QMessageBox()
+            custom_box.setWindowTitle("Save Changes")
+            custom_box.setText(
+                "Do you want to save the changes made to the configuration?")
+            custom_box.setStandardButtons(
+                QMessageBox.Discard | QMessageBox.Cancel)
+
+            save_and_close_button = QPushButton("Save and Close")
+            custom_box.addButton(save_and_close_button, QMessageBox.AcceptRole)
+
+            reply = custom_box.exec_()
+            if reply == QMessageBox.AcceptRole:
+                self.save()
+            elif reply == QMessageBox.Cancel:
+                event.ignore()
+                return
+        event.accept()
 
     def apriori_values_changed(self, *args, context, instantiation):
         """
@@ -1078,6 +1243,7 @@ class Configurator(QtWidgets.QMainWindow):
         except ValueError:
             self.error_label.setText(
                 f'Apriori probability of context "{context}.{instantiation}" is not a number')
+        self.title_update()
 
     def influence_values_changed(self, value, context, intention, instantiation, slider):
         """
@@ -1098,212 +1264,28 @@ class Configurator(QtWidgets.QMainWindow):
                 f"QSlider::handle:horizontal {{background-color: {self.COLORS[value]}}}")
         except AssertionError as e:
             self.error_label.setText(str(e))
-            
-        self.graph_item.update_value(context, intention)
-        if context or intention is not None:
-            self.graph_item.set_config(self.bayesNet.config)
+        self.title_update()
         return value
 
 
-class TwoLayerGraph(pg.GraphItem):
-    """
-    Graph Visualization for the two layer bayesian network
-    """
+# if __name__ == "__main__":
 
-    def __init__(self, dist=10, size=3, line_width=[0, 25], pxMode=False, **kwds):
-        super().__init__(**kwds)
-        self.dist = dist
-        self.size = size
-        self.line_width = line_width
-        self.pxMode = pxMode
-        self.unfolded_context = set()
-        self.textItems = []
-        self.context = None
-        self.intention = None
+#     parser = argparse.ArgumentParser()
+#     parser.add_argument('-f', '--file', type=str,
+#                         help='Path to a config file to load upon start.')
+#     args = parser.parse_args()
 
-    def _set_pos(self):
-        """
-        Add all the data points in the pos array
-        """
-        i = 0
-        added_context = set()
-        for intention, context_dict in self.config['intentions'].items():
-            position = (self.dist, self.dist/2 + i*self.dist)
-            self.data["pos"].append(position)
-            self.data["names"].append(intention)
-            self.data["intention_indices"].append(i)
-            # self.data["mapping"][position] = intention
-            i += 1
-            for context, instantiation_dict in context_dict.items():
-                if context not in added_context and isinstance(context, str):
-                    if context in self.unfolded_context:
-                        for instatiation in instantiation_dict:
-                            if f"{context}:{instatiation}" not in added_context and isinstance(context, str):
-                                position = (0, i*self.dist)
-                                self.data["pos"].append(position)
-                                self.data["names"].append(
-                                    (context, instatiation))
-                                # f"{context}:{instatiation}")
-                                # TODO: use tuple here and check for type on usage
-                                # TODO: this may be 'instantiation_indices'
-                                self.data["instantiation_indices"].append(i)
-                                # self.data["context_indices"].append(i)
-                                # self.data["mapping"][position] = f"{context}:{instatiation}"
-                                added_context.add(f"{context}:{instatiation}")
-                                i += 1
-                    else:
-                        position = (0, i*self.dist)
-                        self.data["pos"].append(position)
-                        self.data["names"].append(context)
-                        self.data["context_indices"].append(i)
-                        # self.data["mapping"][position] = context
-                        added_context.add(context)
-                        i += 1
+#     # get file from args
+#     config_path = args.file
+#     if config_path:
+#         config = load_config(config_path)
+#     else:
+#         config = None
 
-    def _set_adj(self):
-        """
-        Add all the connections in the adj array
-        """
-        # TODO: merge context and instantiations indices
-        left_side = self.data["context_indices"] + \
-            self.data["instantiation_indices"]
-        self.data["adj"] = list(itertools.product(
-            left_side, self.data["intention_indices"]))
+#     configurator = Configurator(config=config)
+#     # TODO: this is slightly complicated - could be solved if the configurator can distinguish between String/Path and dict and behaves accordingly.
+#     if config_path:
+#         configurator.current_file_name = Path(args.file).absolute()
+#     configurator.title_update()
 
-    def update_value(self, context, intention):
-        """
-        Gets the values from configurator when slider is modified by the user 
-        """
-        self.context = context
-        self.intention = intention
-        self.set_config(self.config)
-
-    def _set_pen(self):
-        """
-        Add all the pens for the connections in the pen array 
-        """
-        start_color = QColor(255, 0, 0)  # Start color (e.g., red)
-        end_color = QColor(0, 255, 0)  # End color (e.g., green)
-
-        def calculate_color(normalized_mean):
-            """
-            To calculate color value
-            """
-            red = start_color.red() + normalized_mean * (end_color.red() - start_color.red())
-            green = start_color.green() + normalized_mean * (end_color.green() - start_color.green())
-            blue = start_color.blue() + normalized_mean * (end_color.blue() - start_color.blue())
-            return red, green, blue
-
-        def calculate_width(normalized_mean):
-            """
-            To calculate the width
-            """
-            return self.line_width[0] + (self.line_width[1] - self.line_width[0]) * normalized_mean
-        
-        def calculate_normalized_mean(context, intention):
-            """
-            To calculate the normalized mean
-            """
-            values = list(self.config["intentions"][intention][context].values())
-            return np.mean(values) / 5.0
-        
-        for start, end in self.data["adj"]:
-            if start in self.data["context_indices"] or start in self.data["instantiation_indices"]:
-                context = self.data["names"][start]
-                intention = self.data["names"][end]
-            else:
-                context = self.data["names"][end]
-                intention = self.data["names"][start]
-            
-            color = pg.mkPen().color()
-            
-            if start in self.data["instantiation_indices"]:
-                # Hack: TODO: this is problematic if the context has a colon in name
-                context, instantiation = self.data["names"][start]
-                # TODO. problem with default dict or problem with type - for "human holding object" bool is used and it does not work...
-                normalized_mean = self.config["intentions"][intention][context][instantiation] / 5.0
-            else:
-                normalized_mean = calculate_normalized_mean(context, intention)
-            
-            alpha = color.alpha()
-            red, green, blue = calculate_color(normalized_mean)
-            width = calculate_width(normalized_mean)
-            
-            self.data["pen"].append(np.array([(red, green, blue, alpha, width)], dtype=[
-                ('red', np.uint8), ('green', np.uint8), ('blue', np.uint8), ('alpha', np.uint8), ('width', np.uint8)]))
-            
-        if self.context or self.intention is not None:
-            context = self.context
-            intention = self.intention
-            normalized_mean = calculate_normalized_mean(context, intention)
-            color_values = self.data['pen'][0][0]
-            if self.data["names"][start] == context and self.data["names"][end] == intention:
-                red = color_values[0]       
-                green  = color_values[1]     
-                blue = color_values[2] 
-                red, green, blue = calculate_color(normalized_mean)
-            
-            width = calculate_width(normalized_mean)
-            self.data["pen"].append(np.array([(red, green, blue, alpha, width)], dtype=[
-                ('red', np.uint8), ('green', np.uint8), ('blue', np.uint8), ('alpha', np.uint8), ('width', np.uint8)]))
-
-    def _set_text(self):
-        """
-        Place all the texts for Context and Intention Names
-        """
-        for i in self.textItems:
-            i.scene().removeItem(i)
-        self.textItems = []
-        # self.data["mapping"].items():
-        for position, label in zip(self.data["pos"], self.data["names"]):
-            # TODO: change color
-            if isinstance(label, tuple):
-                label = f"{label[0]}:{label[1]}"
-            text_item = pg.TextItem(label, anchor=(0.5, 0.5))
-            text_item.setParentItem(self)
-            text_item.setPos(*position)
-            self.textItems.append(text_item)
-
-    def set_config(self, config):
-        """
-        Uses the config to set the data and draws the graph
-        """
-        # extract every needed field for setData from config
-
-        self.config = config
-        self.data = {"mapping": {}, "pos": [],
-                     "adj": [], "pen": [], "names": [], "context_indices": [], "intention_indices": [], "instantiation_indices": []}
-        self._set_pos()
-        self._set_adj()
-        self._set_pen()
-        self._set_text()
-
-        self.setData(pos=np.array(self.data["pos"]), adj=np.array(
-            self.data["adj"]), pen=np.array(self.data["pen"]), size=self.size, pxMode=self.pxMode)
-
-    def mousePressEvent(self, event):
-        """
-        Handler for the mouse click event
-        """
-        click_pos = event.pos()
-        # Context
-        if click_pos.x() > 0 - (self.size/2.0) and click_pos.x() < 0 + (self.size/2.0):
-            # self.data["mapping"].items():
-            i = 0
-            for position, name in zip(self.data["pos"], self.data["names"]):
-                if click_pos.y() > position[1] - (self.size/2.0) and click_pos.y() < position[1] + (self.size/2.0) and position[0] == 0:
-                    # click on folded context
-                    if i in self.data["context_indices"]:
-                        self.unfolded_context.add(name)
-                    # click on one of the instantiations of an unfolded context
-                    if i in self.data["instantiation_indices"]:
-                        # HAck: TODO: this is problematic if the context has a colon in name
-                        context, instantiation = self.data["names"][i]
-                        self.unfolded_context.remove(context)
-                i += 1
-        # Intention
-        if click_pos.x() > self.dist - (self.size/2.0) and click_pos.x() < self.dist + (self.size/2.0):
-            pass
-            # TODO: maybe set the focus to the corresponding field
-
-        self.set_config(self.config)
+#     configurator.app.exec_()
