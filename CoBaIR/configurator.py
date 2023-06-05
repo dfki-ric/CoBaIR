@@ -603,7 +603,7 @@ class Configurator(QtWidgets.QMainWindow):
         Deletes the currently selected context.
         """
         self.error_label.setText("")
-        context = self.context_dropdown.currentText()
+        context = self.context_selection.currentText()
         try:
             self.bayesNet.del_context(context)
         except AssertionError as error_message:
