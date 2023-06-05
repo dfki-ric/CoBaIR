@@ -1259,10 +1259,10 @@ class Configurator(QtWidgets.QMainWindow):
         """
         self.error_label.setText("")
         try:
-            self.bayesNet.change_influence_value(
-                intention=intention, context=context, instantiation=instantiation, value=int(value))
             slider.setStyleSheet(
                 f"QSlider::handle:horizontal {{background-color: {self.COLORS.get(value, 'default_color')}}}")
+            self.bayesNet.change_influence_value(
+                intention=intention, context=context, instantiation=instantiation, value=int(value))
         except AssertionError as e:
             self.error_label.setText(str(e))
         self.title_update()
