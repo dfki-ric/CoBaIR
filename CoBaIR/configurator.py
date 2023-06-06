@@ -454,6 +454,7 @@ class Configurator(QtWidgets.QMainWindow):
         # adding view box to the graphic layout widget
         self.view = self.win.addViewBox()
         self.graph_item = TwoLayerGraph()
+        self.current_file_name = Path()
         self.setup_layout()
         self.bayesNet = BayesNet(config)
         self.original_config = deepcopy(self.bayesNet.config)
