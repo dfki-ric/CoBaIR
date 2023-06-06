@@ -8,7 +8,7 @@ from copy import deepcopy
 # 3rd party imports
 import pyqtgraph as pg
 import numpy as np
-
+from PyQt5.QtGui import QColor
 
 class TwoLayerGraph(pg.GraphItem):
     """
@@ -23,7 +23,8 @@ class TwoLayerGraph(pg.GraphItem):
         self.pxMode = pxMode
         self.unfolded_context = set()
         self.textItems = []
-        self.placeholder = True
+        self.context = None
+        self.intention = None
 
     def _set_pos(self):
         """
@@ -74,10 +75,43 @@ class TwoLayerGraph(pg.GraphItem):
         self.data["adj"] = list(itertools.product(
             left_side, self.data["intention_indices"]))
 
+    def update_value(self, context, intention):
+        """
+        Gets the values from configurator when slider is modified by the user 
+        """
+        self.context = context
+        self.intention = intention
+        self.set_config(self.config)
+
     def _set_pen(self):
         """
         Add all the pens for the connections in the pen array 
         """
+        start_color = QColor(255, 0, 0)  # Start color (e.g., red)
+        end_color = QColor(0, 255, 0)  # End color (e.g., green)
+
+        def calculate_color(normalized_mean):
+            """
+            To calculate color value
+            """
+            red = start_color.red() + normalized_mean * (end_color.red() - start_color.red())
+            green = start_color.green() + normalized_mean * (end_color.green() - start_color.green())
+            blue = start_color.blue() + normalized_mean * (end_color.blue() - start_color.blue())
+            return red, green, blue
+
+        def calculate_width(normalized_mean):
+            """
+            To calculate the width
+            """
+            return self.line_width[0] + (self.line_width[1] - self.line_width[0]) * normalized_mean
+        
+        def calculate_normalized_mean(context, intention):
+            """
+            To calculate the normalized mean
+            """
+            values = list(self.config["intentions"][intention][context].values())
+            return np.mean(values) / 5.0
+        
         for start, end in self.data["adj"]:
             if start in self.data["context_indices"] or start in self.data["instantiation_indices"]:
                 context = self.data["names"][start]
@@ -85,39 +119,46 @@ class TwoLayerGraph(pg.GraphItem):
             else:
                 context = self.data["names"][end]
                 intention = self.data["names"][start]
+            
             color = pg.mkPen().color()
-            normalized_mean = np.mean(
-                list(self.config["intentions"][intention][context].values()))/5.0
-
+            
             if start in self.data["instantiation_indices"]:
-                # HAck: TODO: this is problematic if the context has a colon in name
+                # Hack: TODO: this is problematic if the context has a colon in name
                 context, instantiation = self.data["names"][start]
                 # TODO. problem with default dict or problem with type - for "human holding object" bool is used and it does not work...
                 normalized_mean = self.config["intentions"][intention][context][instantiation] / 5.0
+            else:
+                normalized_mean = calculate_normalized_mean(context, intention)
+            
             alpha = color.alpha()
-            # TODO: Maybe color can even be scaled with the normalized mean
-            red = color.red() if normalized_mean else 255
-            green = color.green() if normalized_mean else 0
-            blue = color.blue() if normalized_mean else 0
-            width = self.line_width[0] + \
-                (self.line_width[1] - self.line_width[0]) * normalized_mean
-
+            red, green, blue = calculate_color(normalized_mean)
+            width = calculate_width(normalized_mean)
+            
             self.data["pen"].append(np.array([(red, green, blue, alpha, width)], dtype=[
                 ('red', np.uint8), ('green', np.uint8), ('blue', np.uint8), ('alpha', np.uint8), ('width', np.uint8)]))
-
-    def _clear_text(self):
-        """
-        Clears all the texts for Context and Intention Names
-        """
-        for i in self.textItems:
-            i.scene().removeItem(i)
-        self.textItems = []
+            
+        if self.context or self.intention is not None:
+            context = self.context
+            intention = self.intention
+            normalized_mean = calculate_normalized_mean(context, intention)
+            color_values = self.data['pen'][0][0]
+            if self.data["names"][start] == context and self.data["names"][end] == intention:
+                red = color_values[0]       
+                green  = color_values[1]     
+                blue = color_values[2] 
+                red, green, blue = calculate_color(normalized_mean)
+            
+            width = calculate_width(normalized_mean)
+            self.data["pen"].append(np.array([(red, green, blue, alpha, width)], dtype=[
+                ('red', np.uint8), ('green', np.uint8), ('blue', np.uint8), ('alpha', np.uint8), ('width', np.uint8)]))
 
     def _set_text(self):
         """
         Place all the texts for Context and Intention Names
         """
-        self._clear_text()
+        for i in self.textItems:
+            i.scene().removeItem(i)
+        self.textItems = []
         # self.data["mapping"].items():
         for position, label in zip(self.data["pos"], self.data["names"]):
             # TODO: change color
@@ -130,11 +171,11 @@ class TwoLayerGraph(pg.GraphItem):
 
     def set_config(self, config):
         """
-        Uses the config to set the data
+        Uses the config to set the data and draws the graph
         """
         # extract every needed field for setData from config
 
-        self.config = deepcopy(config)
+        self.config = config
         self.data = {"mapping": {}, "pos": [],
                      "adj": [], "pen": [], "names": [], "context_indices": [], "intention_indices": [], "instantiation_indices": []}
         self._set_pos()
@@ -144,62 +185,30 @@ class TwoLayerGraph(pg.GraphItem):
 
         self.setData(pos=np.array(self.data["pos"]), adj=np.array(
             self.data["adj"]), pen=np.array(self.data["pen"]), size=self.size, pxMode=self.pxMode)
-        self.placeholder = False
 
     def mousePressEvent(self, event):
         """
         Handler for the mouse click event
         """
-        if not self.placeholder:
-            click_pos = event.pos()
-            # Context
-            if click_pos.x() > 0 - (self.size/2.0) and click_pos.x() < 0 + (self.size/2.0):
-                # self.data["mapping"].items():
-                i = 0
-                for position, name in zip(self.data["pos"], self.data["names"]):
-                    if click_pos.y() > position[1] - (self.size/2.0) and click_pos.y() < position[1] + (self.size/2.0) and position[0] == 0:
-                        # click on folded context
-                        if i in self.data["context_indices"]:
-                            self.unfolded_context.add(name)
-                        # click on one of the instantiations of an unfolded context
-                        if i in self.data["instantiation_indices"]:
-                            # HAck: TODO: this is problematic if the context has a colon in name
-                            context, instantiation = self.data["names"][i]
-                            self.unfolded_context.remove(context)
-                    i += 1
-            # Intention
-            if click_pos.x() > self.dist - (self.size/2.0) and click_pos.x() < self.dist + (self.size/2.0):
-                pass
-                # TODO: maybe set the focus to the corresponding field
-            self.set_config(self.config)
+        click_pos = event.pos()
+        # Context
+        if click_pos.x() > 0 - (self.size/2.0) and click_pos.x() < 0 + (self.size/2.0):
+            # self.data["mapping"].items():
+            i = 0
+            for position, name in zip(self.data["pos"], self.data["names"]):
+                if click_pos.y() > position[1] - (self.size/2.0) and click_pos.y() < position[1] + (self.size/2.0) and position[0] == 0:
+                    # click on folded context
+                    if i in self.data["context_indices"]:
+                        self.unfolded_context.add(name)
+                    # click on one of the instantiations of an unfolded context
+                    if i in self.data["instantiation_indices"]:
+                        # HAck: TODO: this is problematic if the context has a colon in name
+                        context, instantiation = self.data["names"][i]
+                        self.unfolded_context.remove(context)
+                i += 1
+        # Intention
+        if click_pos.x() > self.dist - (self.size/2.0) and click_pos.x() < self.dist + (self.size/2.0):
+            pass
+            # TODO: maybe set the focus to the corresponding field
 
-    def clear(self):
-        """clears all the data points, text and connections from the Graph"""
-
-        ### Show a placeholder as hack because colored connections are not cleared ###
-        # TODO: implement a working clear method in parent
-        # self.setData(pos=np.array([(0, 0), (1, 1)]), adj=np.array(
-        # [(0, 1)]))  # Only removing points
-
-        config = {
-            'intentions': {
-                'Intention': {
-                    'Context': {
-                        'Instantiation A': 0,
-                        'Instantiation B': 0
-                    }
-                }
-            },
-            'contexts': {
-                'Context': {
-                    'Instantiation A': 0.5,
-                    'Instantiation B': 0.5
-                }
-            },
-            "decision_threshold": 0.0}
-
-        self.set_config(config)
-        self.placeholder = True
-        # self.scatter.clear()  # Only removing points - depends also somehow on the scaling!?!?
-        # super().setData()  # Only removing points - depends also somehow on the scaling?!?!
-        # self._clear_text()
+        self.set_config(self.config)

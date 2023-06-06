@@ -896,7 +896,7 @@ class Configurator(QtWidgets.QMainWindow):
         This draws the graph from the current config.
         '''
         # TODO: clearing graph
-        self.graph_item.clear()
+        # self.graph_item.clear()
         # only if config is valid
         if self.bayesNet.valid:
             self.graph_item.set_config(self.bayesNet.config)
@@ -1264,28 +1264,8 @@ class Configurator(QtWidgets.QMainWindow):
                 f"QSlider::handle:horizontal {{background-color: {self.COLORS[value]}}}")
         except AssertionError as e:
             self.error_label.setText(str(e))
-        self.title_update()
+            
+        self.graph_item.update_value(context, intention)
+        if context or intention is not None:
+            self.graph_item.set_config(self.bayesNet.config)
         return value
-
-
-# if __name__ == "__main__":
-
-#     parser = argparse.ArgumentParser()
-#     parser.add_argument('-f', '--file', type=str,
-#                         help='Path to a config file to load upon start.')
-#     args = parser.parse_args()
-
-#     # get file from args
-#     config_path = args.file
-#     if config_path:
-#         config = load_config(config_path)
-#     else:
-#         config = None
-
-#     configurator = Configurator(config=config)
-#     # TODO: this is slightly complicated - could be solved if the configurator can distinguish between String/Path and dict and behaves accordingly.
-#     if config_path:
-#         configurator.current_file_name = Path(args.file).absolute()
-#     configurator.title_update()
-
-#     configurator.app.exec_()
