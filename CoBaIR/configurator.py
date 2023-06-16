@@ -1016,6 +1016,7 @@ class Configurator(QtWidgets.QMainWindow):
         """
         if item_type == "context":
             self.set_influencing_context_dropdown([name])
+            self.set_context_dropdown([name])
         elif item_type == "intention":
             self.set_intention_dropdown([name])
 
