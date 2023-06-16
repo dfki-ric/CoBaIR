@@ -9,12 +9,13 @@ from copy import deepcopy
 import pyqtgraph as pg
 import numpy as np
 
+from PyQt5 import QtCore
 
 class TwoLayerGraph(pg.GraphItem):
     """
     Graph Visualization for the two layer bayesian network
     """
-
+    name_clicked = QtCore.pyqtSignal(str, str)
     def __init__(self, dist=10, size=3, line_width=[0, 25], pxMode=False, **kwds):
         super().__init__(**kwds)
         self.dist = dist
@@ -161,6 +162,7 @@ class TwoLayerGraph(pg.GraphItem):
                         # click on folded context
                         if i in self.data["context_indices"]:
                             self.unfolded_context.add(name)
+                            self.name_clicked.emit(name, "context")
                         # click on one of the instantiations of an unfolded context
                         if i in self.data["instantiation_indices"]:
                             # HAck: TODO: this is problematic if the context has a colon in name
@@ -169,6 +171,9 @@ class TwoLayerGraph(pg.GraphItem):
                     i += 1
             # Intention
             if click_pos.x() > self.dist - (self.size/2.0) and click_pos.x() < self.dist + (self.size/2.0):
+                for position, name in zip(self.data["pos"], self.data["names"]):
+                    if click_pos.y() > position[1] - (self.size/2.0) and click_pos.y() < position[1] + (self.size/2.0) and position[0] == self.dist:
+                        self.name_clicked.emit(name, "intention")
                 pass
                 # TODO: maybe set the focus to the corresponding field
             self.set_config(self.config)

@@ -455,7 +455,6 @@ class Configurator(QtWidgets.QMainWindow):
         self.view = self.win.addViewBox()
         self.graph_item = TwoLayerGraph()
         self.view.addItem(self.graph_item)
-
         # settings for showing - TODO: maybe this can go to a separate method that can be called in load etc
         self.current_file_name = Path()
         self.setup_layout()
@@ -820,6 +819,7 @@ class Configurator(QtWidgets.QMainWindow):
         self.actionSave.setShortcut("Ctrl+S")
         self.actionSave_as.triggered.connect(self.save_as)
         self.actionSave_as.setShortcut("Ctrl+Shift+S")
+        self.graph_item.name_clicked.connect(self.graph_clicked)  # Connect the signal to the slot
 
     def reset(self):
         """
@@ -940,7 +940,6 @@ class Configurator(QtWidgets.QMainWindow):
         if not command:
             command = self.influencing_context_selected
         self.intention_dropdown.clear()
-
         if options:
             self.intention_dropdown.addItems(list(options))
             max_width = max(QFontMetrics(self.influencing_context_selection.font()).boundingRect(option).width()
@@ -1007,6 +1006,19 @@ class Configurator(QtWidgets.QMainWindow):
             )
             row_count += 1
 
+    def graph_clicked(self, name: str, item_type: str):
+        """
+        Handle the event when a graph item is clicked.
+
+        Args:
+            name (str): The name of the clicked item.
+            item_type (str): The type of the clicked item ('context' or 'intention').
+        """
+        if item_type == "context":
+            self.set_influencing_context_dropdown([name])
+        elif item_type == "intention":
+            self.set_intention_dropdown([name])
+
     def influencing_context_selected(self, context_or_intention: str):
         """
         Callback for click on context in influencing context dropdown.
@@ -1032,10 +1044,9 @@ class Configurator(QtWidgets.QMainWindow):
             return
 
         self.intention_instantiations = defaultdict(lambda: defaultdict(dict))
-
         layout = self.gridLayout_3
         row_count = layout.rowCount()
-
+        
         for instantiation, value in self.bayesNet.config['intentions'][intention][context].items():
             influence_text = f'Influence of {context}:{instantiation} on {intention}:'
             instantiation_label = QLabel(
