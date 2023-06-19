@@ -22,6 +22,9 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont, QFontMetrics
 import logging
 import numpy as np
+from PyQt5.QtWidgets import QWidget
+
+# Rest of the code...
 
 # local imports
 from .bayes_net import BayesNet, load_config, config_to_default_dict
@@ -603,7 +606,7 @@ class Configurator(QtWidgets.QMainWindow):
         Deletes the currently selected context.
         """
         self.error_label.setText("")
-        context = self.context_dropdown.currentText()
+        context = self.context_selection.currentText()
         try:
             self.bayesNet.del_context(context)
         except AssertionError as error_message:
@@ -972,7 +975,7 @@ class Configurator(QtWidgets.QMainWindow):
                         logger.error(
                             f"Failed to destroy widget {widget}: {type(e).__name__}: {str(e)}")
                     except AttributeError:
-                        pass  # can not destroy StringVars
+                        pass  # Cannot destroy StringVars
                     except TypeError as e:
                         logger.error(
                             f"Failed to destroy widget {widget}: {type(e).__name__}: {str(e)}")
@@ -1014,34 +1017,28 @@ class Configurator(QtWidgets.QMainWindow):
         Args:
             context_or_intention: name of the clicked context
         """
-        for active_intention, active_context in self.intention_instantiations.items():
-            for active_context, instantiations in active_context.items():
-                for instantiation, widgets in instantiations.items():
-                    for widget in widgets:
-                        try:
-                            widget.deleteLater()
-                        except AttributeError:
-                            pass  # can not destroy StringVars
-                        except Exception as e:
-                            # TODO: better logging
-                            print(f"couldn't destroy: {e}")
+        for widget in self.influencing_context_frame.findChildren(QWidget):
+            try:
+                widget.deleteLater()
+            except AttributeError:
+                pass  # Cannot destroy StringVars
+            except Exception as e:
+                # TODO: better logging
+                print(f"Couldn't destroy widget: {e}")
+
         intention = self.intention_dropdown.currentText()
         context = self.influencing_context_selection.currentText()
         if context not in self.bayesNet.config['contexts'] or \
                 intention not in self.bayesNet.config['intentions']:
             return
-
         self.intention_instantiations = defaultdict(lambda: defaultdict(dict))
-
         layout = self.gridLayout_3
-        row_count = layout.rowCount()
-
+        row_count = 0
         for instantiation, value in self.bayesNet.config['intentions'][intention][context].items():
             influence_text = f'Influence of {context}:{instantiation} on {intention}:'
             instantiation_label = QLabel(
                 influence_text, self.influencing_context_frame)
             instantiation_label.setFont(QFont('Times New Roman', 13))
-
             low_label = QLabel('LOW', self.influencing_context_frame)
             low_label.setFont(QFont('Times New Roman', 13))
 
@@ -1075,7 +1072,7 @@ class Configurator(QtWidgets.QMainWindow):
                 slider,
                 high_label,
             )
-
+            
             row_count += 1
 
     def load(self):
