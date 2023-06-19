@@ -1023,8 +1023,7 @@ class Configurator(QtWidgets.QMainWindow):
             except AttributeError:
                 pass  # Cannot destroy StringVars
             except Exception as e:
-                # TODO: better logging
-                print(f"Couldn't destroy widget: {e}")
+                logging.error(f"Couldn't destroy widget: {e}")
 
         intention = self.intention_dropdown.currentText()
         context = self.influencing_context_selection.currentText()
@@ -1072,7 +1071,7 @@ class Configurator(QtWidgets.QMainWindow):
                 slider,
                 high_label,
             )
-            
+
             row_count += 1
 
     def load(self):
