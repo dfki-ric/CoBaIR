@@ -95,16 +95,17 @@ class TwoLayerGraph(pg.GraphItem):
             """
             To calculate color value
             """
-            red = start_color.red() + normalized_mean * (end_color.red() - start_color.red())
-            green = start_color.green() + normalized_mean * (end_color.green() - start_color.green())
-            blue = start_color.blue() + normalized_mean * (end_color.blue() - start_color.blue())
+            t = normalized_mean
+            red = int(start_color.red() + t * (end_color.red() - start_color.red()))
+            green = int(start_color.green() + t * (end_color.green() - start_color.green()))
+            blue = int(start_color.blue() + t * (end_color.blue() - start_color.blue()))
             return red, green, blue
 
         def calculate_width(normalized_mean):
             """
             To calculate the width
             """
-            return self.line_width[0] + (self.line_width[1] - self.line_width[0]) * normalized_mean * 0.3
+            return self.line_width[0] + (self.line_width[1] - self.line_width[0]) * normalized_mean * 0.5
 
         def calculate_normalized_mean(context, intention):
             """
