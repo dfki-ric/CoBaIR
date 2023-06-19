@@ -104,7 +104,7 @@ class TwoLayerGraph(pg.GraphItem):
             """
             To calculate the width
             """
-            return self.line_width[0] + (self.line_width[1] - self.line_width[0]) * normalized_mean * 0.5
+            return self.line_width[0] + (self.line_width[1] - self.line_width[0]) * normalized_mean * 0.3
 
         def calculate_normalized_mean(context, intention):
             """
@@ -113,7 +113,7 @@ class TwoLayerGraph(pg.GraphItem):
             values = list(self.config["intentions"][intention][context].values())
             return np.mean(values) / 5.0 if np.mean(values) > 0 else 0.0
 
-        
+
         for start, end in self.data["adj"]:
             if start in self.data["context_indices"] or start in self.data["instantiation_indices"]:
                 context = self.data["names"][start]
@@ -121,9 +121,7 @@ class TwoLayerGraph(pg.GraphItem):
             else:
                 context = self.data["names"][end]
                 intention = self.data["names"][start]
-            
-            color = pg.mkPen().color()
-            
+
             if start in self.data["instantiation_indices"]:
                 # Hack: TODO: this is problematic if the context has a colon in name
                 context, instantiation = self.data["names"][start]
@@ -131,26 +129,30 @@ class TwoLayerGraph(pg.GraphItem):
                 normalized_mean = self.config["intentions"][intention][context][instantiation] / 5.0
             else:
                 normalized_mean = calculate_normalized_mean(context, intention)
-            
-            alpha = color.alpha()
+
             red, green, blue = calculate_color(normalized_mean)
+            alpha = 255 if normalized_mean > 0 else 0
             width = calculate_width(normalized_mean)
-            
+
+            color = QColor(red, green, blue, alpha)
+
             self.data["pen"].append(np.array([(red, green, blue, alpha, width)], dtype=[
                 ('red', np.uint8), ('green', np.uint8), ('blue', np.uint8), ('alpha', np.uint8), ('width', np.uint8)]))
-            
+
         if self.context or self.intention is not None:
             context = self.context
             intention = self.intention
             normalized_mean = calculate_normalized_mean(context, intention)
             color_values = self.data['pen'][0][0]
             if self.data["names"][start] == context and self.data["names"][end] == intention:
-                red = color_values[0]       
-                green  = color_values[1]     
-                blue = color_values[2] 
+                red = color_values[0]
+                green  = color_values[1]
+                blue = color_values[2]
                 red, green, blue = calculate_color(normalized_mean)
-            
+
             width = calculate_width(normalized_mean)
+            alpha = 255 if normalized_mean > 0 else 0
+            color = QColor(red, green, blue, alpha)
             self.data["pen"].append(np.array([(red, green, blue, alpha, width)], dtype=[
                 ('red', np.uint8), ('green', np.uint8), ('blue', np.uint8), ('alpha', np.uint8), ('width', np.uint8)]))
 
