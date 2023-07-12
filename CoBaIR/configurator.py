@@ -1248,14 +1248,14 @@ class Configurator(QtWidgets.QMainWindow):
                         self.context_instantiations[context][instantiation][1].text()))
                 except UserWarning as warning:
                     caught_warnings.append(warning)
+                except ValueError as error:
+                    self.error_label.setText(str(error))
         except AssertionError as error_message:
             self.error_label.setText(str(error_message))
-        except ValueError:
-            self.error_label.setText(f'Apriori probability of context "{context}.{instantiation}" is not a number')
         else:
             if caught_warnings:
-                warning = caught_warnings[0]
-                self.error_label.setText(str(warning))
+                warning_messages = [str(warning) for warning in caught_warnings]
+                self.error_label.setText("\n".join(warning_messages))
 
     def influence_values_changed(self, value, context, intention, instantiation, slider):
         """
