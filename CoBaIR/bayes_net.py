@@ -602,7 +602,7 @@ class BayesNet():
 
     def del_context(self, context: str):
         """
-        removes a context.
+        Removes a context.
 
         Args:
             context: Name of the context to delete
@@ -611,15 +611,18 @@ class BayesNet():
             AssertionError: An AssertionError is raised if the resulting config is not valid.
             ValueError: An ValueError is raised if the context is not in self.config.
         """
-        # check if context exists already - only then I can edit
+        # Check if context exists already - only then I can edit
         if context not in self.config['contexts']:
-            raise ValueError(
-                'Cannot delete non existing context - use add_context to add a new context')
+            raise ValueError('Cannot delete non-existing context - use add_context to add a new context')
+
         del self.config['contexts'][context]
         self._remove_context_from_intentions()
         self._transport_context_into_intentions()
-        # reinizialize
-        self.__init__(self.config)
+
+        if self.config['contexts']:
+            self.__init__(self.config)
+        else:
+            self.valid = False
 
     def del_intention(self, intention):
         """
