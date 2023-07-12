@@ -28,7 +28,6 @@ def test_add_to_empty(config=None, counter=0):
             lambda: defaultdict(int))), 'contexts': defaultdict(lambda: defaultdict(float))}
         bn = BayesNet()
     else:
-        # with pytest.raises(AssertionError):
         bn = BayesNet(config, validate=False)
     context = f'the context_{counter}'
     instantiations = {
