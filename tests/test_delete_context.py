@@ -5,7 +5,7 @@ Tests for deleting context variables
 # System imports
 from copy import deepcopy
 import pytest
-
+import warnings
 from collections import defaultdict
 # 3rd party imports
 
@@ -36,19 +36,24 @@ def test_delete_context_from_existing_context():
     bn = BayesNet()
     bn.load('small_example.yml')
     old_config = deepcopy(bn.config)
-    # cnt =0
     new_contexts = list(bn.config['contexts'].keys())
-    for context in new_contexts:
-        if len(bn.config['contexts'].keys()) > 1:
-            bn.del_context(context)
-            assert context not in bn.config['contexts']
-        else:
-            # while deleting the last context raises an Exception because there is no context
-            with pytest.raises(ValueError):
-                bn.del_context(context)
-            assert context not in bn.config['contexts']
-    assert bn.config != old_config
 
+    with warnings.catch_warnings(record=True) as warning_list:
+        # Delete each context
+        for context in new_contexts:
+            if len(bn.config['contexts'].keys()) > 1:
+                bn.del_context(context)
+                assert context not in bn.config['contexts']
+            else:
+                with pytest.raises(ValueError):
+                    bn.del_context(context)
+                assert context not in bn.config['contexts']
+        
+        # Check for warning messages
+        for warning in warning_list:
+            assert issubclass(warning.category, UserWarning)
+
+    assert bn.config != old_config
 
 def test_delete_config_before_adding():
     """
