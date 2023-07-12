@@ -1245,6 +1245,8 @@ class Configurator(QtWidgets.QMainWindow):
                 for warning in warn_list:
                     if issubclass(warning.category, UserWarning):
                         self.error_label.setText(str(warning.message))
+        except AssertionError as error_message:
+            self.error_label.setText(str(error_message))
         except ValueError:
             self.error_label.setText(
                 f'Apriori probability of context "{context}.{instantiation}" is not a number')
