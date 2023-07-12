@@ -22,6 +22,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont, QFontMetrics
 import logging
 import numpy as np
+import warnings
 
 # local imports
 from .bayes_net import BayesNet, load_config, config_to_default_dict
@@ -1237,10 +1238,13 @@ class Configurator(QtWidgets.QMainWindow):
         # update config
         self.error_label.setText("")
         try:
-            self.bayesNet.change_context_apriori_value(context=context, instantiation=instantiation, value=float(
-                self.context_instantiations[context][instantiation][1].text()))
-        except AssertionError as error_message:
-            self.error_label.setText(str(error_message))
+            with warnings.catch_warnings(record=True) as warn_list:
+                warnings.simplefilter("always")  # Capture all warnings
+                self.bayesNet.change_context_apriori_value(context=context, instantiation=instantiation, value=float(
+                    self.context_instantiations[context][instantiation][1].text()))
+                for warning in warn_list:
+                    if issubclass(warning.category, UserWarning):
+                        self.error_label.setText(str(warning.message))
         except ValueError:
             self.error_label.setText(
                 f'Apriori probability of context "{context}.{instantiation}" is not a number')
