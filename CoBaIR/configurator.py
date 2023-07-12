@@ -791,7 +791,10 @@ class Configurator(QtWidgets.QMainWindow):
             self.decision_threshold_changed)
 
         self.error_label.setText("")
+        def warning_to_label(message, *args, **kwargs):
+            self.error_label.setText(str(message))
 
+        warnings.showwarning = warning_to_label
         self.context_instantiations = defaultdict(dict)
         self.intention_instantiations = defaultdict(lambda: defaultdict(dict))
         self.new_context_button.clicked.connect(self.new_context)
@@ -1241,10 +1244,11 @@ class Configurator(QtWidgets.QMainWindow):
             self.bayesNet.change_context_apriori_value(context=context, instantiation=instantiation, value=float(
                 self.context_instantiations[context][instantiation][1].text()))
         except AssertionError as error_message:
+            # Convert AssertionError to a warning
+            warnings.warn(str(error_message))
             self.error_label.setText(str(error_message))
         except ValueError:
-            self.error_label.setText(
-                f'Apriori probability of context "{context}.{instantiation}" is not a number')
+            self.error_label.setText(f'Apriori probability of context "{context}.{instantiation}" is not a number')
 
     def influence_values_changed(self, value, context, intention, instantiation, slider):
         """

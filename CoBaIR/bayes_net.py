@@ -74,8 +74,9 @@ class BayesNet():
         self.config = deepcopy(config)
         self.decision_threshold = self.config['decision_threshold']
 
-        if validate:  # this is needed to load invalid configs
+        if validate: 
             self.validate_config()
+
         # Translation dicts for context to card number in bnlearn and vice versa
         self._create_value_to_card()
         self._create_card_to_value()
@@ -450,13 +451,13 @@ class BayesNet():
         # Probabilities need to sum up to 1
         for context, instantiations in self.config['contexts'].items():
             for instantiation, value in instantiations.items():
-                assert isinstance(
-                    value, float), f'Apriori probability of context "{context}.{instantiation}" is not a number'
+                assert isinstance(value, float), f'Apriori probability of context "{context}.{instantiation}" is not a number'
             assert sum(instantiations.values()) == 1.0, \
                 f'The sum of probabilities for context instantiations must be 1 - For "{context}" it is {sum(instantiations.values())}!'
             # This is the config of the currently running BayesNet
         self.valid_config = deepcopy(self.config)
         self.valid = True
+
 
     def _create_zero_influence_dict(self, context_with_instantiations: dict) -> defaultdict:
         """
