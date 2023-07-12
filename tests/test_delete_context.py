@@ -5,7 +5,7 @@ Tests for deleting context variables
 # System imports
 from copy import deepcopy
 import pytest
-
+import warnings
 from collections import defaultdict
 # 3rd party imports
 
@@ -43,10 +43,12 @@ def test_delete_context_from_existing_context():
             bn.del_context(context)
             assert context not in bn.config['contexts']
         else:
-            # while deleting the last context raises an Exception because there is no context
-            with pytest.raises(ValueError):
+            # while deleting the last context raises a warning because there is no context
+            with warnings.catch_warnings(record=True) as w:
                 bn.del_context(context)
-            assert context not in bn.config['contexts']
+                assert context not in bn.config['contexts']
+                assert len(w) == 1  # Assert that one warning was issued
+                assert issubclass(w[-1].category, UserWarning)  # Assert the warning category
     assert bn.config != old_config
 
 
