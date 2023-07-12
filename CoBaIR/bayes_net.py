@@ -239,8 +239,8 @@ class BayesNet():
         '''
         Calculates the probability values with the given context_influence from the config.
 
-        Influence on the positive case(intention is true) is calculated as the 
-            average over all influences for the given context.
+        Influence on the positive case(intention is true) is calculated as the
+        average over all influences for the given context.
         The influence mapping is given in
         self.value_to_prob = {5: 0.95, 4: 0.75,
             3: 0.5, 2: 0.25, 1: 0.05, 0: 0.0}
@@ -249,11 +249,11 @@ class BayesNet():
                 A dict with the influence values for contexts.
                 Example: {'speech commands':
                             {'pickup': 5, 'handover': 0, 'other': 0},
-                          'human holding object':
+                        'human holding object':
                             {True: 1, False: 4},
-                          'human activity':
+                        'human activity':
                             {'idle': 4, 'working': 3}
-                          }
+                        }
         Returns:
             list:
             A list of lists containing the probability values for the negative and positive.
@@ -261,7 +261,7 @@ class BayesNet():
 
             [[0.416, 0.5, 0.183, 0.266, 0.733, 0.816, 0.5, 0.583, 0.733, 0.816, 0.5, 0.583],
 
-             [0.583, 0.5, 0.816, 0.733, 0.266, 0.183, 0.5, 0.416, 0.266, 0.183, 0.5, 0.416]]
+            [0.583, 0.5, 0.816, 0.733, 0.266, 0.183, 0.5, 0.416, 0.266, 0.183, 0.5, 0.416]]
         '''
         # For every intention calculate the average of their influencing contexts
         pos_values = []
@@ -275,17 +275,19 @@ class BayesNet():
             altered_context_influence = self._alter_combined_context(
                 count, context_influence, combined_context)
 
-            ####
-
-            for i in range(len(self.evidence_card)):
+            for i in range(len(self.evidence)):
                 value = self.card_to_value[self.evidence[i]][count[i]]
                 influence = altered_context_influence[self.evidence[i]][value]
                 prob = self.value_to_prob[influence]
                 average += prob
-            average /= len(self.evidence)
+
+            if len(self.evidence) > 0:
+                average /= len(self.evidence)
+
             pos_values.append(average)
-        # create neg_values
-        neg_values = [1-value for value in pos_values]
+
+        neg_values = [1.0 - pos_value for pos_value in pos_values]
+
         return [neg_values, pos_values]
 
     def valid_evidence(self, context: str, instantiation) -> tuple[bool, str]:
