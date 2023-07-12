@@ -619,10 +619,7 @@ class BayesNet():
         self._remove_context_from_intentions()
         self._transport_context_into_intentions()
 
-        if self.config['contexts']:
-            self.__init__(self.config)
-        else:
-            self.valid = False
+        self.__init__(self.config)
 
     def del_intention(self, intention):
         """

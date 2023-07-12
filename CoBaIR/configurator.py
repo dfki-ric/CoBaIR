@@ -1229,7 +1229,7 @@ class Configurator(QtWidgets.QMainWindow):
                 event.ignore()
                 return
         event.accept()
-
+        
     def apriori_values_changed(self, *args, context, instantiation):
         """
         Callback for change of the apriori values.
@@ -1252,6 +1252,9 @@ class Configurator(QtWidgets.QMainWindow):
                     self.error_label.setText(str(error))
         except AssertionError as error_message:
             self.error_label.setText(str(error_message))
+        except ValueError:
+            self.error_label.setText(
+                f'Apriori probability of context "{context}.{instantiation}" is not a number')        
         else:
             if caught_warnings:
                 warning_messages = [str(warning) for warning in caught_warnings]
