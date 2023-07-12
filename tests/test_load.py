@@ -59,7 +59,7 @@ def test_loading_invalid_yml_file():
     # I assume this will throw an Error!- 
     # AssertionError: Influence Value for pick up tool.speech commands.
     # handover must be an integer between 0 and 5! Is 10
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         BayesNet(config)
         assert BayesNet(config).valid is False
 

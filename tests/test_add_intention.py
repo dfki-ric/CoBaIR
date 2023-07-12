@@ -28,7 +28,7 @@ def test_add_to_empty():
     config['intentions'][intention] = {}
     bn = BayesNet()
     # I assume this will throw an Error!
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         bn.add_intention('some intention')
     # Making sure tmp_config will be maintained
     assert config_to_default_dict(bn.config) == config_to_default_dict(config)
@@ -45,7 +45,7 @@ def test_add_n_to_empty(n=N):
     # I assume this will throw an Error!
     for i in range(n):
         config['intentions'][f'{intention}_{i}'] = {}
-        with pytest.raises(AssertionError):
+        with pytest.raises(ValueError):
             bn.add_intention(f'{intention}_{i}')
     # Making sure tmp_config will be maintained
     assert config_to_default_dict(bn.config) == config_to_default_dict(config)

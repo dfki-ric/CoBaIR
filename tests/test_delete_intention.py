@@ -44,7 +44,7 @@ def test_delete_intention_from_existing_intention():
             assert intention not in bn.config['intentions']
         else:
             # while deleting the last context raises an Exception because there is no context
-            with pytest.raises(AssertionError):
+            with pytest.raises(ValueError):
                 bn.del_intention(intention)
                 assert intention not in bn.config['intentions']
     assert bn.config != old_config

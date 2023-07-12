@@ -22,7 +22,7 @@ def test_context_intention_from_empty():
     """
     bn = BayesNet()
     # I assume this will throw an Error!
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         bn.add_context('the context', {
             'inst_a': 0.3, 'inst_b': 0.3, 'inst_c': 0.4})
     bn.add_intention('some intention')
@@ -37,7 +37,7 @@ def test_n_context_intention_from_empty(n=N):
     bn = BayesNet()
     for i in range(n):
         # I assume this will throw an Error!
-        with pytest.raises(AssertionError):
+        with pytest.raises(ValueError):
             bn.add_context(f'{context}_{i}', instantiations)
     bn.add_intention('some intention')
 

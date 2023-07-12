@@ -37,7 +37,7 @@ def test_add_to_empty(config=None, counter=0):
     config['contexts'][context] = instantiations
 
     # I assume this will throw an Error!
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         bn.add_context(context, instantiations)
     # Making sure tmp_config will be maintained
     assert config_to_default_dict(bn.config) == config_to_default_dict(config)
