@@ -44,7 +44,7 @@ def test_delete_context_from_existing_context():
             assert context not in bn.config['contexts']
         else:
             # while deleting the last context raises an Exception because there is no context
-            with pytest.warns(UserWarning):
+            with pytest.raises(AssertionError):
                 bn.del_context(context)
                 assert context not in bn.config['contexts']
     assert bn.config != old_config

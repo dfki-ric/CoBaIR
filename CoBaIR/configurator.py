@@ -1241,14 +1241,21 @@ class Configurator(QtWidgets.QMainWindow):
         # update config
         self.error_label.setText("")
         try:
-            self.bayesNet.change_context_apriori_value(context=context, instantiation=instantiation, value=float(
-                self.context_instantiations[context][instantiation][1].text()))
+            with warnings.catch_warnings(record=True) as caught_warnings:
+                warnings.simplefilter("error", UserWarning)
+                try:
+                    self.bayesNet.change_context_apriori_value(context=context, instantiation=instantiation, value=float(
+                        self.context_instantiations[context][instantiation][1].text()))
+                except UserWarning as warning:
+                    caught_warnings.append(warning)
         except AssertionError as error_message:
-            # Convert AssertionError to a warning
-            warnings.warn(str(error_message))
             self.error_label.setText(str(error_message))
         except ValueError:
             self.error_label.setText(f'Apriori probability of context "{context}.{instantiation}" is not a number')
+        else:
+            if caught_warnings:
+                warning = caught_warnings[0]
+                self.error_label.setText(str(warning))
 
     def influence_values_changed(self, value, context, intention, instantiation, slider):
         """

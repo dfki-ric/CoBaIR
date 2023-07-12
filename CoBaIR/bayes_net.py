@@ -419,42 +419,41 @@ class BayesNet():
         '''
         # TODO: add validation that apriorio values are float
         # contexts and intentions need to be defined
-        assert 'contexts' in self.config, 'Field "contexts" must be defined in the config'
-        assert 'intentions' in self.config, 'Field "intentions" must be defined in the config'
-        assert len(self.config['contexts']), 'No contexts defined'
-        assert len(self.config['intentions']), 'No intentions defined'
-        assert isinstance(self.config['decision_threshold'], float) and \
-            self.config['decision_threshold'] >= 0 and \
-            self.config['decision_threshold'] < 1, \
-            'Decision threshold must be a number between 0 and 1'
+        if 'contexts' not in self.config:
+            warnings.warn('Field "contexts" must be defined in the config')
+        if 'intentions' not in self.config:
+            warnings.warn('Field "intentions" must be defined in the config')
+        if not len(self.config['contexts']):
+            warnings.warn('No contexts defined')
+        if not len(self.config['intentions']):
+            warnings.warn('No intentions defined')
+        if not isinstance(self.config['decision_threshold'], float) or \
+                not (0 <= self.config['decision_threshold'] < 1):
+            warnings.warn('Decision threshold must be a number between 0 and 1')
 
         # Intentions need to have influence value for all contexts and their possible instantiations
         for intention, context_influences in self.config['intentions'].items():
             for context, influences in context_influences.items():
 
-                if isinstance(context, str):
-                    assert context in self.config['contexts'], \
-                        f'Context influence {context} cannot be found in the defined contexts!'
-                # assert influences.keys() == self.config['contexts'][context].keys(
-                # ), f'An influence needs to be defined for all instantiations!
-                # {intention}.{context} does not fit the defined instantiations for {context}'
+                if isinstance(context, str) and context not in self.config['contexts']:
+                    warnings.warn(f'Context influence {context} cannot be found in the defined contexts!')
 
                 for instantiation, influence in influences.items():
                     if not isinstance(instantiation, tuple):
-                        assert 5 >= influence >= 0 and isinstance(influence, int), \
-                            f'Influence Value for {intention}.{context}.{instantiation} must be an integer between 0 and 5!' \
-                            f'Is {influence}'
-                        assert instantiation in self.config['contexts'][context].keys(), \
-                            f'An influence needs to be defined for all instantiations! {intention}.{context}.{instantiation}' \
-                            f'does not fit the defined instantiations for {context}'
+                        if not (0 <= influence <= 5 and isinstance(influence, int)):
+                            warnings.warn(f'Influence Value for {intention}.{context}.{instantiation} must be an integer between 0 and 5! Is {influence}')
+                        if instantiation not in self.config['contexts'][context].keys():
+                            warnings.warn(f'An influence needs to be defined for all instantiations! {intention}.{context}.{instantiation} does not fit the defined instantiations for {context}')
 
         # Probabilities need to sum up to 1
         for context, instantiations in self.config['contexts'].items():
             for instantiation, value in instantiations.items():
-                assert isinstance(value, float), f'Apriori probability of context "{context}.{instantiation}" is not a number'
-            assert sum(instantiations.values()) == 1.0, \
-                f'The sum of probabilities for context instantiations must be 1 - For "{context}" it is {sum(instantiations.values())}!'
-            # This is the config of the currently running BayesNet
+                if not isinstance(value, float):
+                    warnings.warn(f'Apriori probability of context "{context}.{instantiation}" is not a number')
+            if sum(instantiations.values()) != 1.0:
+                warnings.warn(f'The sum of probabilities for context instantiations must be 1 - For "{context}" it is {sum(instantiations.values())}!')
+
+        # This is the config of the currently running BayesNet
         self.valid_config = deepcopy(self.config)
         self.valid = True
 
