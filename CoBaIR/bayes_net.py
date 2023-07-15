@@ -283,7 +283,10 @@ class BayesNet():
                 influence = altered_context_influence[self.evidence[i]][value]
                 prob = self.value_to_prob.get(influence, 0)
                 average += prob
-            average /= len(self.evidence)
+            if len(self.evidence) > 0:
+                average /= len(self.evidence)
+            else:
+                average = 0
             pos_values.append(average)
         # create neg_values
         neg_values = [1-value for value in pos_values]

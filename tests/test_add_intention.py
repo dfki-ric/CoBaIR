@@ -5,6 +5,7 @@ Tests for adding intention variables
 # System imports
 import pytest
 from collections import defaultdict
+import warnings
 # 3rd party imports
 
 # local imports
@@ -16,23 +17,28 @@ __author__ = 'Adrian Lubitz'
 
 # TODO: add more negative cases
 
-
-def test_add_to_empty():
+def test_add_to_empty(config=None, counter=0):
     """
     Test adding an intention to an empty config
     """
-    config = {'intentions': defaultdict(lambda: defaultdict(
-        lambda: defaultdict(int))), 'contexts': defaultdict(lambda: defaultdict(float))}
-    intention = 'some intention'
+    if config is None:
+        config = {'intentions': defaultdict(lambda: defaultdict(
+            lambda: defaultdict(int))), 'contexts': defaultdict(lambda: defaultdict(float))}
+        bn = BayesNet()
+    else:
+        bn = BayesNet(config, validate=False)
+    intention = f'some intention_{counter}'
 
     config['intentions'][intention] = {}
-    bn = BayesNet()
-    # I assume this will throw an Error!
-    with pytest.raises(ValueError):
-        bn.add_intention('some intention')
+
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")  # Ensure all warnings are caught
+        bn.add_intention(intention)
+        assert len(w) == 1  # Check that one warning was raised
+        assert issubclass(w[-1].category, UserWarning)  # Check that the warning is a UserWarning
+
     # Making sure tmp_config will be maintained
     assert config_to_default_dict(bn.config) == config_to_default_dict(config)
-
 
 def test_add_n_to_empty(n=N):
     """
@@ -40,16 +46,8 @@ def test_add_n_to_empty(n=N):
     """
     config = {'intentions': defaultdict(lambda: defaultdict(
         lambda: defaultdict(int))), 'contexts': defaultdict(lambda: defaultdict(float))}
-    intention = 'intention'
-    bn = BayesNet()
-    # I assume this will throw an Error!
     for i in range(n):
-        config['intentions'][f'{intention}_{i}'] = {}
-        with pytest.raises(ValueError):
-            bn.add_intention(f'{intention}_{i}')
-    # Making sure tmp_config will be maintained
-    assert config_to_default_dict(bn.config) == config_to_default_dict(config)
-
+        test_add_to_empty(config, i)
 
 def test_add_to_existing():
     """
@@ -58,7 +56,6 @@ def test_add_to_existing():
     config = load_config('small_example.yml')
     bn = BayesNet(config)
     bn.add_intention('some intention')
-
 
 def test_add_n_to_existing(n=N):
     """
