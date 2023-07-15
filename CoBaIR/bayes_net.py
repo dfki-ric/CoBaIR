@@ -281,7 +281,7 @@ class BayesNet():
             for i in range(len(self.evidence_card)):
                 value = self.card_to_value[self.evidence[i]][count[i]]
                 influence = altered_context_influence[self.evidence[i]][value]
-                prob = self.value_to_prob[influence]
+                prob = self.value_to_prob.get(influence, 0)
                 average += prob
             average /= len(self.evidence)
             pos_values.append(average)
@@ -420,15 +420,25 @@ class BayesNet():
         # contexts and intentions need to be defined
         if 'contexts' not in self.config:
             warnings.warn('Field "contexts" must be defined in the config')
+            self.valid = False
+            return  # Exit early when validation fails
         if 'intentions' not in self.config:
             warnings.warn('Field "intentions" must be defined in the config')
+            self.valid = False
+            return  # Exit early when validation fails
         if not len(self.config['contexts']):
             warnings.warn('No contexts defined')
+            self.valid = False
+            return  # Exit early when validation fails
         if not len(self.config['intentions']):
             warnings.warn('No intentions defined')
+            self.valid = False
+            return  # Exit early when validation fails
         if not isinstance(self.config['decision_threshold'], float) or \
                 not (0 <= self.config['decision_threshold'] < 1):
             warnings.warn('Decision threshold must be a number between 0 and 1')
+            self.valid = False
+            return  # Exit early when validation fails
 
         # Intentions need to have influence value for all contexts and their possible instantiations
         for intention, context_influences in self.config['intentions'].items():
@@ -436,21 +446,31 @@ class BayesNet():
 
                 if isinstance(context, str) and context not in self.config['contexts']:
                     warnings.warn(f'Context influence {context} cannot be found in the defined contexts!')
+                    self.valid = False
+                    return  # Exit early when validation fails
 
                 for instantiation, influence in influences.items():
                     if not isinstance(instantiation, tuple):
                         if not (0 <= influence <= 5 and isinstance(influence, int)):
                             warnings.warn(f'Influence Value for {intention}.{context}.{instantiation} must be an integer between 0 and 5! Is {influence}')
+                            self.valid = False
+                            return  # Exit early when validation fails
                         if instantiation not in self.config['contexts'][context].keys():
                             warnings.warn(f'An influence needs to be defined for all instantiations! {intention}.{context}.{instantiation} does not fit the defined instantiations for {context}')
+                            self.valid = False
+                            return  # Exit early when validation fails
 
         # Probabilities need to sum up to 1
         for context, instantiations in self.config['contexts'].items():
             for instantiation, value in instantiations.items():
                 if not isinstance(value, float):
                     warnings.warn(f'Apriori probability of context "{context}.{instantiation}" is not a number')
+                    self.valid = False
+                    return  # Exit early when validation fails
             if sum(instantiations.values()) != 1.0:
                 warnings.warn(f'The sum of probabilities for context instantiations must be 1 - For "{context}" it is {sum(instantiations.values())}!')
+                self.valid = False
+                return  # Exit early when validation fails
 
         # This is the config of the currently running BayesNet
         self.valid_config = deepcopy(self.config)
