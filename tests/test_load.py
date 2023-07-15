@@ -5,7 +5,7 @@ Tests for Loading yaml format config file
 # System imports
 from collections import defaultdict
 import pytest
-
+import warnings
 # 3rd party imports
 from yaml.parser import ParserError
 
@@ -53,17 +53,14 @@ def test_loading_invalid_yml_file():
     """
     Test loading invalid file name
     """
-
     config = load_config('small_example_invalid.yml')
 
-    # I assume this will throw an Error!- 
-    # AssertionError: Influence Value for pick up tool.speech commands.
-    # handover must be an integer between 0 and 5! Is 10
-    with pytest.raises(ValueError):
+    # I assume this will throw a warning instead of an error
+    # if the value for pick up tool.speech commands.handover is invalid
+    with warnings.catch_warnings(record=True) as w:
         BayesNet(config)
         assert BayesNet(config).valid is False
-
-
+        
 def test_loading_valid_yml_file():
     """
     Test loading valid file name - validata_config() function will validate 

@@ -276,20 +276,19 @@ class BayesNet():
             altered_context_influence = self._alter_combined_context(
                 count, context_influence, combined_context)
 
-            for i in range(len(self.evidence)):
+            ####
+
+            for i in range(len(self.evidence_card)):
                 value = self.card_to_value[self.evidence[i]][count[i]]
                 influence = altered_context_influence[self.evidence[i]][value]
                 prob = self.value_to_prob[influence]
                 average += prob
-
-            if len(self.evidence) > 0:
-                average /= len(self.evidence)
-
+            average /= len(self.evidence)
             pos_values.append(average)
-
-        neg_values = [1.0 - pos_value for pos_value in pos_values]
-
+        # create neg_values
+        neg_values = [1-value for value in pos_values]
         return [neg_values, pos_values]
+
 
     def valid_evidence(self, context: str, instantiation) -> tuple[bool, str]:
         """
