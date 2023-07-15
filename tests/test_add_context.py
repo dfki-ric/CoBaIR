@@ -5,7 +5,7 @@ Tests for adding context variables
 # System imports
 import pytest
 from collections import defaultdict
-
+import warnings
 # 3rd party imports
 
 # local imports
@@ -16,7 +16,6 @@ from CoBaIR.bayes_net import BayesNet, config_to_default_dict, default_to_regula
 __author__ = 'Adrian Lubitz'
 
 # TODO: add more negative cases
-
 
 def test_add_to_empty(config=None, counter=0):
     """
@@ -35,9 +34,12 @@ def test_add_to_empty(config=None, counter=0):
 
     config['contexts'][context] = instantiations
 
-    # I assume this will throw an Error!
-    with pytest.raises(ValueError):
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")  # Ensure all warnings are caught
         bn.add_context(context, instantiations)
+        assert len(w) == 1  # Check that one warning was raised
+        assert issubclass(w[-1].category, UserWarning)  # Check that the warning is a UserWarning
+
     # Making sure tmp_config will be maintained
     assert config_to_default_dict(bn.config) == config_to_default_dict(config)
 
