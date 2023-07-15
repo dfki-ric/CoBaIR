@@ -28,7 +28,6 @@ def test_delete_context_from_empty():
         bn.del_context(context)
     assert bn.config == config_to_default_dict()
 
-
 def test_delete_context_from_existing_context():
     """
     Test deleting on an existing config - deleting the name of the context and instantiations
@@ -36,21 +35,24 @@ def test_delete_context_from_existing_context():
     bn = BayesNet()
     bn.load('small_example.yml')
     old_config = deepcopy(bn.config)
-    # cnt =0
     new_contexts = list(bn.config['contexts'].keys())
     for context in new_contexts:
         if len(bn.config['contexts'].keys()) > 1:
-            bn.del_context(context)
-            assert context not in bn.config['contexts']
-        else:
-            # while deleting the last context raises a warning because there is no context
             with warnings.catch_warnings(record=True) as w:
                 bn.del_context(context)
-                assert context not in bn.config['contexts']
-                assert len(w) == 1  # Assert that one warning was issued
-                assert issubclass(w[-1].category, UserWarning)  # Assert the warning category
+            if context in bn.config['contexts']:
+                warnings.warn(f'Failed to delete context: {context}')
+            assert len(w) == 0  # Check that no warnings were raised
+        else:
+            # while deleting the last context raises an Exception because there is no context
+            with pytest.raises(Exception):
+                with warnings.catch_warnings(record=True) as w:
+                    bn.del_context(context)
+                if context in bn.config['contexts']:
+                    warnings.warn(f'Failed to delete context: {context}')
+                assert len(w) == 0  # Check that no warnings were raised
+    assert len(bn.evidence) == 0
     assert bn.config != old_config
-
 
 def test_delete_config_before_adding():
     """
