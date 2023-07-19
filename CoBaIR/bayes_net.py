@@ -301,6 +301,7 @@ class BayesNet():
             A tuple of bool to indicate validity and str for error message
         """
         if context not in self.config['contexts'] or instantiation is None:
+            warnings.warn(f'Invalid instantiation for context {context}.') #Treating it as if no evidence was given.
             return False, 'ignore'
         if not isinstance(instantiation, Hashable) or \
                 not instantiation in self.config['contexts'][context].keys():
@@ -351,6 +352,7 @@ class BayesNet():
         if decision_threshold is None:
             decision_threshold = self.config['decision_threshold']
         card_evidence = {}
+        invalid_contexts = set()
         for context, instantiation in evidence.items():
             valid, err_msg = self.valid_evidence(context, instantiation)
             if valid:
@@ -368,7 +370,12 @@ class BayesNet():
             else:
                 if not err_msg == 'ignore':
                     raise ValueError(err_msg)
+                invalid_contexts.add(context)
 
+        if invalid_contexts:
+            warnings.warn(f'Invalid instantiations for the following contexts: {", ".join(invalid_contexts)}. '
+                          f'These contexts will be ignored for the inference process.')
+            
         if self.valid:
             inference = {}
             for intention in self.intentions:
