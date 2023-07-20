@@ -1036,12 +1036,12 @@ class Configurator(QtWidgets.QMainWindow):
         layout = self.gridLayout_3
         row_count = layout.rowCount()
         self.SCALE_MAPPING = {
-            0: ': Not Probable',
-            1: ': Not Very Probable',
-            2: ': Somewhat Probable',
-            3: ': Even Probability',
-            4: ': Very Probable',
-            5: ': Definitely Probable',
+            0: (' : Not Probable ❌'),     
+            1: (' : Not Very Probable 🟠'),
+            2: (' : Somewhat Probable 🟡'),
+            3: (' : Even Probability 🟡🟢'),
+            4: (' : Very Probable 🟢'),
+            5: (' : Definitely Probable ✅'),
         }
         for instantiation, value in self.bayesNet.config['intentions'][intention][context].items():
             influence_text = f'Influence of {context}:{instantiation} on {intention}:'
@@ -1060,7 +1060,7 @@ class Configurator(QtWidgets.QMainWindow):
 
             slider_label = QLabel(self.SCALE_MAPPING[value], self.influencing_context_frame)
             slider_label.setFont(QFont('Times New Roman', 13))
-            slider_label.setFixedWidth(150) 
+            slider_label.setFixedWidth(200) 
             
             layout.setColumnStretch(0, 1)
             layout.addWidget(instantiation_label, row_count, 1)
