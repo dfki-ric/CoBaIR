@@ -892,13 +892,14 @@ class Configurator(QtWidgets.QMainWindow):
         '''
         This draws the graph from the current config.
         '''
-        self.view.clear()  
+        # TODO: clearing graph
+        # self.graph_item.clear()
         # only if config is valid
         if self.bayesNet.valid:
             self.view.addItem(self.graph_item)
             self.graph_item.set_config(self.bayesNet.config)
         else:
-            self.graph_item.setParentItem(None)  
+            self.graph_item.setParentItem(None)
 
     def set_influencing_context_dropdown(self, options: list, command: function = None):
         '''
@@ -1046,7 +1047,6 @@ class Configurator(QtWidgets.QMainWindow):
 
             slider = QSlider(Qt.Horizontal, self.influencing_context_frame)
             slider.setFixedSize(100, 20)
-
             high_label = QLabel('HIGH', self.influencing_context_frame)
             high_label.setFont(QFont('Times New Roman', 13))
 
@@ -1108,52 +1108,6 @@ class Configurator(QtWidgets.QMainWindow):
             self.setWindowTitle(f"CoBaIR {_} {self.current_file_name.name} *")
         else:
             self.setWindowTitle(f"CoBaIR {_} {self.current_file_name.name} ")
-
-    # def check_config_status(self):
-    #     """
-    #     Check the status of the configuration.
-
-    #     Returns:
-    #         bool: True if the current configuration differs from the original configuration, False otherwise.
-    #     """
-    #     if self.bayesNet.config != self.original_config:
-    #         return True
-    #     return False
-
-    # def parse_yaml_file(self):
-    #     """Parse YAML file path.
-
-    #     This function uses the argparse module to process the command-line arguments and retrieve the path of a YAML file.
-
-    #     Returns:
-    #         str or None: The path of the YAML file specified using the --file argument. If no file is provided, returns None.
-    #     """
-    #     parser = argparse.ArgumentParser(description='Process YAML file path.')
-    #     parser.add_argument('--file', type=str, default=None, help='path of YAML file')
-    #     args = parser.parse_args()
-    #     return args.file
-
-    # def get_current_file_name(self, yaml_file_path):
-    #     """Get the current file name.
-
-    #     This function retrieves the current file name based on the provided YAML file path. If no path is provided, it tries
-    #     to retrieve the file name from the `file_name` attribute of the `bayesNet` object.
-
-    #     Args:
-    #         yaml_file_path (str or None): The path of the YAML file.
-
-    #     Returns:
-    #         str or None: The current file name. If a YAML file path is provided, returns the base name of the file. If no
-    #         path is provided or it's None, tries to retrieve the file name from the `file_name` attribute of `bayesNet`.
-    #         Returns None if no file name can be determined.
-    #     """
-    #     if yaml_file_path is not None:
-    #         current_file_name = os.path.basename(yaml_file_path)
-    #     else:
-    #         current_file_name = self.bayesNet.file_name if hasattr(self.bayesNet, 'file_name') else None
-    #         if current_file_name is not None:
-    #             current_file_name = os.path.basename(current_file_name)
-    #     return current_file_name
 
     def config_status(self):
         """
@@ -1264,28 +1218,8 @@ class Configurator(QtWidgets.QMainWindow):
                 f"QSlider::handle:horizontal {{background-color: {self.COLORS[value]}}}")
         except AssertionError as e:
             self.error_label.setText(str(e))
-        self.title_update()
+
+        self.graph_item.update_value(context, intention)
+        if context or intention is not None:
+            self.graph_item.set_config(self.bayesNet.config)
         return value
-
-
-# if __name__ == "__main__":
-
-#     parser = argparse.ArgumentParser()
-#     parser.add_argument('-f', '--file', type=str,
-#                         help='Path to a config file to load upon start.')
-#     args = parser.parse_args()
-
-#     # get file from args
-#     config_path = args.file
-#     if config_path:
-#         config = load_config(config_path)
-#     else:
-#         config = None
-
-#     configurator = Configurator(config=config)
-#     # TODO: this is slightly complicated - could be solved if the configurator can distinguish between String/Path and dict and behaves accordingly.
-#     if config_path:
-#         configurator.current_file_name = Path(args.file).absolute()
-#     configurator.title_update()
-
-#     configurator.app.exec_()

@@ -8,6 +8,8 @@ from copy import deepcopy
 # 3rd party imports
 import pyqtgraph as pg
 import numpy as np
+from PyQt5.QtGui import QColor
+
 
 class TwoLayerGraph(pg.GraphItem):
     """
@@ -33,6 +35,9 @@ class TwoLayerGraph(pg.GraphItem):
         self.pxMode = pxMode
         self.unfolded_context = set()
         self.textItems = []
+        # TODO: [Refactoring update config] this is missleading - The graph does not only have one context and one intention!
+        self.context = None
+        self.intention = None
 
     def _set_pos(self):
         """
@@ -47,8 +52,8 @@ class TwoLayerGraph(pg.GraphItem):
             self.data["names"].append(intention)
             self.data["intention_indices"].append(i)
             # self.data["mapping"][position] = intention
-            i += 1     
-            j += 1   
+            i += 1
+            j += 1
             for context, instantiation_dict in context_dict.items():
                 if context not in added_context and isinstance(context, str):
                     if context in self.unfolded_context:
@@ -67,7 +72,7 @@ class TwoLayerGraph(pg.GraphItem):
                                 added_context.add(f"{context}:{instatiation}")
                                 i += 1
                     else:
-                        position = (0, i *self.dist)
+                        position = (0, i * self.dist)
                         self.data["pos"].append(position)
                         self.data["names"].append(context)
                         self.data["context_indices"].append(i)
@@ -85,10 +90,47 @@ class TwoLayerGraph(pg.GraphItem):
         self.data["adj"] = list(itertools.product(
             left_side, self.data["intention_indices"]))
 
+    # TODO: [Refactoring update config] why are we doing this? On slider movement the config should be updated and then it should just normally redraw
+    def update_value(self, context, intention):
+        """
+        Gets the values from configurator when slider is modified by the user 
+        """
+        self.context = context
+        self.intention = intention
+        self.set_config(self.config)
+
     def _set_pen(self):
         """
         Add all the pens for the connections in the pen array 
         """
+        start_color = QColor(255, 0, 0)  # Start color (e.g., red)
+        end_color = QColor(0, 255, 0)  # End color (e.g., green)
+
+        def calculate_color(normalized_mean):
+            """
+            To calculate color value
+            """
+            red = start_color.red() + normalized_mean * (end_color.red() - start_color.red())
+            green = start_color.green() + normalized_mean * \
+                (end_color.green() - start_color.green())
+            blue = start_color.blue() + normalized_mean * \
+                (end_color.blue() - start_color.blue())
+            return red, green, blue
+
+        def calculate_width(normalized_mean):
+            """
+            To calculate the width
+            """
+            return self.line_width[0] + (self.line_width[1] - self.line_width[0]) * normalized_mean
+
+        def calculate_normalized_mean(context, intention):
+            """
+            To calculate the normalized mean
+            """
+            values = list(self.config["intentions"]
+                          [intention][context].values())
+            return np.mean(values) / 5.0
+
         for start, end in self.data["adj"]:
             if start in self.data["context_indices"] or start in self.data["instantiation_indices"]:
                 context = self.data["names"][start]
@@ -96,23 +138,37 @@ class TwoLayerGraph(pg.GraphItem):
             else:
                 context = self.data["names"][end]
                 intention = self.data["names"][start]
+
             color = pg.mkPen().color()
-            normalized_mean = np.mean(
-                list(self.config["intentions"][intention][context].values()))/5.0
 
             if start in self.data["instantiation_indices"]:
-                # HAck: TODO: this is problematic if the context has a colon in name
+                # Hack: TODO: this is problematic if the context has a colon in name
                 context, instantiation = self.data["names"][start]
                 # TODO. problem with default dict or problem with type - for "human holding object" bool is used and it does not work...
                 normalized_mean = self.config["intentions"][intention][context][instantiation] / 5.0
-            alpha = color.alpha()
-            # TODO: Maybe color can even be scaled with the normalized mean
-            red = color.red() if normalized_mean else 255
-            green = color.green() if normalized_mean else 0
-            blue = color.blue() if normalized_mean else 0
-            width = self.line_width[0] + \
-                (self.line_width[1] - self.line_width[0]) * normalized_mean
+            else:
+                normalized_mean = calculate_normalized_mean(context, intention)
 
+            alpha = color.alpha()
+            red, green, blue = calculate_color(normalized_mean)
+            width = calculate_width(normalized_mean)
+
+            self.data["pen"].append(np.array([(red, green, blue, alpha, width)], dtype=[
+                ('red', np.uint8), ('green', np.uint8), ('blue', np.uint8), ('alpha', np.uint8), ('width', np.uint8)]))
+
+        # TODO: [Refactoring update config] This should not be a special case!
+        if self.context or self.intention is not None:
+            context = self.context
+            intention = self.intention
+            normalized_mean = calculate_normalized_mean(context, intention)
+            color_values = self.data['pen'][0][0]
+            if self.data["names"][start] == context and self.data["names"][end] == intention:
+                red = color_values[0]
+                green = color_values[1]
+                blue = color_values[2]
+                red, green, blue = calculate_color(normalized_mean)
+
+            width = calculate_width(normalized_mean)
             self.data["pen"].append(np.array([(red, green, blue, alpha, width)], dtype=[
                 ('red', np.uint8), ('green', np.uint8), ('blue', np.uint8), ('alpha', np.uint8), ('width', np.uint8)]))
 
@@ -135,7 +191,7 @@ class TwoLayerGraph(pg.GraphItem):
 
     def set_config(self, config):
         """
-        Uses the config to set the data
+        Uses the config to set the data and draws the graph
         """
         # extract every needed field for setData from config
 
