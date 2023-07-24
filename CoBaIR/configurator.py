@@ -1092,13 +1092,13 @@ class Configurator(QtWidgets.QMainWindow):
             slider.setMaximum(5)
             slider.setTickInterval(1)
             slider.setStyleSheet(
-                f"QSlider::handle:horizontal {{background-color: {self.COLORS[value]}}}")
+                f"QSlider::handle:horizontal {{background-color: {self.COLORS.get(value, 'default_color')}}}")
+
             slider.setValue(value)
 
             slider.valueChanged.connect(lambda value, context=context, intention=intention,
                                         instantiation=instantiation, slider=slider:
                                         self.influence_values_changed(value, context, intention, instantiation, slider))
-
             self.intention_instantiations[intention][context][instantiation] = (
                 instantiation_label,
                 low_label,
@@ -1243,10 +1243,10 @@ class Configurator(QtWidgets.QMainWindow):
         """
         self.error_label.setText("")
         try:
+            slider.setStyleSheet(
+                f"QSlider::handle:horizontal {{background-color: {self.COLORS.get(value, 'default_color')}}}")
             self.bayesNet.change_influence_value(
                 intention=intention, context=context, instantiation=instantiation, value=int(value))
-            slider.setStyleSheet(
-                f"QSlider::handle:horizontal {{background-color: {self.COLORS[value]}}}")
         except AssertionError as e:
             self.error_label.setText(str(e))
 
