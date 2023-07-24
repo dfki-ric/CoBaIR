@@ -454,9 +454,6 @@ class Configurator(QtWidgets.QMainWindow):
         # adding view box to the graphic layout widget
         self.view = self.win.addViewBox()
         self.graph_item = TwoLayerGraph()
-        self.view.addItem(self.graph_item)
-
-        # settings for showing - TODO: maybe this can go to a separate method that can be called in load etc
         self.current_file_name = Path()
         self.setup_layout()
         self.bayesNet = BayesNet(config)
@@ -603,7 +600,7 @@ class Configurator(QtWidgets.QMainWindow):
         Deletes the currently selected context.
         """
         self.error_label.setText("")
-        context = self.context_dropdown.currentText()
+        context = self.context_selection.currentText()
         try:
             self.bayesNet.del_context(context)
         except AssertionError as error_message:
@@ -899,7 +896,10 @@ class Configurator(QtWidgets.QMainWindow):
         # self.graph_item.clear()
         # only if config is valid
         if self.bayesNet.valid:
+            self.view.addItem(self.graph_item)
             self.graph_item.set_config(self.bayesNet.config)
+        else:
+            self.graph_item.setParentItem(None)
 
     def set_influencing_context_dropdown(self, options: list, command: function = None):
         '''
@@ -1109,52 +1109,6 @@ class Configurator(QtWidgets.QMainWindow):
         else:
             self.setWindowTitle(f"CoBaIR {_} {self.current_file_name.name} ")
 
-    # def check_config_status(self):
-    #     """
-    #     Check the status of the configuration.
-
-    #     Returns:
-    #         bool: True if the current configuration differs from the original configuration, False otherwise.
-    #     """
-    #     if self.bayesNet.config != self.original_config:
-    #         return True
-    #     return False
-
-    # def parse_yaml_file(self):
-    #     """Parse YAML file path.
-
-    #     This function uses the argparse module to process the command-line arguments and retrieve the path of a YAML file.
-
-    #     Returns:
-    #         str or None: The path of the YAML file specified using the --file argument. If no file is provided, returns None.
-    #     """
-    #     parser = argparse.ArgumentParser(description='Process YAML file path.')
-    #     parser.add_argument('--file', type=str, default=None, help='path of YAML file')
-    #     args = parser.parse_args()
-    #     return args.file
-
-    # def get_current_file_name(self, yaml_file_path):
-    #     """Get the current file name.
-
-    #     This function retrieves the current file name based on the provided YAML file path. If no path is provided, it tries
-    #     to retrieve the file name from the `file_name` attribute of the `bayesNet` object.
-
-    #     Args:
-    #         yaml_file_path (str or None): The path of the YAML file.
-
-    #     Returns:
-    #         str or None: The current file name. If a YAML file path is provided, returns the base name of the file. If no
-    #         path is provided or it's None, tries to retrieve the file name from the `file_name` attribute of `bayesNet`.
-    #         Returns None if no file name can be determined.
-    #     """
-    #     if yaml_file_path is not None:
-    #         current_file_name = os.path.basename(yaml_file_path)
-    #     else:
-    #         current_file_name = self.bayesNet.file_name if hasattr(self.bayesNet, 'file_name') else None
-    #         if current_file_name is not None:
-    #             current_file_name = os.path.basename(current_file_name)
-    #     return current_file_name
-
     def config_status(self):
         """
         Check the status of the configuration.
@@ -1264,7 +1218,7 @@ class Configurator(QtWidgets.QMainWindow):
                 f"QSlider::handle:horizontal {{background-color: {self.COLORS[value]}}}")
         except AssertionError as e:
             self.error_label.setText(str(e))
-            
+
         self.graph_item.update_value(context, intention)
         if context or intention is not None:
             self.graph_item.set_config(self.bayesNet.config)
