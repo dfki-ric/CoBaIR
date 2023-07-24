@@ -7,4 +7,4 @@ Please add your OS here
 ## Dependencies
 Please add a list produced by `pip freeze` here.
 
-\label ~"type::bug"
+/label ~"type::bug"
