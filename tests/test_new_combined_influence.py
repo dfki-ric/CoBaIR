@@ -29,6 +29,24 @@ def test_new_combined_influence_into_empty():
     with pytest.raises(ValueError):
         bayes_net.add_combined_influence(intention, contexts, instantiations,value)
 
+def test_new_combined_influence_no_intention():
+    """
+    Test that adding combined context influence raises an error when no intentions are found
+    """
+    bn = BayesNet()
+    with pytest.raises(ValueError) as excinfo:
+        bn.add_combined_influence("hand over tool", ["speech commands", "human activity"], ["pickup", "working"], 5)
+    assert str(excinfo.value) == "add_combined_influence can only combine context instantiations that already exist"
+
+def test_new_combined_influence_no_context():
+    """
+    Test that adding combined context influence raises an error when contexts list is empty
+    """
+    bn = BayesNet()
+    with pytest.raises(ValueError) as excinfo:
+        bn.add_combined_influence("hand over tool", [], ["pickup", "working"], 5)
+    assert str(excinfo.value) == "Contexts list cannot be empty."
+
 
 def test_change_influence_value_in_existing_new_combined_context_influence():
     """

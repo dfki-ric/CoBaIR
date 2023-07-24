@@ -722,16 +722,17 @@ class BayesNet():
             instantiations: Tuple of context instances to set influence value for.
             value: influence value. Can be one out of [0, 1, 2, 3, 4, 5]
         Raises:
-            ValueError: Raises a ValueError if the instantiation does not exists in the config
+            ValueError: Raises a ValueError if the instantiation does not exist in the config, or if the contexts list is empty.
             AssertionError: An AssertionError is raised if the resulting config is not valid.
         """
+        if not contexts:
+            raise ValueError('Contexts list cannot be empty.')
         for i, instantiation in enumerate(instantiations):
             if instantiation not in self.config['intentions'][intention][contexts[i]]:
-                raise ValueError(
-                    'add_combined_influence can only combine context instantiations that already exist')
+                raise ValueError('add_combined_influence can only combine context instantiations that already exist')
         self.config['intentions'][intention][contexts][instantiations] = value
         self.__init__(self.config)
-
+        
     def del_combined_influence(self, intention: str, contexts: tuple, instantiations: tuple):
         """
         Adds an influence value for a combination of context instantiations.

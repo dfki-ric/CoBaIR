@@ -602,7 +602,7 @@ class Configurator(QtWidgets.QMainWindow):
         Deletes the currently selected context.
         """
         self.error_label.setText("")
-        context = self.context_dropdown.currentText()
+        context = self.context_selection.currentText()
         try:
             self.bayesNet.del_context(context)
         except AssertionError as error_message:
@@ -802,6 +802,37 @@ class Configurator(QtWidgets.QMainWindow):
 
         self.new_combined_influence_button.clicked.connect(
             self.new_combined_influence)
+
+        self.advanced_label.setText("advanced \u25BC")
+        self.advanced_label.setParent(self.advanced_hidden_frame)
+        self.advanced_folded = False
+        self.advanced_label.clicked.connect(self.on_clicked_advanced)
+
+        self.advanced_table = QFrame(self.advanced_hidden_frame)
+        self.advanced_hidden_frame.setLayout(QGridLayout())
+        self.advanced_hidden_frame.layout().addWidget(self.advanced_table, 0, 0)
+        self.on_clicked_advanced()
+
+        # add widgets to layout
+        # self.grid_layout.addWidget(self.context_label, 0, 0)
+        # self.grid_layout.addWidget(self.context_selection, 0, 1)
+        # self.grid_layout.addWidget(self.edit_context_button, 0, 2)
+        # self.grid_layout.addWidget(self.delete_context_button, 0, 3)
+
+        # self.grid_layout.addWidget(self.context_selected_frame, 1, 1)
+
+        # self.grid_layout.addWidget(self.intention_label_frame, 2, 0)
+        # self.grid_layout.addWidget(self.influencing_context_selection, 2, 1)
+        # self.grid_layout.addWidget(self.on_label, 2, 2)
+        # self.grid_layout.addWidget(self.intention_dropdown, 2, 3)
+        # self.grid_layout.addWidget(self.edit_intention_button, 2, 4)
+        # self.grid_layout.addWidget(self.delete_intention_button, 2, 5)
+
+        # self.grid_layout.addWidget(self.decision_threshold, 4, 1)
+        # self.grid_layout.addWidget(self.decision_threshold_entry, 4, 2)
+
+        self.new_combined_influence_button.clicked.connect(
+            self.new_combined_influence)
         self.advanced_folded = False
         self.advanced_label.clicked.connect(self.on_clicked_advanced)
 
@@ -819,7 +850,8 @@ class Configurator(QtWidgets.QMainWindow):
         self.actionSave.setShortcut("Ctrl+S")
         self.actionSave_as.triggered.connect(self.save_as)
         self.actionSave_as.setShortcut("Ctrl+Shift+S")
-        self.graph_item.name_clicked.connect(self.graph_clicked)  # Connect the signal to the slot
+        self.graph_item.name_clicked.connect(
+            self.graph_clicked)  # Connect the signal to the slot
 
     def reset(self):
         """
@@ -896,10 +928,13 @@ class Configurator(QtWidgets.QMainWindow):
         This draws the graph from the current config.
         '''
         # TODO: clearing graph
-        self.graph_item.clear()
+        # self.graph_item.clear()
         # only if config is valid
         if self.bayesNet.valid:
+            self.view.addItem(self.graph_item)
             self.graph_item.set_config(self.bayesNet.config)
+        else:
+            self.graph_item.setParentItem(None)
 
     def set_influencing_context_dropdown(self, options: list, command: function = None):
         '''
@@ -1047,7 +1082,7 @@ class Configurator(QtWidgets.QMainWindow):
         self.intention_instantiations = defaultdict(lambda: defaultdict(dict))
         layout = self.gridLayout_3
         row_count = layout.rowCount()
-        
+
         for instantiation, value in self.bayesNet.config['intentions'][intention][context].items():
             influence_text = f'Influence of {context}:{instantiation} on {intention}:'
             instantiation_label = QLabel(
@@ -1059,7 +1094,6 @@ class Configurator(QtWidgets.QMainWindow):
 
             slider = QSlider(Qt.Horizontal, self.influencing_context_frame)
             slider.setFixedSize(100, 20)
-
             high_label = QLabel('HIGH', self.influencing_context_frame)
             high_label.setFont(QFont('Times New Roman', 13))
 
@@ -1074,13 +1108,13 @@ class Configurator(QtWidgets.QMainWindow):
             slider.setMaximum(5)
             slider.setTickInterval(1)
             slider.setStyleSheet(
-                f"QSlider::handle:horizontal {{background-color: {self.COLORS[value]}}}")
+                f"QSlider::handle:horizontal {{background-color: {self.COLORS.get(value, 'default_color')}}}")
+
             slider.setValue(value)
 
             slider.valueChanged.connect(lambda value, context=context, intention=intention,
                                         instantiation=instantiation, slider=slider:
                                         self.influence_values_changed(value, context, intention, instantiation, slider))
-
             self.intention_instantiations[intention][context][instantiation] = (
                 instantiation_label,
                 low_label,
@@ -1121,52 +1155,6 @@ class Configurator(QtWidgets.QMainWindow):
             self.setWindowTitle(f"CoBaIR {_} {self.current_file_name.name} *")
         else:
             self.setWindowTitle(f"CoBaIR {_} {self.current_file_name.name} ")
-
-    # def check_config_status(self):
-    #     """
-    #     Check the status of the configuration.
-
-    #     Returns:
-    #         bool: True if the current configuration differs from the original configuration, False otherwise.
-    #     """
-    #     if self.bayesNet.config != self.original_config:
-    #         return True
-    #     return False
-
-    # def parse_yaml_file(self):
-    #     """Parse YAML file path.
-
-    #     This function uses the argparse module to process the command-line arguments and retrieve the path of a YAML file.
-
-    #     Returns:
-    #         str or None: The path of the YAML file specified using the --file argument. If no file is provided, returns None.
-    #     """
-    #     parser = argparse.ArgumentParser(description='Process YAML file path.')
-    #     parser.add_argument('--file', type=str, default=None, help='path of YAML file')
-    #     args = parser.parse_args()
-    #     return args.file
-
-    # def get_current_file_name(self, yaml_file_path):
-    #     """Get the current file name.
-
-    #     This function retrieves the current file name based on the provided YAML file path. If no path is provided, it tries
-    #     to retrieve the file name from the `file_name` attribute of the `bayesNet` object.
-
-    #     Args:
-    #         yaml_file_path (str or None): The path of the YAML file.
-
-    #     Returns:
-    #         str or None: The current file name. If a YAML file path is provided, returns the base name of the file. If no
-    #         path is provided or it's None, tries to retrieve the file name from the `file_name` attribute of `bayesNet`.
-    #         Returns None if no file name can be determined.
-    #     """
-    #     if yaml_file_path is not None:
-    #         current_file_name = os.path.basename(yaml_file_path)
-    #     else:
-    #         current_file_name = self.bayesNet.file_name if hasattr(self.bayesNet, 'file_name') else None
-    #         if current_file_name is not None:
-    #             current_file_name = os.path.basename(current_file_name)
-    #     return current_file_name
 
     def config_status(self):
         """
@@ -1271,34 +1259,14 @@ class Configurator(QtWidgets.QMainWindow):
         """
         self.error_label.setText("")
         try:
+            slider.setStyleSheet(
+                f"QSlider::handle:horizontal {{background-color: {self.COLORS.get(value, 'default_color')}}}")
             self.bayesNet.change_influence_value(
                 intention=intention, context=context, instantiation=instantiation, value=int(value))
-            slider.setStyleSheet(
-                f"QSlider::handle:horizontal {{background-color: {self.COLORS[value]}}}")
         except AssertionError as e:
             self.error_label.setText(str(e))
-        self.title_update()
+
+        self.graph_item.update_value(context, intention)
+        if context or intention is not None:
+            self.graph_item.set_config(self.bayesNet.config)
         return value
-
-
-# if __name__ == "__main__":
-
-#     parser = argparse.ArgumentParser()
-#     parser.add_argument('-f', '--file', type=str,
-#                         help='Path to a config file to load upon start.')
-#     args = parser.parse_args()
-
-#     # get file from args
-#     config_path = args.file
-#     if config_path:
-#         config = load_config(config_path)
-#     else:
-#         config = None
-
-#     configurator = Configurator(config=config)
-#     # TODO: this is slightly complicated - could be solved if the configurator can distinguish between String/Path and dict and behaves accordingly.
-#     if config_path:
-#         configurator.current_file_name = Path(args.file).absolute()
-#     configurator.title_update()
-
-#     configurator.app.exec_()
