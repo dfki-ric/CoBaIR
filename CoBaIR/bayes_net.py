@@ -9,6 +9,7 @@ from collections import defaultdict
 from collections.abc import Hashable
 from copy import deepcopy
 import warnings
+import logging
 
 # 3rd party imports
 import bnlearn as bn
@@ -57,6 +58,7 @@ class BayesNet():
             validate: Flag if the given config should be validated or not. 
                 This is necessary to load invalid configs
         '''
+        self.log = logging.getLogger(self.__class__.__name__)
 
         self.valid = False
         self.bn_verbosity = bn_verbosity

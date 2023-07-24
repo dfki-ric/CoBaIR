@@ -3,6 +3,11 @@ This module is a GUI configurator to create configurations for context based int
 '''
 
 # System imports
+import webbrowser
+from .visualization import TwoLayerGraph
+from .bayes_net import BayesNet, load_config, config_to_default_dict
+from PyQt5.QtWidgets import QWidget
+import numpy as np
 import sys
 import os
 from collections import defaultdict
@@ -21,12 +26,10 @@ from PyQt5.QtWidgets import QDialog, QLabel, QLineEdit, QComboBox, QPushButton,\
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont, QFontMetrics
 import logging
-import numpy as np
+
+# Rest of the code...
 
 # local imports
-from .bayes_net import BayesNet, load_config, config_to_default_dict
-from .visualization import TwoLayerGraph
-import webbrowser
 
 # end file header
 __author__ = 'Adrian Lubitz'
@@ -44,6 +47,7 @@ class NewIntentionDialog(QDialog):
         Args:
             intention: An intention that will be filled in the dialog
         """
+        self.log = logging.getLogger(self.__class__.__name__)
         dialog = QDialog()
         dialog.deleteLater()
         self.intention = intention
@@ -119,6 +123,7 @@ class NewCombinedContextDialog(QDialog):
                             working: 3
                     }
         """
+        self.log = logging.getLogger(self.__class__.__name__)
         self.intentions = deepcopy(intentions)
         self.original_instantiations = defaultdict(dict)
         super().__init__(parent)
@@ -281,6 +286,7 @@ class NewContextDialog(QDialog):
                 Example: {'speech commands': {
                     'pickup': 0.2, 'handover': 0.2, 'other': 0.6}}
         """
+        self.log = logging.getLogger(self.__class__.__name__)
         dialog = QDialog()
         dialog.deleteLater()
         self.predefined_context = deepcopy(predefined_context)
@@ -446,6 +452,7 @@ class Configurator(QtWidgets.QMainWindow):
             config: A dict with a config following the config format.
         '''
         # App specifics
+        self.log = logging.getLogger(self.__class__.__name__)
         self.app = QtWidgets.QApplication(sys.argv)
         QtWidgets.QMainWindow.__init__(self, *args, **kwargs)
         pg.setConfigOptions(antialias=True)
@@ -996,19 +1003,14 @@ class Configurator(QtWidgets.QMainWindow):
         Args:
             context: name of the clicked context
         """
-        logger = logging.getLogger(__name__)
+
         for _, instantiations in self.context_instantiations.items():
             for instantiation, widgets in instantiations.items():
                 for widget in widgets:
                     try:
                         widget.deleteLater()
-                    except RuntimeError as e:
-                        logger.error(
-                            f"Failed to destroy widget {widget}: {type(e).__name__}: {str(e)}")
-                    except AttributeError:
-                        pass  # can not destroy StringVars
-                    except TypeError as e:
-                        logger.error(
+                    except Exception as e:
+                        self.log.error(
                             f"Failed to destroy widget {widget}: {type(e).__name__}: {str(e)}")
 
         self.context_instantiations = defaultdict(dict)
@@ -1062,33 +1064,25 @@ class Configurator(QtWidgets.QMainWindow):
         Args:
             context_or_intention: name of the clicked context
         """
-        for active_intention, active_context in self.intention_instantiations.items():
-            for active_context, instantiations in active_context.items():
-                for instantiation, widgets in instantiations.items():
-                    for widget in widgets:
-                        try:
-                            widget.deleteLater()
-                        except AttributeError:
-                            pass  # can not destroy StringVars
-                        except Exception as e:
-                            # TODO: better logging
-                            print(f"couldn't destroy: {e}")
+        for widget in self.influencing_context_frame.findChildren(QWidget):
+            try:
+                widget.deleteLater()
+            except Exception as e:
+                self.log.error(f"Couldn't destroy widget: {e}")
+
         intention = self.intention_dropdown.currentText()
         context = self.influencing_context_selection.currentText()
         if context not in self.bayesNet.config['contexts'] or \
                 intention not in self.bayesNet.config['intentions']:
             return
-
         self.intention_instantiations = defaultdict(lambda: defaultdict(dict))
         layout = self.gridLayout_3
-        row_count = layout.rowCount()
-
+        row_count = 0
         for instantiation, value in self.bayesNet.config['intentions'][intention][context].items():
             influence_text = f'Influence of {context}:{instantiation} on {intention}:'
             instantiation_label = QLabel(
                 influence_text, self.influencing_context_frame)
             instantiation_label.setFont(QFont('Times New Roman', 13))
-
             low_label = QLabel('LOW', self.influencing_context_frame)
             low_label.setFont(QFont('Times New Roman', 13))
 
