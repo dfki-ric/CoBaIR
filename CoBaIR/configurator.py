@@ -797,15 +797,10 @@ class Configurator(QtWidgets.QMainWindow):
         self.new_intention_button.clicked.connect(self.new_intention)
         self.edit_intention_button.clicked.connect(self.edit_intention)
         self.delete_intention_button.clicked.connect(self.delete_intention)
-        self.delete_intention_button = self.findChild(
-            QPushButton, 'delete_intention_button')
 
-        self.new_combined_influence_button = self.findChild(
-            QPushButton, 'advanced_new_button')
         self.new_combined_influence_button.clicked.connect(
             self.new_combined_influence)
 
-        self.advanced_hidden_frame = self.findChild(QFrame, 'frame_3')
         self.advanced_label.setText("advanced \u25BC")
         self.advanced_label.setParent(self.advanced_hidden_frame)
         self.advanced_folded = False
@@ -817,22 +812,22 @@ class Configurator(QtWidgets.QMainWindow):
         self.on_clicked_advanced()
 
         # add widgets to layout
-        self.grid_layout.addWidget(self.context_label, 0, 0)
-        self.grid_layout.addWidget(self.context_dropdown, 0, 1)
-        self.grid_layout.addWidget(self.edit_context_button, 0, 2)
-        self.grid_layout.addWidget(self.delete_context_button, 0, 3)
+        # self.grid_layout.addWidget(self.context_label, 0, 0)
+        # self.grid_layout.addWidget(self.context_selection, 0, 1)
+        # self.grid_layout.addWidget(self.edit_context_button, 0, 2)
+        # self.grid_layout.addWidget(self.delete_context_button, 0, 3)
 
-        self.grid_layout.addWidget(self.context_selected_frame, 1, 1)
+        # self.grid_layout.addWidget(self.context_selected_frame, 1, 1)
 
-        self.grid_layout.addWidget(self.intention_label_frame, 2, 0)
-        self.grid_layout.addWidget(self.influencing_context_dropdown, 2, 1)
-        self.grid_layout.addWidget(self.on_label, 2, 2)
-        self.grid_layout.addWidget(self.intention_dropdown, 2, 3)
-        self.grid_layout.addWidget(self.edit_intention_button, 2, 4)
-        self.grid_layout.addWidget(self.delete_intention_button, 2, 5)
+        # self.grid_layout.addWidget(self.intention_label_frame, 2, 0)
+        # self.grid_layout.addWidget(self.influencing_context_selection, 2, 1)
+        # self.grid_layout.addWidget(self.on_label, 2, 2)
+        # self.grid_layout.addWidget(self.intention_dropdown, 2, 3)
+        # self.grid_layout.addWidget(self.edit_intention_button, 2, 4)
+        # self.grid_layout.addWidget(self.delete_intention_button, 2, 5)
 
-        self.grid_layout.addWidget(self.context_instantiations_3, 4, 1)
-        self.grid_layout.addWidget(self.decision_threshold_entry, 4, 2)
+        # self.grid_layout.addWidget(self.decision_threshold, 4, 1)
+        # self.grid_layout.addWidget(self.decision_threshold_entry, 4, 2)
 
         self.new_combined_influence_button.clicked.connect(
             self.new_combined_influence)
