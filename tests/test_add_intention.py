@@ -17,6 +17,7 @@ __author__ = 'Adrian Lubitz'
 
 # TODO: add more negative cases
 
+
 def test_add_to_empty(config=None, counter=0):
     """
     Test adding an intention to an empty config
@@ -31,14 +32,11 @@ def test_add_to_empty(config=None, counter=0):
 
     config['intentions'][intention] = {}
 
-    with warnings.catch_warnings(record=True) as w:
-        warnings.simplefilter("always")  # Ensure all warnings are caught
+    with pytest.warns(UserWarning):
         bn.add_intention(intention)
-        assert len(w) == 1  # Check that one warning was raised
-        assert issubclass(w[-1].category, UserWarning)  # Check that the warning is a UserWarning
-
     # Making sure tmp_config will be maintained
     assert config_to_default_dict(bn.config) == config_to_default_dict(config)
+
 
 def test_add_n_to_empty(n=N):
     """
@@ -49,6 +47,7 @@ def test_add_n_to_empty(n=N):
     for i in range(n):
         test_add_to_empty(config, i)
 
+
 def test_add_to_existing():
     """
     Test adding an intention to an existing config
@@ -56,6 +55,7 @@ def test_add_to_existing():
     config = load_config('small_example.yml')
     bn = BayesNet(config)
     bn.add_intention('some intention')
+
 
 def test_add_n_to_existing(n=N):
     """

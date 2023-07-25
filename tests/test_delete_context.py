@@ -28,6 +28,7 @@ def test_delete_context_from_empty():
         bn.del_context(context)
     assert bn.config == config_to_default_dict()
 
+
 def test_delete_context_from_existing_context():
     """
     Test deleting on an existing config - deleting the name of the context and instantiations
@@ -38,21 +39,16 @@ def test_delete_context_from_existing_context():
     new_contexts = list(bn.config['contexts'].keys())
     for context in new_contexts:
         if len(bn.config['contexts'].keys()) > 1:
-            with warnings.catch_warnings(record=True) as w:
-                bn.del_context(context)
-            if context in bn.config['contexts']:
-                warnings.warn(f'Failed to delete context: {context}')
-            assert len(w) == 0  # Check that no warnings were raised
+            bn.del_context(context)
+            assert context not in bn.config['contexts']
         else:
             # while deleting the last context raises an Exception because there is no context
-            with pytest.raises(Exception):
-                with warnings.catch_warnings(record=True) as w:
-                    bn.del_context(context)
-                if context in bn.config['contexts']:
-                    warnings.warn(f'Failed to delete context: {context}')
-                assert len(w) == 0  # Check that no warnings were raised
+            with pytest.warns(UserWarning):
+                bn.del_context(context)
+                assert context not in bn.config['contexts']
     assert len(bn.evidence) == 0
     assert bn.config != old_config
+
 
 def test_delete_config_before_adding():
     """

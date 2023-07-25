@@ -74,7 +74,7 @@ class BayesNet():
         self.config = deepcopy(config)
         self.decision_threshold = self.config['decision_threshold']
 
-        if validate: 
+        if validate:
             self.validate_config()
 
         # Translation dicts for context to card number in bnlearn and vice versa
@@ -292,7 +292,6 @@ class BayesNet():
         neg_values = [1-value for value in pos_values]
         return [neg_values, pos_values]
 
-
     def valid_evidence(self, context: str, instantiation) -> tuple[bool, str]:
         """
         Tests if evidence is a valid instantiation for the context.
@@ -418,66 +417,66 @@ class BayesNet():
 
         Raises:
             Warnings: Warning is raised if the config is not valid.
+
+        Returns: 
+            bool: True if config is valid, False otherwise
         '''
-        # TODO: add validation that apriorio values are float
-        # contexts and intentions need to be defined
+        # We assume the config is valid - if not this will be set to False - this allows to raise multiple warnings
+        self.valid = True
         if 'contexts' not in self.config:
             warnings.warn('Field "contexts" must be defined in the config')
             self.valid = False
-            return  
         if 'intentions' not in self.config:
             warnings.warn('Field "intentions" must be defined in the config')
             self.valid = False
-            return  
         if not len(self.config['contexts']):
             warnings.warn('No contexts defined')
             self.valid = False
-            return 
         if not len(self.config['intentions']):
             warnings.warn('No intentions defined')
             self.valid = False
-            return 
         if not isinstance(self.config['decision_threshold'], float) or \
                 not (0 <= self.config['decision_threshold'] < 1):
-            warnings.warn('Decision threshold must be a number between 0 and 1')
+            warnings.warn(
+                'Decision threshold must be a number between 0 and 1')
             self.valid = False
-            return  
 
         # Intentions need to have influence value for all contexts and their possible instantiations
         for intention, context_influences in self.config['intentions'].items():
             for context, influences in context_influences.items():
 
                 if isinstance(context, str) and context not in self.config['contexts']:
-                    warnings.warn(f'Context influence {context} cannot be found in the defined contexts!')
+                    warnings.warn(
+                        f'Context influence {context} cannot be found in the defined contexts!')
                     self.valid = False
-                    return  
 
                 for instantiation, influence in influences.items():
                     if not isinstance(instantiation, tuple):
                         if not (0 <= influence <= 5 and isinstance(influence, int)):
-                            warnings.warn(f'Influence Value for {intention}.{context}.{instantiation} must be an integer between 0 and 5! Is {influence}')
+                            warnings.warn(
+                                f'Influence Value for {intention}.{context}.{instantiation} must be an integer between 0 and 5! Is {influence}')
                             self.valid = False
-                            return  
                         if instantiation not in self.config['contexts'][context].keys():
-                            warnings.warn(f'An influence needs to be defined for all instantiations! {intention}.{context}.{instantiation} does not fit the defined instantiations for {context}')
+                            warnings.warn(
+                                f'An influence needs to be defined for all instantiations! {intention}.{context}.{instantiation} does not fit the defined instantiations for {context}')
                             self.valid = False
-                            return  
 
         # Probabilities need to sum up to 1
         for context, instantiations in self.config['contexts'].items():
             for instantiation, value in instantiations.items():
                 if not isinstance(value, float):
-                    warnings.warn(f'Apriori probability of context "{context}.{instantiation}" is not a number')
+                    warnings.warn(
+                        f'Apriori probability of context "{context}.{instantiation}" is not a number')
                     self.valid = False
-                    return  
             if sum(instantiations.values()) != 1.0:
-                warnings.warn(f'The sum of probabilities for context instantiations must be 1 - For "{context}" it is {sum(instantiations.values())}!')
+                warnings.warn(
+                    f'The sum of probabilities for context instantiations must be 1 - For "{context}" it is {sum(instantiations.values())}!')
                 self.valid = False
-                return  
 
         # This is the config of the currently running BayesNet
-        self.valid_config = deepcopy(self.config)
-        self.valid = True
+        if self.valid:
+            self.valid_config = deepcopy(self.config)
+        return self.valid
 
     def _create_zero_influence_dict(self, context_with_instantiations: dict) -> defaultdict:
         """
@@ -517,7 +516,6 @@ class BayesNet():
                     {True: 0.6, False:0.4}
         Raises:
             ValueError: Raises a ValueError if the context already exists in the config
-            AssertionError: An AssertionError is raised if the resulting config is not valid.
         """
         # check if context exists already
         if context in self.config['contexts']:
@@ -539,7 +537,6 @@ class BayesNet():
 
         Raises:
             ValueError: Raises a ValueError if the intention already exists in the config
-            AssertionError: An AssertionError is raised if the resulting config is not valid.
         """
         # check if intention exists already
         if intention in self.config['intentions']:
@@ -574,7 +571,6 @@ class BayesNet():
 
         Raises:
             ValueError: Raises a ValueError if the context does not exists in the config
-            AssertionError: An AssertionError is raised if the resulting config is not valid.
         """
         # check if context exists already - only then I can edit
         if context not in self.config['contexts']:
@@ -606,7 +602,6 @@ class BayesNet():
 
         Raises:
             ValueError: Raises a ValueError if the intention does not exists in the config
-            AssertionError: An AssertionError is raised if the resulting config is not valid.
         """
         # check if context exists already - only then I can edit
         if intention not in self.config['intentions']:
@@ -629,12 +624,12 @@ class BayesNet():
             context: Name of the context to delete
 
         Raises:
-            AssertionError: An AssertionError is raised if the resulting config is not valid.
             ValueError: An ValueError is raised if the context is not in self.config.
         """
         # Check if context exists already - only then I can edit
         if context not in self.config['contexts']:
-            raise ValueError('Cannot delete non-existing context - use add_context to add a new context')
+            raise ValueError(
+                'Cannot delete non-existing context - use add_context to add a new context')
 
         del self.config['contexts'][context]
         self._remove_context_from_intentions()
@@ -650,7 +645,6 @@ class BayesNet():
             intention: Name of the intention to delete
 
         Raises:
-            AssertionError: An AssertionError is raised if the resulting config is not valid.
             ValueError: An ValueError is raised if the intention is not in self.config.
         """
         if intention not in self.config['intentions']:
@@ -683,8 +677,6 @@ class BayesNet():
 
         Args:
             path: path to the file the config is saved in
-        Raises:
-            AssertionError: An AssertionError is raised if the resulting config is not valid.
         """
         config = load_config(path)
         # reinitialize with config
@@ -700,7 +692,6 @@ class BayesNet():
             value: the new apriori value
         Raises:
             ValueError: Raises a ValueError if the instantiation does not exists in the config
-            AssertionError: An AssertionError is raised if the resulting config is not valid.
         """
         # check if this value already exists because I'm using defaultdict
         # otherwise you can just add values
@@ -723,7 +714,6 @@ class BayesNet():
             value: the new influence value. Can be one out of [0, 1, 2, 3, 4, 5]
         Raises:
             ValueError: Raises a ValueError if the instantiation does not exists in the config
-            AssertionError: An AssertionError is raised if the resulting config is not valid.
         """
         # check if this value already exists because I'm using defaultdict
         # otherwise you can just add values
@@ -746,7 +736,6 @@ class BayesNet():
             value: influence value. Can be one out of [0, 1, 2, 3, 4, 5]
         Raises:
             ValueError: Raises a ValueError if the instantiation does not exists in the config
-            AssertionError: An AssertionError is raised if the resulting config is not valid.
         """
         for i, instantiation in enumerate(instantiations):
             if instantiation not in self.config['intentions'][intention][contexts[i]]:
@@ -765,7 +754,6 @@ class BayesNet():
             instantiations: tuple of context instantiations
         Raises:
             ValueError: Raises a ValueError if the instantiation does not exists in the config
-            AssertionError: An AssertionError is raised if the resulting config is not valid.
         """
         if instantiations not in self.config['intentions'][intention][contexts]:
             raise ValueError(
@@ -811,8 +799,6 @@ class BayesNet():
         Changes the decision threshold in the config.
         Args:
             decision_threshold: The new decision threshold.
-        Raises:
-            AssertionError: An AssertionError is raised if the resulting config is not valid.
         """
         self.config['decision_threshold'] = decision_threshold
         self.__init__(self.config)

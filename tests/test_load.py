@@ -57,10 +57,12 @@ def test_loading_invalid_yml_file():
 
     # I assume this will throw a warning instead of an error
     # if the value for pick up tool.speech commands.handover is invalid
-    with warnings.catch_warnings(record=True) as w:
-        bn = BayesNet(config, validate=True)  # Pass validate=True to enable config validation
+    with pytest.warns(UserWarning):
+        # Pass validate=True to enable config validation
+        bn = BayesNet(config, validate=True)
         assert bn.valid is False
-        
+
+
 def test_loading_valid_yml_file():
     """
     Test loading valid file name - validata_config() function will validate
@@ -68,6 +70,7 @@ def test_loading_valid_yml_file():
     """
 
     config = load_config('small_example.yml')
-    bayes_net = BayesNet(config, validate=True)  # Pass validate=True to enable config validation
+    # Pass validate=True to enable config validation
+    bayes_net = BayesNet(config, validate=True)
     # valid config
     assert bayes_net.valid is True

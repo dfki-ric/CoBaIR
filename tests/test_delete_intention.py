@@ -43,15 +43,11 @@ def test_delete_intention_from_existing_intention():
             assert intention not in bn.config['intentions']
         else:
             # while deleting the last context raises a warning because there is no context
-            with warnings.catch_warnings(record=True) as w:
-                warnings.simplefilter("always")  # Ensure all warnings are caught
+            with pytest.warns(UserWarning):
                 bn.del_intention(intention)
                 assert intention not in bn.config['intentions']
-                if intention in bn.config['intentions']:
-                    warnings.warn(f'Failed to delete intention: {intention}')
-                assert len(w) == 1  # Check that one warning was raised
-                assert issubclass(w[-1].category, UserWarning)  # Check that the warning is a UserWarning
     assert bn.config != old_config
+
 
 def test_delete_to_config_before_adding():
     """
