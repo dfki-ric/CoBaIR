@@ -36,11 +36,12 @@ def test_infer_unrelated_evidence():
     probabilities = {'pick up tool': 0.602803738317757,
                      'hand over tool': 0.397196261682243}
 
-    max_intention, decision_threshold, inference = bn.infer({'some context': 'is not important',
-                                                             'another context': '',
-                                                             'unhashable context': {},
-                                                             'int context': 1,
-                                                             'obj context': bn})
+    with pytest.warns(UserWarning):
+        max_intention, decision_threshold, inference = bn.infer({'some context': 'is not important',
+                                                                'another context': '',
+                                                                 'unhashable context': {},
+                                                                 'int context': 1,
+                                                                 'obj context': bn})
 
     if max_intention is not None:
         assert decision_threshold > 0
@@ -55,7 +56,7 @@ def test_infer_single_evidence():
                      'hand over tool': 0.21782178217821785}
 
     max_intention, decision_threshold, inference = bn.infer(
-        {'speech commands': 'pickup', 'unhashable context': {}})
+        {'speech commands': 'pickup'})
     for intention, probability in inference.items():
         assert round(abs(probability-probabilities[intention]), 7) == 0
 
@@ -66,13 +67,13 @@ def test_infer_multiple_evidence():
     """
     probabilities = {'hand over tool': 0.3797468354430379,
                      'pick up tool': 0.620253164556962}
-
-    max_intention, decision_threshold, inference = bn.infer({
-        'speech commands': 'pickup',
-        'human holding object': False,
-        'human activity': 'idle',
-        'unhashable context': {}
-    })
+    with pytest.warns(UserWarning):
+        max_intention, decision_threshold, inference = bn.infer({
+            'speech commands': 'pickup',
+            'human holding object': False,
+            'human activity': 'idle',
+            'unhashable context': {}
+        })
     for intention, probability in inference.items():
         assert round(abs(probability-probabilities[intention]), 7) == 0
 
@@ -84,12 +85,13 @@ def test_infer_combined_evidence():
     probabilities = {'hand over tool': 0.26229508196721313,
                      'pick up tool': 0.7377049180327869}
 
-    max_intention, decision_threshold, inference = bn.infer({
-        'speech commands': 'pickup',
-        'human holding object': True,
-        'human activity': 'idle',
-        'unhashable context': {}
-    })
+    with pytest.warns(UserWarning):
+        max_intention, decision_threshold, inference = bn.infer({
+            'speech commands': 'pickup',
+            'human holding object': True,
+            'human activity': 'idle',
+            'unhashable context': {}
+        })
     for intention, probability in inference.items():
         assert round(abs(probability-probabilities[intention]), 7) == 0
 
@@ -112,11 +114,23 @@ def test_infer_overlapping_combined_evidence():
 
 def test_infer_invalid_evidence():
     """
-    Test inference
+    Test inference with unhashable context instantiation
     """
     probabilities = {'pick up tool': 0.7821782178217822,
                      'hand over tool': 0.21782178217821785}
 
     with pytest.raises(ValueError):
         bn.infer(
-            {'speech commands': 'ERROR', 'unhashable context': {}})
+            {'speech commands': {}, })
+
+
+def test_infer_warning_evidence():
+    """
+    Test inference with context instantiation that cause warnings 'this context': 'will be ignored anyways'
+    """
+    probabilities = {'pick up tool': 0.7821782178217822,
+                     'hand over tool': 0.21782178217821785}
+
+    with pytest.warns(UserWarning):
+        bn.infer(
+            {'speech commands': 'something not related', 'this context': 'will be ignored anyways'})

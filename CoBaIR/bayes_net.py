@@ -298,17 +298,27 @@ class BayesNet():
             instantiation: an instantiation of the context
         Returns:
             tuple[bool, str]:
-            A tuple of bool to indicate validity and str for error message
+            A tuple of bool to indicate validity and str for error/warn message
         """
-        if context not in self.config['contexts'] or instantiation is None:
-            warnings.warn(f'Invalid instantiation for context {context}.') #Treating it as if no evidence was given.
-            return False, 'ignore'
-        if not isinstance(instantiation, Hashable) or \
-                not instantiation in self.config['contexts'][context].keys():
-            invalid_msg = f'{instantiation} is not a valid instantiation for {context}. '
+
+        if context not in self.config['contexts']:
+            # If context not known to the config is given in evidence it will just ignore that context.
+            return True, f'Context "{context}" not set in config - will be ignored'
+
+        if not isinstance(instantiation, Hashable):
+            # I not hasable, it can't be used!
+            return False, f'Context instatiations must be hashable! Instantiation "{instantiation}" for context "{context}" is not hashable!'
+
+        if instantiation is None:
+            # instantiation None is possible - in this case the apriori values will be used.
+            return True, f'No instantiation given for context "{context}" - A prori values will be used.'
+
+        if not instantiation in self.config['contexts'][context].keys():
+            invalid_msg = f'"{instantiation}" is not a valid instantiation for "{context}". Using None instead'
             valid_options = list(self.config["contexts"][context].keys())
-            valid_options_msg = f'Must be one of {valid_options}'
-            return False, invalid_msg + valid_options_msg
+            valid_options_msg = f' Valid options are {valid_options}'
+            return True, invalid_msg + valid_options_msg
+
         return True, ''
 
     def bind_discretization_function(self, context, discretization_function):
@@ -352,10 +362,14 @@ class BayesNet():
         if decision_threshold is None:
             decision_threshold = self.config['decision_threshold']
         card_evidence = {}
-        invalid_contexts = set()
+        errors = []
+        warning_msgs = []
         for context, instantiation in evidence.items():
             valid, err_msg = self.valid_evidence(context, instantiation)
             if valid:
+                if err_msg:
+                    warning_msgs.append(err_msg)
+                    continue
                 card_evidence[context] = self.value_to_card[context][instantiation]
             elif context in self.discretization_functions and instantiation is not None:
                 discrete_instantiation = self.discretization_functions[context](
@@ -363,19 +377,22 @@ class BayesNet():
                 valid, err_msg = self.valid_evidence(
                     context, discrete_instantiation)
                 if valid:
+                    if err_msg:
+                        warning_msgs.append(err_msg)
+                        continue
                     card_evidence[context] = self.value_to_card[context][discrete_instantiation]
                 else:
-                    if not err_msg == 'ignore':
-                        raise ValueError(err_msg)
+                    errors.append(err_msg)
             else:
-                if not err_msg == 'ignore':
-                    raise ValueError(err_msg)
-                invalid_contexts.add(context)
+                errors.append(err_msg)
 
-        if invalid_contexts:
-            warnings.warn(f'Invalid instantiations for the following contexts: {", ".join(invalid_contexts)}. '
-                          f'These contexts will be ignored for the inference process.')
-            
+        if warning_msgs:
+            for warning in warning_msgs:
+                warnings.warn(warning)
+
+        if errors:
+            raise ValueError(f"{errors}")
+
         if self.valid:
             inference = {}
             for intention in self.intentions:
