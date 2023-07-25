@@ -17,6 +17,9 @@ from pathlib import Path
 import itertools
 import copy
 import argparse
+import warnings
+import webbrowser
+
 # 3rd party imports
 import pyqtgraph as pg
 from PyQt5 import QtWidgets, uic
@@ -29,10 +32,16 @@ import logging
 
 # Rest of the code...
 
+
 # local imports
+from .bayes_net import BayesNet, load_config, config_to_default_dict
+from .visualization import TwoLayerGraph
+
 
 # end file header
 __author__ = 'Adrian Lubitz'
+# This is necessary to trigger all warnings which are used by the GUI
+warnings.simplefilter('always')
 
 
 class NewIntentionDialog(QDialog):
@@ -544,7 +553,7 @@ class Configurator(QtWidgets.QMainWindow):
                 if new_instantiations:
                     self.bayesNet.add_context(
                         old_context_name, new_instantiations)
-            except AssertionError as error_message:
+            except Exception as error_message:
                 self.error_label.setText(str(error_message))
             # update view!
             self.create_fields()
@@ -593,7 +602,7 @@ class Configurator(QtWidgets.QMainWindow):
                 if new_instantiations:
                     self.bayesNet.edit_context(
                         context, new_instantiations, old_context_name)
-            except (ValueError, AssertionError) as error_message:
+            except Exception as error_message:
                 self.error_label.setText(str(error_message))
             self.create_fields()
             self.context_selection.setCurrentText(old_context_name)
@@ -612,7 +621,7 @@ class Configurator(QtWidgets.QMainWindow):
         context = self.context_selection.currentText()
         try:
             self.bayesNet.del_context(context)
-        except AssertionError as error_message:
+        except Exception as error_message:
             self.error_label.setText(str(error_message))
         self.create_fields()
 
@@ -630,7 +639,7 @@ class Configurator(QtWidgets.QMainWindow):
             if result:
                 try:
                     self.bayesNet.add_intention(result)
-                except AssertionError as error_message:
+                except Exception as error_message:
                     self.error_label.setText(str(error_message))
             # update view!
             self.create_fields()
@@ -678,7 +687,7 @@ class Configurator(QtWidgets.QMainWindow):
         intention = self.intention_dropdown.currentText()
         try:
             self.bayesNet.del_intention(intention)
-        except AssertionError as error_message:
+        except Exception as error_message:
             self.error_label.setText(str(error_message))
         self.create_fields()
 
@@ -797,6 +806,10 @@ class Configurator(QtWidgets.QMainWindow):
 
         self.error_label.setText("")
 
+        def warning_to_label(message, *args, **kwargs):
+            self.error_label.setText(str(message))
+
+        warnings.showwarning = warning_to_label
         self.context_instantiations = defaultdict(dict)
         self.intention_instantiations = defaultdict(lambda: defaultdict(dict))
         self.new_context_button.clicked.connect(self.new_context)
@@ -899,10 +912,10 @@ class Configurator(QtWidgets.QMainWindow):
         try:
             self.bayesNet.change_decision_threshold(
                 float(value))
-        except AssertionError as error_message:
-            self.error_label.setText(f"{error_message}")
         except ValueError:
             self.error_label.setText(f'Decision Threshold must be a number')
+        except Exception as error_message:
+            self.error_label.setText(f"{error_message}")
         self.title_update()
 
     def set_context_dropdown(self, options: list, command: function = None):
@@ -1133,12 +1146,10 @@ class Configurator(QtWidgets.QMainWindow):
                 self.bayesNet.load(fileName)
                 self.original_config = deepcopy(self.bayesNet.config)
                 self.error_label.setText("")
-            except AssertionError as error_message:
-                self.error_label.setText(str(error_message))
-                self.original_config = deepcopy(self.bayesNet.config)
             except Exception as error_message:
                 self.error_label.setText(str(error_message))
         self.create_fields()
+        self.bayesNet.validate_config()  # Validate to raise warnings
 
     def title_update(self):
         """
@@ -1233,12 +1244,10 @@ class Configurator(QtWidgets.QMainWindow):
         try:
             self.bayesNet.change_context_apriori_value(context=context, instantiation=instantiation, value=float(
                 self.context_instantiations[context][instantiation][1].text()))
-        except AssertionError as error_message:
+        except ValueError as error:
+            self.error_label.setText(str(error))
+        except Exception as error_message:
             self.error_label.setText(str(error_message))
-        except ValueError:
-            self.error_label.setText(
-                f'Apriori probability of context "{context}.{instantiation}" is not a number')
-        self.title_update()
 
     def influence_values_changed(self, value, context, intention, instantiation, slider):
         """
@@ -1257,7 +1266,9 @@ class Configurator(QtWidgets.QMainWindow):
                 f"QSlider::handle:horizontal {{background-color: {self.COLORS.get(value, 'default_color')}}}")
             self.bayesNet.change_influence_value(
                 intention=intention, context=context, instantiation=instantiation, value=int(value))
-        except AssertionError as e:
+            slider.setStyleSheet(
+                f"QSlider::handle:horizontal {{background-color: {self.COLORS[value]}}}")
+        except Exception as e:
             self.error_label.setText(str(e))
 
         self.graph_item.update_value(context, intention)
