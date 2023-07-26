@@ -83,6 +83,14 @@ class TwoLayerGraph(pg.GraphItem):
                         added_context.add(context)
                         i += 1
 
+    def update_value(self, context, intention):
+        """
+        Gets the values from configurator when slider is modified by the user 
+        """
+        self.context = context
+        self.intention = intention
+        self.set_config(self.config)
+
     def _set_adj(self):
         """
         Add all the connections in the adj array
@@ -124,7 +132,7 @@ class TwoLayerGraph(pg.GraphItem):
             """
             To calculate the width
             """
-            return self.line_width[0] + (self.line_width[1] - self.line_width[0]) * normalized_mean
+            return self.line_width[0] + (self.line_width[1] - self.line_width[0]) * normalized_mean * 0.5
 
         def calculate_normalized_mean(context, intention):
             """
@@ -132,7 +140,7 @@ class TwoLayerGraph(pg.GraphItem):
             """
             values = list(self.config["intentions"]
                           [intention][context].values())
-            return np.mean(values) / 5.0
+            return np.mean(values) / 5.0 if np.mean(values) > 0 else 0.0
 
         for start, end in self.data["adj"]:
             if start in self.data["context_indices"] or start in self.data["instantiation_indices"]:
@@ -142,8 +150,6 @@ class TwoLayerGraph(pg.GraphItem):
                 context = self.data["names"][end]
                 intention = self.data["names"][start]
 
-            color = pg.mkPen().color()
-
             if start in self.data["instantiation_indices"]:
                 # Hack: TODO: this is problematic if the context has a colon in name
                 context, instantiation = self.data["names"][start]
@@ -152,8 +158,8 @@ class TwoLayerGraph(pg.GraphItem):
             else:
                 normalized_mean = calculate_normalized_mean(context, intention)
 
-            alpha = color.alpha()
             red, green, blue = calculate_color(normalized_mean)
+            alpha = 255 if normalized_mean > 0 else 0
             width = calculate_width(normalized_mean)
 
             self.data["pen"].append(np.array([(red, green, blue, alpha, width)], dtype=[
@@ -164,14 +170,11 @@ class TwoLayerGraph(pg.GraphItem):
             context = self.context
             intention = self.intention
             normalized_mean = calculate_normalized_mean(context, intention)
-            color_values = self.data['pen'][0][0]
             if self.data["names"][start] == context and self.data["names"][end] == intention:
-                red = color_values[0]
-                green = color_values[1]
-                blue = color_values[2]
                 red, green, blue = calculate_color(normalized_mean)
 
             width = calculate_width(normalized_mean)
+            alpha = 255 if normalized_mean > 0 else 0
             self.data["pen"].append(np.array([(red, green, blue, alpha, width)], dtype=[
                 ('red', np.uint8), ('green', np.uint8), ('blue', np.uint8), ('alpha', np.uint8), ('width', np.uint8)]))
 
@@ -197,8 +200,7 @@ class TwoLayerGraph(pg.GraphItem):
         Uses the config to set the data and draws the graph
         """
         # extract every needed field for setData from config
-
-        self.config = config
+        self.config = deepcopy(config)
         self.data = {"mapping": {}, "pos": [],
                      "adj": [], "pen": [], "names": [], "context_indices": [], "intention_indices": [], "instantiation_indices": []}
         self._set_pos()
