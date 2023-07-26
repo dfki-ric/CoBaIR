@@ -83,14 +83,6 @@ class TwoLayerGraph(pg.GraphItem):
                         added_context.add(context)
                         i += 1
 
-    def update_value(self, context, intention):
-        """
-        Gets the values from configurator when slider is modified by the user 
-        """
-        self.context = context
-        self.intention = intention
-        self.set_config(self.config)
-
     def _set_adj(self):
         """
         Add all the connections in the adj array
@@ -162,7 +154,7 @@ class TwoLayerGraph(pg.GraphItem):
             alpha = 255 if normalized_mean > 0 else 0
             width = calculate_width(normalized_mean)
 
-            self.data["pen"].append(np.array([(red, green, blue, alpha, width)], dtype=[
+            self.data["pen"].append(np.array((red, green, blue, alpha, width), dtype=[
                 ('red', np.uint8), ('green', np.uint8), ('blue', np.uint8), ('alpha', np.uint8), ('width', np.uint8)]))
 
         # TODO: [Refactoring update config] This should not be a special case!
@@ -175,7 +167,7 @@ class TwoLayerGraph(pg.GraphItem):
 
             width = calculate_width(normalized_mean)
             alpha = 255 if normalized_mean > 0 else 0
-            self.data["pen"].append(np.array([(red, green, blue, alpha, width)], dtype=[
+            self.data["pen"].append(np.array((red, green, blue, alpha, width), dtype=[
                 ('red', np.uint8), ('green', np.uint8), ('blue', np.uint8), ('alpha', np.uint8), ('width', np.uint8)]))
 
     def _set_text(self):
@@ -209,7 +201,7 @@ class TwoLayerGraph(pg.GraphItem):
         self._set_text()
 
         self.setData(pos=np.array(self.data["pos"]), adj=np.array(
-            self.data["adj"]), pen=np.array(self.data["pen"]), size=self.size, pxMode=self.pxMode)
+            self.data["adj"]), pen=np.array(self.data["pen"], dtype=[('red', np.uint8), ('green', np.uint8), ('blue', np.uint8), ('alpha', np.uint8), ('width', np.uint8)]), size=self.size, pxMode=self.pxMode)
 
     def mousePressEvent(self, event):
         """
