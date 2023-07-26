@@ -3,6 +3,11 @@ This module is a GUI configurator to create configurations for context based int
 '''
 
 # System imports
+import webbrowser
+from .visualization import TwoLayerGraph
+from .bayes_net import BayesNet, load_config, config_to_default_dict
+from PyQt5.QtWidgets import QWidget
+import numpy as np
 import sys
 import os
 from collections import defaultdict
@@ -12,6 +17,9 @@ from pathlib import Path
 import itertools
 import copy
 import argparse
+import warnings
+import webbrowser
+
 # 3rd party imports
 import pyqtgraph as pg
 from PyQt5 import QtWidgets, uic
@@ -21,15 +29,19 @@ from PyQt5.QtWidgets import QDialog, QLabel, QLineEdit, QComboBox, QPushButton,\
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont, QFontMetrics
 import logging
-import numpy as np
+
+# Rest of the code...
+
 
 # local imports
 from .bayes_net import BayesNet, load_config, config_to_default_dict
 from .visualization import TwoLayerGraph
-import webbrowser
+
 
 # end file header
 __author__ = 'Adrian Lubitz'
+# This is necessary to trigger all warnings which are used by the GUI
+warnings.simplefilter('always')
 
 
 class NewIntentionDialog(QDialog):
@@ -44,6 +56,7 @@ class NewIntentionDialog(QDialog):
         Args:
             intention: An intention that will be filled in the dialog
         """
+        self.log = logging.getLogger(self.__class__.__name__)
         dialog = QDialog()
         dialog.deleteLater()
         self.intention = intention
@@ -119,6 +132,7 @@ class NewCombinedContextDialog(QDialog):
                             working: 3
                     }
         """
+        self.log = logging.getLogger(self.__class__.__name__)
         self.intentions = deepcopy(intentions)
         self.original_instantiations = defaultdict(dict)
         super().__init__(parent)
@@ -281,6 +295,7 @@ class NewContextDialog(QDialog):
                 Example: {'speech commands': {
                     'pickup': 0.2, 'handover': 0.2, 'other': 0.6}}
         """
+        self.log = logging.getLogger(self.__class__.__name__)
         dialog = QDialog()
         dialog.deleteLater()
         self.predefined_context = deepcopy(predefined_context)
@@ -446,6 +461,7 @@ class Configurator(QtWidgets.QMainWindow):
             config: A dict with a config following the config format.
         '''
         # App specifics
+        self.log = logging.getLogger(self.__class__.__name__)
         self.app = QtWidgets.QApplication(sys.argv)
         QtWidgets.QMainWindow.__init__(self, *args, **kwargs)
         pg.setConfigOptions(antialias=True)
@@ -455,7 +471,6 @@ class Configurator(QtWidgets.QMainWindow):
         self.view = self.win.addViewBox()
         self.graph_item = TwoLayerGraph()
         self.view.addItem(self.graph_item)
-
         # settings for showing - TODO: maybe this can go to a separate method that can be called in load etc
         self.current_file_name = Path()
         self.setup_layout()
@@ -538,7 +553,7 @@ class Configurator(QtWidgets.QMainWindow):
                 if new_instantiations:
                     self.bayesNet.add_context(
                         old_context_name, new_instantiations)
-            except AssertionError as error_message:
+            except Exception as error_message:
                 self.error_label.setText(str(error_message))
             # update view!
             self.create_fields()
@@ -587,7 +602,7 @@ class Configurator(QtWidgets.QMainWindow):
                 if new_instantiations:
                     self.bayesNet.edit_context(
                         context, new_instantiations, old_context_name)
-            except (ValueError, AssertionError) as error_message:
+            except Exception as error_message:
                 self.error_label.setText(str(error_message))
             self.create_fields()
             self.context_selection.setCurrentText(old_context_name)
@@ -603,10 +618,10 @@ class Configurator(QtWidgets.QMainWindow):
         Deletes the currently selected context.
         """
         self.error_label.setText("")
-        context = self.context_dropdown.currentText()
+        context = self.context_selection.currentText()
         try:
             self.bayesNet.del_context(context)
-        except AssertionError as error_message:
+        except Exception as error_message:
             self.error_label.setText(str(error_message))
         self.create_fields()
 
@@ -624,7 +639,7 @@ class Configurator(QtWidgets.QMainWindow):
             if result:
                 try:
                     self.bayesNet.add_intention(result)
-                except AssertionError as error_message:
+                except Exception as error_message:
                     self.error_label.setText(str(error_message))
             # update view!
             self.create_fields()
@@ -672,7 +687,7 @@ class Configurator(QtWidgets.QMainWindow):
         intention = self.intention_dropdown.currentText()
         try:
             self.bayesNet.del_intention(intention)
-        except AssertionError as error_message:
+        except Exception as error_message:
             self.error_label.setText(str(error_message))
         self.create_fields()
 
@@ -791,6 +806,10 @@ class Configurator(QtWidgets.QMainWindow):
 
         self.error_label.setText("")
 
+        def warning_to_label(message, *args, **kwargs):
+            self.error_label.setText(str(message))
+
+        warnings.showwarning = warning_to_label
         self.context_instantiations = defaultdict(dict)
         self.intention_instantiations = defaultdict(lambda: defaultdict(dict))
         self.new_context_button.clicked.connect(self.new_context)
@@ -800,6 +819,37 @@ class Configurator(QtWidgets.QMainWindow):
         self.new_intention_button.clicked.connect(self.new_intention)
         self.edit_intention_button.clicked.connect(self.edit_intention)
         self.delete_intention_button.clicked.connect(self.delete_intention)
+
+        self.new_combined_influence_button.clicked.connect(
+            self.new_combined_influence)
+
+        self.advanced_label.setText("advanced \u25BC")
+        self.advanced_label.setParent(self.advanced_hidden_frame)
+        self.advanced_folded = False
+        self.advanced_label.clicked.connect(self.on_clicked_advanced)
+
+        self.advanced_table = QFrame(self.advanced_hidden_frame)
+        self.advanced_hidden_frame.setLayout(QGridLayout())
+        self.advanced_hidden_frame.layout().addWidget(self.advanced_table, 0, 0)
+        self.on_clicked_advanced()
+
+        # add widgets to layout
+        # self.grid_layout.addWidget(self.context_label, 0, 0)
+        # self.grid_layout.addWidget(self.context_selection, 0, 1)
+        # self.grid_layout.addWidget(self.edit_context_button, 0, 2)
+        # self.grid_layout.addWidget(self.delete_context_button, 0, 3)
+
+        # self.grid_layout.addWidget(self.context_selected_frame, 1, 1)
+
+        # self.grid_layout.addWidget(self.intention_label_frame, 2, 0)
+        # self.grid_layout.addWidget(self.influencing_context_selection, 2, 1)
+        # self.grid_layout.addWidget(self.on_label, 2, 2)
+        # self.grid_layout.addWidget(self.intention_dropdown, 2, 3)
+        # self.grid_layout.addWidget(self.edit_intention_button, 2, 4)
+        # self.grid_layout.addWidget(self.delete_intention_button, 2, 5)
+
+        # self.grid_layout.addWidget(self.decision_threshold, 4, 1)
+        # self.grid_layout.addWidget(self.decision_threshold_entry, 4, 2)
 
         self.new_combined_influence_button.clicked.connect(
             self.new_combined_influence)
@@ -820,6 +870,8 @@ class Configurator(QtWidgets.QMainWindow):
         self.actionSave.setShortcut("Ctrl+S")
         self.actionSave_as.triggered.connect(self.save_as)
         self.actionSave_as.setShortcut("Ctrl+Shift+S")
+        self.graph_item.name_clicked.connect(
+            self.graph_clicked)  # Connect the signal to the slot
 
     def reset(self):
         """
@@ -860,10 +912,10 @@ class Configurator(QtWidgets.QMainWindow):
         try:
             self.bayesNet.change_decision_threshold(
                 float(value))
-        except AssertionError as error_message:
-            self.error_label.setText(f"{error_message}")
         except ValueError:
             self.error_label.setText(f'Decision Threshold must be a number')
+        except Exception as error_message:
+            self.error_label.setText(f"{error_message}")
         self.title_update()
 
     def set_context_dropdown(self, options: list, command: function = None):
@@ -899,7 +951,10 @@ class Configurator(QtWidgets.QMainWindow):
         # self.graph_item.clear()
         # only if config is valid
         if self.bayesNet.valid:
+            self.view.addItem(self.graph_item)
             self.graph_item.set_config(self.bayesNet.config)
+        else:
+            self.graph_item.setParentItem(None)
 
     def set_influencing_context_dropdown(self, options: list, command: function = None):
         '''
@@ -940,7 +995,6 @@ class Configurator(QtWidgets.QMainWindow):
         if not command:
             command = self.influencing_context_selected
         self.intention_dropdown.clear()
-
         if options:
             self.intention_dropdown.addItems(list(options))
             max_width = max(QFontMetrics(self.influencing_context_selection.font()).boundingRect(option).width()
@@ -962,19 +1016,14 @@ class Configurator(QtWidgets.QMainWindow):
         Args:
             context: name of the clicked context
         """
-        logger = logging.getLogger(__name__)
+
         for _, instantiations in self.context_instantiations.items():
             for instantiation, widgets in instantiations.items():
                 for widget in widgets:
                     try:
                         widget.deleteLater()
-                    except RuntimeError as e:
-                        logger.error(
-                            f"Failed to destroy widget {widget}: {type(e).__name__}: {str(e)}")
-                    except AttributeError:
-                        pass  # can not destroy StringVars
-                    except TypeError as e:
-                        logger.error(
+                    except Exception as e:
+                        self.log.error(
                             f"Failed to destroy widget {widget}: {type(e).__name__}: {str(e)}")
 
         self.context_instantiations = defaultdict(dict)
@@ -1007,6 +1056,20 @@ class Configurator(QtWidgets.QMainWindow):
             )
             row_count += 1
 
+    def graph_clicked(self, name: str, item_type: str):
+        """
+        Handle the event when a graph item is clicked.
+
+        Args:
+            name (str): The name of the clicked item.
+            item_type (str): The type of the clicked item ('context' or 'intention').
+        """
+        if item_type == "context":
+            self.set_influencing_context_dropdown([name])
+            self.set_context_dropdown([name])
+        elif item_type == "intention":
+            self.set_intention_dropdown([name])
+
     def influencing_context_selected(self, context_or_intention: str):
         """
         Callback for click on context in influencing context dropdown.
@@ -1014,40 +1077,30 @@ class Configurator(QtWidgets.QMainWindow):
         Args:
             context_or_intention: name of the clicked context
         """
-        for active_intention, active_context in self.intention_instantiations.items():
-            for active_context, instantiations in active_context.items():
-                for instantiation, widgets in instantiations.items():
-                    for widget in widgets:
-                        try:
-                            widget.deleteLater()
-                        except AttributeError:
-                            pass  # can not destroy StringVars
-                        except Exception as e:
-                            # TODO: better logging
-                            print(f"couldn't destroy: {e}")
+        for widget in self.influencing_context_frame.findChildren(QWidget):
+            try:
+                widget.deleteLater()
+            except Exception as e:
+                self.log.error(f"Couldn't destroy widget: {e}")
+
         intention = self.intention_dropdown.currentText()
         context = self.influencing_context_selection.currentText()
         if context not in self.bayesNet.config['contexts'] or \
                 intention not in self.bayesNet.config['intentions']:
             return
-
         self.intention_instantiations = defaultdict(lambda: defaultdict(dict))
-
         layout = self.gridLayout_3
-        row_count = layout.rowCount()
-
+        row_count = 0
         for instantiation, value in self.bayesNet.config['intentions'][intention][context].items():
             influence_text = f'Influence of {context}:{instantiation} on {intention}:'
             instantiation_label = QLabel(
                 influence_text, self.influencing_context_frame)
             instantiation_label.setFont(QFont('Times New Roman', 13))
-
             low_label = QLabel('LOW', self.influencing_context_frame)
             low_label.setFont(QFont('Times New Roman', 13))
 
             slider = QSlider(Qt.Horizontal, self.influencing_context_frame)
             slider.setFixedSize(100, 20)
-
             high_label = QLabel('HIGH', self.influencing_context_frame)
             high_label.setFont(QFont('Times New Roman', 13))
 
@@ -1062,13 +1115,13 @@ class Configurator(QtWidgets.QMainWindow):
             slider.setMaximum(5)
             slider.setTickInterval(1)
             slider.setStyleSheet(
-                f"QSlider::handle:horizontal {{background-color: {self.COLORS[value]}}}")
+                f"QSlider::handle:horizontal {{background-color: {self.COLORS.get(value, 'default_color')}}}")
+
             slider.setValue(value)
 
             slider.valueChanged.connect(lambda value, context=context, intention=intention,
                                         instantiation=instantiation, slider=slider:
                                         self.influence_values_changed(value, context, intention, instantiation, slider))
-
             self.intention_instantiations[intention][context][instantiation] = (
                 instantiation_label,
                 low_label,
@@ -1093,12 +1146,10 @@ class Configurator(QtWidgets.QMainWindow):
                 self.bayesNet.load(fileName)
                 self.original_config = deepcopy(self.bayesNet.config)
                 self.error_label.setText("")
-            except AssertionError as error_message:
-                self.error_label.setText(str(error_message))
-                self.original_config = deepcopy(self.bayesNet.config)
             except Exception as error_message:
                 self.error_label.setText(str(error_message))
         self.create_fields()
+        self.bayesNet.validate_config()  # Validate to raise warnings
 
     def title_update(self):
         """
@@ -1109,52 +1160,6 @@ class Configurator(QtWidgets.QMainWindow):
             self.setWindowTitle(f"CoBaIR {_} {self.current_file_name.name} *")
         else:
             self.setWindowTitle(f"CoBaIR {_} {self.current_file_name.name} ")
-
-    # def check_config_status(self):
-    #     """
-    #     Check the status of the configuration.
-
-    #     Returns:
-    #         bool: True if the current configuration differs from the original configuration, False otherwise.
-    #     """
-    #     if self.bayesNet.config != self.original_config:
-    #         return True
-    #     return False
-
-    # def parse_yaml_file(self):
-    #     """Parse YAML file path.
-
-    #     This function uses the argparse module to process the command-line arguments and retrieve the path of a YAML file.
-
-    #     Returns:
-    #         str or None: The path of the YAML file specified using the --file argument. If no file is provided, returns None.
-    #     """
-    #     parser = argparse.ArgumentParser(description='Process YAML file path.')
-    #     parser.add_argument('--file', type=str, default=None, help='path of YAML file')
-    #     args = parser.parse_args()
-    #     return args.file
-
-    # def get_current_file_name(self, yaml_file_path):
-    #     """Get the current file name.
-
-    #     This function retrieves the current file name based on the provided YAML file path. If no path is provided, it tries
-    #     to retrieve the file name from the `file_name` attribute of the `bayesNet` object.
-
-    #     Args:
-    #         yaml_file_path (str or None): The path of the YAML file.
-
-    #     Returns:
-    #         str or None: The current file name. If a YAML file path is provided, returns the base name of the file. If no
-    #         path is provided or it's None, tries to retrieve the file name from the `file_name` attribute of `bayesNet`.
-    #         Returns None if no file name can be determined.
-    #     """
-    #     if yaml_file_path is not None:
-    #         current_file_name = os.path.basename(yaml_file_path)
-    #     else:
-    #         current_file_name = self.bayesNet.file_name if hasattr(self.bayesNet, 'file_name') else None
-    #         if current_file_name is not None:
-    #             current_file_name = os.path.basename(current_file_name)
-    #     return current_file_name
 
     def config_status(self):
         """
@@ -1239,12 +1244,10 @@ class Configurator(QtWidgets.QMainWindow):
         try:
             self.bayesNet.change_context_apriori_value(context=context, instantiation=instantiation, value=float(
                 self.context_instantiations[context][instantiation][1].text()))
-        except AssertionError as error_message:
+        except ValueError as error:
+            self.error_label.setText(str(error))
+        except Exception as error_message:
             self.error_label.setText(str(error_message))
-        except ValueError:
-            self.error_label.setText(
-                f'Apriori probability of context "{context}.{instantiation}" is not a number')
-        self.title_update()
 
     def influence_values_changed(self, value, context, intention, instantiation, slider):
         """
@@ -1259,37 +1262,16 @@ class Configurator(QtWidgets.QMainWindow):
         """
         self.error_label.setText("")
         try:
+            slider.setStyleSheet(
+                f"QSlider::handle:horizontal {{background-color: {self.COLORS.get(value, 'default_color')}}}")
             self.bayesNet.change_influence_value(
                 intention=intention, context=context, instantiation=instantiation, value=int(value))
             slider.setStyleSheet(
                 f"QSlider::handle:horizontal {{background-color: {self.COLORS[value]}}}")
-        except AssertionError as e:
+        except Exception as e:
             self.error_label.setText(str(e))
         self.graph_item.update_value(context, intention)
         if context or intention is not None:
             self.graph_item.set_config(self.bayesNet.config)
         self.title_update()
         return value
-
-
-# if __name__ == "__main__":
-
-#     parser = argparse.ArgumentParser()
-#     parser.add_argument('-f', '--file', type=str,
-#                         help='Path to a config file to load upon start.')
-#     args = parser.parse_args()
-
-#     # get file from args
-#     config_path = args.file
-#     if config_path:
-#         config = load_config(config_path)
-#     else:
-#         config = None
-
-#     configurator = Configurator(config=config)
-#     # TODO: this is slightly complicated - could be solved if the configurator can distinguish between String/Path and dict and behaves accordingly.
-#     if config_path:
-#         configurator.current_file_name = Path(args.file).absolute()
-#     configurator.title_update()
-
-#     configurator.app.exec_()

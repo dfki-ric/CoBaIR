@@ -25,6 +25,8 @@ On some Linux Distros there seems to be a problem with a shared library. [This S
 ` which works on Ubuntu 22.04.
 
 ## Use the Graphical User Interface
+![GUI](docs/images/simpleConfig.gif "A simple configuration in the GUI")
+
 To make the configuration of a scenario easier we provide a Graphical User Interface(GUI). The GUI can be started with
 ```bash
 python start_configurator.py

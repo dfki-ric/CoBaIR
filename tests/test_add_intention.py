@@ -5,6 +5,7 @@ Tests for adding intention variables
 # System imports
 import pytest
 from collections import defaultdict
+import warnings
 # 3rd party imports
 
 # local imports
@@ -17,19 +18,22 @@ __author__ = 'Adrian Lubitz'
 # TODO: add more negative cases
 
 
-def test_add_to_empty():
+def test_add_to_empty(config=None, counter=0):
     """
     Test adding an intention to an empty config
     """
-    config = {'intentions': defaultdict(lambda: defaultdict(
-        lambda: defaultdict(int))), 'contexts': defaultdict(lambda: defaultdict(float))}
-    intention = 'some intention'
+    if config is None:
+        config = {'intentions': defaultdict(lambda: defaultdict(
+            lambda: defaultdict(int))), 'contexts': defaultdict(lambda: defaultdict(float))}
+        bn = BayesNet()
+    else:
+        bn = BayesNet(config, validate=False)
+    intention = f'some intention_{counter}'
 
     config['intentions'][intention] = {}
-    bn = BayesNet()
-    # I assume this will throw an Error!
-    with pytest.raises(AssertionError):
-        bn.add_intention('some intention')
+
+    with pytest.warns(UserWarning):
+        bn.add_intention(intention)
     # Making sure tmp_config will be maintained
     assert config_to_default_dict(bn.config) == config_to_default_dict(config)
 
@@ -40,15 +44,8 @@ def test_add_n_to_empty(n=N):
     """
     config = {'intentions': defaultdict(lambda: defaultdict(
         lambda: defaultdict(int))), 'contexts': defaultdict(lambda: defaultdict(float))}
-    intention = 'intention'
-    bn = BayesNet()
-    # I assume this will throw an Error!
     for i in range(n):
-        config['intentions'][f'{intention}_{i}'] = {}
-        with pytest.raises(AssertionError):
-            bn.add_intention(f'{intention}_{i}')
-    # Making sure tmp_config will be maintained
-    assert config_to_default_dict(bn.config) == config_to_default_dict(config)
+        test_add_to_empty(config, i)
 
 
 def test_add_to_existing():
