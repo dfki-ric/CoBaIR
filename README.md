@@ -1,4 +1,4 @@
-# CoBaIR
+# ![CoBaIR](docs/images/logo.svg)
 
 CoBaIR is a python library for **Co**ntext **Ba**sed **I**ntention **R**ecognition. 
 It provides the means to infer an intention from given context. 
