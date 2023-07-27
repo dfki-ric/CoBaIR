@@ -27,7 +27,8 @@ from PyQt5.QtWidgets import QDialog, QLabel, QLineEdit, QComboBox, QPushButton,\
     QFrame, QGridLayout, QSizePolicy, QSlider, QFileDialog, QMessageBox
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QFont, QFontMetrics
+from PyQt5.QtGui import QFont, QFontMetrics, QIcon, QPixmap
+
 import logging
 
 # Rest of the code...
@@ -872,6 +873,11 @@ class Configurator(QtWidgets.QMainWindow):
         self.actionSave_as.setShortcut("Ctrl+Shift+S")
         self.graph_item.name_clicked.connect(
             self.graph_clicked)  # Connect the signal to the slot
+
+        # Adding the icon - Apperently this is not possible through QT Designer
+        logo_path = Path(Path(__file__).parent.parent, "docs",
+                         "images", "logo_no_text.png")
+        self.setWindowIcon(QIcon(str(logo_path)))
 
     def reset(self):
         """
