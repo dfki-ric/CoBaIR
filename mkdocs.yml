@@ -5,6 +5,8 @@ plugins:
   - mkdocstrings
 
 theme:
+  logo: images/logo_no_text_monochrome.png
+  favicon: images/logo_no_text.png
   name: 'material'
   palette:
     primary: orange
