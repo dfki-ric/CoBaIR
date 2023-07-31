@@ -1040,10 +1040,10 @@ class Configurator(QtWidgets.QMainWindow):
             item_type (str): The type of the clicked item ('context' or 'intention').
         """
         if item_type == "context":
-            self.set_influencing_context_dropdown([name])
-            self.set_context_dropdown([name])
+            self.context_selection.setCurrentText(name)
+            self.influencing_context_selection.setCurrentText(name)
         elif item_type == "intention":
-            self.set_intention_dropdown([name])
+            self.intention_dropdown.setCurrentText(name)
 
     def influencing_context_selected(self, context_or_intention: str):
         """
