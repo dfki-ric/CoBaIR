@@ -830,7 +830,7 @@ class Configurator(QtWidgets.QMainWindow):
         self.advanced_label.clicked.connect(self.on_clicked_advanced)
 
         self.advanced_table = QFrame(self.advanced_hidden_frame)
-        self.advanced_hidden_frame.setLayout(QGridLayout())
+        # self.advanced_hidden_frame.setLayout(QGridLayout())
         self.advanced_hidden_frame.layout().addWidget(self.advanced_table, 0, 0)
         self.on_clicked_advanced()
 
@@ -1156,6 +1156,7 @@ class Configurator(QtWidgets.QMainWindow):
                 self.error_label.setText(str(error_message))
         self.create_fields()
         self.bayesNet.validate_config()  # Validate to raise warnings
+        self.draw_graph()
 
     def title_update(self):
         """
