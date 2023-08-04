@@ -1036,20 +1036,30 @@ class Configurator(QtWidgets.QMainWindow):
         layout = self.gridLayout_3
         row_count = layout.rowCount()
         self.SCALE_MAPPING = {
-            0: (' : Not Probable ❌'),     
-            1: (' : Not Very Probable 🟠'),
-            2: (' : Somewhat Probable 🟡'),
-            3: (' : Even Probability 🟡🟢'),
-            4: (' : Very Probable 🟢'),
-            5: (' : Definitely Probable ✅'),
+            0: ('no', 'red'),        
+            1: ('very', 'red'),     
+            2: ('low', 'orange'),    
+            3: ('medium', 'orange'),
+            4: ('high', 'green'), 
+            5: ('very high', 'green')
         }
         for instantiation, value in self.bayesNet.config['intentions'][intention][context].items():
-            influence_text = f'Influence of {context}:{instantiation} on {intention}:'
+            influence_text = f'{context}:{instantiation} has'
             instantiation_label = QLabel(
                 influence_text, self.influencing_context_frame)
             instantiation_label.setFont(QFont('Times New Roman', 13))
 
-            low_label = QLabel('LOW', self.influencing_context_frame)
+            scale_text, scale_color = self.SCALE_MAPPING[value]
+            scale_label = QLabel(scale_text, self.influencing_context_frame)
+            scale_label.setFont(QFont('Times New Roman', 13))
+            scale_label.setAlignment(Qt.AlignCenter)
+            scale_label.setStyleSheet(f"QLabel {{ color: {scale_color}; }}")
+
+            influence_end_text = f'influence on {intention}'
+            influence_end_label = QLabel(influence_end_text, self.influencing_context_frame)
+            influence_end_label.setFont(QFont('Times New Roman', 13))
+
+            low_label = QLabel('   LOW', self.influencing_context_frame)
             low_label.setFont(QFont('Times New Roman', 13))
 
             slider = QSlider(Qt.Horizontal, self.influencing_context_frame)
@@ -1058,16 +1068,13 @@ class Configurator(QtWidgets.QMainWindow):
             high_label = QLabel('HIGH', self.influencing_context_frame)
             high_label.setFont(QFont('Times New Roman', 13))
 
-            slider_label = QLabel(self.SCALE_MAPPING[value], self.influencing_context_frame)
-            slider_label.setFont(QFont('Times New Roman', 13))
-            slider_label.setFixedWidth(200) 
-            
             layout.setColumnStretch(0, 1)
             layout.addWidget(instantiation_label, row_count, 1)
-            layout.addWidget(low_label, row_count, 2)
-            layout.addWidget(slider, row_count, 3)
-            layout.addWidget(high_label, row_count, 4)
-            layout.addWidget(slider_label, row_count, 5)  
+            layout.addWidget(scale_label, row_count, 2)
+            layout.addWidget(influence_end_label, row_count, 3)
+            layout.addWidget(low_label, row_count, 4)
+            layout.addWidget(slider, row_count, 5)
+            layout.addWidget(high_label, row_count, 6)
             layout.setColumnStretch(6, 1)
 
             slider.setMinimum(0)
@@ -1078,15 +1085,14 @@ class Configurator(QtWidgets.QMainWindow):
             slider.setValue(value)
 
             slider.valueChanged.connect(lambda value, context=context, intention=intention,
-                                        instantiation=instantiation, slider=slider, slider_label=slider_label:
-                                        self.influence_values_changed(value, context, intention, instantiation, slider, slider_label))
+                                        instantiation=instantiation, slider=slider, scale_label = scale_label:
+                                        self.influence_values_changed(value, context, intention, instantiation, slider, scale_label))
 
             self.intention_instantiations[intention][context][instantiation] = (
                 instantiation_label,
                 low_label,
                 slider,
                 high_label,
-                slider_label  
             )
 
             row_count += 1
@@ -1259,7 +1265,7 @@ class Configurator(QtWidgets.QMainWindow):
                 f'Apriori probability of context "{context}.{instantiation}" is not a number')
         self.title_update()
 
-    def influence_values_changed(self, value, context, intention, instantiation, slider, slider_label):
+    def influence_values_changed(self, value, context, intention, instantiation, slider, scale_label):
         """
         Callback for change of the influence values.
 
@@ -1276,7 +1282,9 @@ class Configurator(QtWidgets.QMainWindow):
                 intention=intention, context=context, instantiation=instantiation, value=int(value))
             slider.setStyleSheet(
                 f"QSlider::handle:horizontal {{background-color: {self.COLORS[value]}}}")
-            slider_label.setText(self.SCALE_MAPPING[value])
+            
+            scale_label.setText(self.SCALE_MAPPING[value][0])
+
         except AssertionError as e:
             self.error_label.setText(str(e))
         self.title_update()
