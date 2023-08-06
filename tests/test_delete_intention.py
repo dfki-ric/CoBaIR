@@ -5,7 +5,7 @@ Tests for deleting intention variables
 # System imports
 from copy import deepcopy
 import pytest
-
+import warnings
 from collections import defaultdict
 # 3rd party imports
 
@@ -36,15 +36,14 @@ def test_delete_intention_from_existing_intention():
     bn = BayesNet()
     bn.load('small_example.yml')
     old_config = deepcopy(bn.config)
-    # cnt =0
     new_intention = list(bn.config['intentions'].keys())
     for intention in new_intention:
         if len(bn.config['intentions'].keys()) > 1:
             bn.del_intention(intention)
             assert intention not in bn.config['intentions']
         else:
-            # while deleting the last context raises an Exception because there is no context
-            with pytest.raises(AssertionError):
+            # while deleting the last context raises a warning because there is no context
+            with pytest.warns(UserWarning):
                 bn.del_intention(intention)
                 assert intention not in bn.config['intentions']
     assert bn.config != old_config

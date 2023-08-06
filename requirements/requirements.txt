@@ -2,5 +2,4 @@ pgmpy==0.1.20
 bnlearn==0.7.10
 pyyaml==5.3.1
 PyQt5==5.15.9
-# pyqtgraph==0.13.2
-pyqtgraph @ git+https://github.com/adrianlubitz/pyqtgraph.git@patch-1
+pyqtgraph==0.13.3

@@ -5,7 +5,7 @@ Tests for adding context variables
 # System imports
 import pytest
 from collections import defaultdict
-
+import warnings
 # 3rd party imports
 
 # local imports
@@ -28,7 +28,6 @@ def test_add_to_empty(config=None, counter=0):
             lambda: defaultdict(int))), 'contexts': defaultdict(lambda: defaultdict(float))}
         bn = BayesNet()
     else:
-        # with pytest.raises(AssertionError):
         bn = BayesNet(config, validate=False)
     context = f'the context_{counter}'
     instantiations = {
@@ -36,8 +35,7 @@ def test_add_to_empty(config=None, counter=0):
 
     config['contexts'][context] = instantiations
 
-    # I assume this will throw an Error!
-    with pytest.raises(AssertionError):
+    with pytest.warns(UserWarning):
         bn.add_context(context, instantiations)
     # Making sure tmp_config will be maintained
     assert config_to_default_dict(bn.config) == config_to_default_dict(config)

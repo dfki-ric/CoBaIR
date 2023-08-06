@@ -1,5 +1,16 @@
+'''
+installer for CoBaIR
+'''
+
+# System imports
 import os
 from setuptools import setup, find_packages
+# 3rd party imports
+
+# local imports
+
+# end file header
+__author__ = 'Adrian Lubitz'
 
 
 # TODO: if TAG in pipeline given use tag
