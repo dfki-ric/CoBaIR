@@ -19,7 +19,7 @@ from PyQt5.QtWidgets import QDialog, QLabel, QLineEdit, QComboBox, QPushButton,\
     QFrame, QGridLayout, QSizePolicy, QSlider, QFileDialog, QMessageBox
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QFont, QFontMetrics
+from PyQt5.QtGui import QFont, QFontMetrics, QColor
 import logging
 import numpy as np
 
@@ -806,7 +806,7 @@ class Configurator(QtWidgets.QMainWindow):
         self.advanced_folded = False
         self.advanced_label.clicked.connect(self.on_clicked_advanced)
 
-        self.COLORS = {0: 'White', 1: 'Red', 2: 'Orange',
+        self.COLORS = {0: 'Black', 1: 'Red', 2: 'Orange',
                        3: 'Yellow', 4: 'darkCyan', 5: 'Green'}
         # Adding the canvas
         self.canvas_frame.layout().addWidget(self.win, 0, 0)
@@ -1062,13 +1062,16 @@ class Configurator(QtWidgets.QMainWindow):
             slider_label = QLabel(self.SCALE_MAPPING[value], self.influencing_context_frame)
             slider_label.setFont(QFont('Times New Roman', 13))
             slider_label.setFixedWidth(80) 
+            slider_label.setStyleSheet(f"QLabel {{ color: {self.COLORS[value]}; }}")
             
             layout.setColumnStretch(0, 1)
-            layout.addWidget(instantiation_label, row_count, 1)
-            layout.addWidget(slider_label, row_count, 2)
-            layout.addWidget(low_label, row_count, 3)
-            layout.addWidget(slider, row_count, 4)
-            layout.addWidget(high_label, row_count, 5)
+            layout.addWidget(instantiation_label, row_count*2, 1)
+            layout.addWidget(slider_label, row_count*2, 2)
+
+            layout.addWidget(low_label, row_count*2+1, 1, alignment=Qt.AlignRight)
+            layout.addWidget(slider, row_count*2+1, 2)
+            layout.addWidget(high_label, row_count*2+1, 3)
+
             layout.setColumnStretch(6, 1)
 
             slider.setMinimum(0)
@@ -1278,6 +1281,8 @@ class Configurator(QtWidgets.QMainWindow):
             slider.setStyleSheet(
                 f"QSlider::handle:horizontal {{background-color: {self.COLORS[value]}}}")
             slider_label.setText(self.SCALE_MAPPING[value])
+            slider_label.setStyleSheet(f"QLabel {{ color: {self.COLORS[value]}; }}")
+
         except AssertionError as e:
             self.error_label.setText(str(e))
         self.title_update()
