@@ -53,7 +53,7 @@ def test_loading_invalid_yml_file():
     """
     Test loading invalid file name
     """
-    config = load_config('small_example_invalid.yml')
+    config = load_config('tests/small_example_invalid.yml')
 
     # I assume this will throw a warning instead of an error
     # if the value for pick up tool.speech commands.handover is invalid
