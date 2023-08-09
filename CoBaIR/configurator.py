@@ -823,37 +823,6 @@ class Configurator(QtWidgets.QMainWindow):
 
         self.new_combined_influence_button.clicked.connect(
             self.new_combined_influence)
-
-        self.advanced_label.setText("advanced \u25BC")
-        self.advanced_label.setParent(self.advanced_hidden_frame)
-        self.advanced_folded = False
-        self.advanced_label.clicked.connect(self.on_clicked_advanced)
-
-        self.advanced_table = QFrame(self.advanced_hidden_frame)
-        self.advanced_hidden_frame.setLayout(QGridLayout())
-        self.advanced_hidden_frame.layout().addWidget(self.advanced_table, 0, 0)
-        self.on_clicked_advanced()
-
-        # add widgets to layout
-        # self.grid_layout.addWidget(self.context_label, 0, 0)
-        # self.grid_layout.addWidget(self.context_selection, 0, 1)
-        # self.grid_layout.addWidget(self.edit_context_button, 0, 2)
-        # self.grid_layout.addWidget(self.delete_context_button, 0, 3)
-
-        # self.grid_layout.addWidget(self.context_selected_frame, 1, 1)
-
-        # self.grid_layout.addWidget(self.intention_label_frame, 2, 0)
-        # self.grid_layout.addWidget(self.influencing_context_selection, 2, 1)
-        # self.grid_layout.addWidget(self.on_label, 2, 2)
-        # self.grid_layout.addWidget(self.intention_dropdown, 2, 3)
-        # self.grid_layout.addWidget(self.edit_intention_button, 2, 4)
-        # self.grid_layout.addWidget(self.delete_intention_button, 2, 5)
-
-        # self.grid_layout.addWidget(self.decision_threshold, 4, 1)
-        # self.grid_layout.addWidget(self.decision_threshold_entry, 4, 2)
-
-        self.new_combined_influence_button.clicked.connect(
-            self.new_combined_influence)
         self.advanced_folded = False
         self.advanced_label.clicked.connect(self.on_clicked_advanced)
 
@@ -1071,10 +1040,10 @@ class Configurator(QtWidgets.QMainWindow):
             item_type (str): The type of the clicked item ('context' or 'intention').
         """
         if item_type == "context":
-            self.set_influencing_context_dropdown([name])
-            self.set_context_dropdown([name])
+            self.context_selection.setCurrentText(name)
+            self.influencing_context_selection.setCurrentText(name)
         elif item_type == "intention":
-            self.set_intention_dropdown([name])
+            self.intention_dropdown.setCurrentText(name)
 
     def influencing_context_selected(self, context_or_intention: str):
         """
@@ -1156,6 +1125,7 @@ class Configurator(QtWidgets.QMainWindow):
                 self.error_label.setText(str(error_message))
         self.create_fields()
         self.bayesNet.validate_config()  # Validate to raise warnings
+        self.draw_graph()
 
     def title_update(self):
         """
