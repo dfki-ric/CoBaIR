@@ -62,6 +62,17 @@ def test_loading_invalid_yml_file():
         bn = BayesNet(config, validate=True)
         assert bn.valid is False
 
+def test_missing_and_invalid_context():
+    """
+    Test loading a configuration file with missing and invalid context values.
+    This could potentially lead to an application crash.
+    """
+    config = load_config('tests/small_example_invalid_context.yml')
+
+    with pytest.raises(TypeError):  
+        bn = BayesNet(config, validate=True)
+        assert bn.valid is False
+
 
 def test_no_intention_defined():
     """
