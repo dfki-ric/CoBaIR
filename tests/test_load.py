@@ -53,10 +53,47 @@ def test_loading_invalid_yml_file():
     """
     Test loading invalid file name
     """
-    config = load_config('small_example_invalid.yml')
+    config = load_config('tests/small_example_invalid.yml')
 
     # I assume this will throw a warning instead of an error
     # if the value for pick up tool.speech commands.handover is invalid
+    with pytest.warns(UserWarning):
+        # Pass validate=True to enable config validation
+        bn = BayesNet(config, validate=True)
+        assert bn.valid is False
+
+def test_missing_and_invalid_context():
+    """
+    Test loading a configuration file with missing and invalid context values.
+    This could potentially lead to an application crash.
+    """
+    config = load_config('tests/small_example_invalid_context.yml')
+
+    with pytest.raises(TypeError):  
+        bn = BayesNet(config, validate=True)
+        assert bn.valid is False
+
+
+def test_no_intention_defined():
+    """
+    Test loading a configuration file with no intention defined
+    """
+    config = load_config('tests/small_example_invalid_intention.yml')
+
+    # I assume this will throw a warning instead of an error
+    with pytest.warns(UserWarning):
+        # Pass validate=True to enable config validation
+        bn = BayesNet(config, validate=True)
+        assert bn.valid is False
+
+
+def test_invalid_values():
+    """
+    Test loading a configuration file with values not in the correct range
+    """
+    config = load_config('tests/small_example_invalid_value.yml')
+
+    # I assume this will throw a warning instead of an error
     with pytest.warns(UserWarning):
         # Pass validate=True to enable config validation
         bn = BayesNet(config, validate=True)

@@ -84,7 +84,7 @@ def test_load_and_save():
     """
     bn = BayesNet()
     bn.load('small_example.yml')
-    bn.save('small_example_copy.yml')
-    assert load_config('small_example.yml') == load_config('small_example_copy.yml')
+    bn.save('tests/small_example_copy.yml')
+    assert load_config('small_example.yml') == load_config('tests/small_example_copy.yml')
 
 
