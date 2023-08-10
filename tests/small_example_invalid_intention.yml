@@ -1,0 +1,19 @@
+# Threshold for intention to be picked. 
+# If the probability of the most likely intention is lower than the threshold no intention will be selected
+decision_threshold: 0.8
+
+#  List of contexts. Contexts can have different discrete values. 
+# For all discrete values a prior probability must be given(sum for one context must be 1)
+contexts:
+  speech commands:
+    pickup : 0.2
+    handover : 0.2
+    other : 0.6
+  human holding object:
+    true : 0.4
+    false : 0.6
+  human activity:
+    idle : 0.2
+    working : 0.8
+
+#missing intention

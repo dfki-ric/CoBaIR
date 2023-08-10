@@ -63,6 +63,32 @@ def test_loading_invalid_yml_file():
         assert bn.valid is False
 
 
+def test_no_intention_defined():
+    """
+    Test loading a configuration file with no intention defined
+    """
+    config = load_config('tests/small_example_invalid_intention.yml')
+
+    # I assume this will throw a warning instead of an error
+    with pytest.warns(UserWarning):
+        # Pass validate=True to enable config validation
+        bn = BayesNet(config, validate=True)
+        assert bn.valid is False
+
+
+def test_invalid_values():
+    """
+    Test loading a configuration file with values not in the correct range
+    """
+    config = load_config('tests/small_example_invalid_value.yml')
+
+    # I assume this will throw a warning instead of an error
+    with pytest.warns(UserWarning):
+        # Pass validate=True to enable config validation
+        bn = BayesNet(config, validate=True)
+        assert bn.valid is False
+
+
 def test_loading_valid_yml_file():
     """
     Test loading valid file name - validata_config() function will validate
