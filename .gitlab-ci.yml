@@ -6,9 +6,11 @@ stages:
   - docu
   - deploy
 
-run_tests_3.8:
-  image: python:3.8-bullseye
+run_tests:
+  image: python:${PYTHON_VERSION}-bullseye
   stage: test
+  variables:
+    PYTHON_VERSION: "3.8"  # default version
   before_script:
     - pip install --upgrade pip
     - pip install -r requirements/test_requirements.txt
@@ -28,6 +30,9 @@ run_tests_3.8:
     paths:
       - htmlcov
       - test_report
+  parallel:
+    matrix:
+      - PYTHON_VERSION: ["3.8", "3.9", "3.10", "3.11"]
 
 
 software_catalogue_entry:
