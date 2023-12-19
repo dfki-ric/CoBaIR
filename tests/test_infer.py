@@ -52,8 +52,8 @@ def test_infer_single_evidence():
     """
     Test inference with single evidence context present
     """
-    probabilities = {'pick up tool': 0.7821782178217822,
-                     'hand over tool': 0.21782178217821785}
+    probabilities = {'hand over tool': 0.23157894736842097,
+                     'pick up tool': 0.768421052631579}
 
     max_intention, decision_threshold, inference = bn.infer(
         {'speech commands': 'pickup'})
@@ -65,8 +65,8 @@ def test_infer_multiple_evidence():
     """
     Test inference with multiple evidence context present
     """
-    probabilities = {'hand over tool': 0.3797468354430379,
-                     'pick up tool': 0.620253164556962}
+    probabilities = {'hand over tool': 0.46153846153846145,
+                     'pick up tool': 0.5384615384615384}
     with pytest.warns(UserWarning):
         max_intention, decision_threshold, inference = bn.infer({
             'speech commands': 'pickup',
@@ -82,14 +82,14 @@ def test_infer_combined_evidence():
     """
     Test inference for the combined case
     """
-    probabilities = {'hand over tool': 0.26229508196721313,
-                     'pick up tool': 0.7377049180327869}
+    probabilities = {'hand over tool': 0.04878048780487805,
+                     'pick up tool': 0.9512195121951219}
 
     with pytest.warns(UserWarning):
         max_intention, decision_threshold, inference = bn.infer({
             'speech commands': 'pickup',
             'human holding object': True,
-            'human activity': 'idle',
+            'human activity': 'working',
             'unhashable context': {}
         })
     for intention, probability in inference.items():
