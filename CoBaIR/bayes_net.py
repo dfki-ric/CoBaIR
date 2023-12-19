@@ -161,7 +161,7 @@ class BayesNet():
     def _create_combined_context(self, context_influence: dict) -> dict:
         """
         Creates a dict with the combined contexts in card index format from context_influence.
-
+        TODO: example makes no sense - replace
         Args:
             context_influence:
                 A dict with the influence values for contexts.
@@ -342,7 +342,7 @@ class BayesNet():
                 f'Cannot bind discretization function to {context}. Context does not exist!')
         self.discretization_functions[context] = discretization_function
 
-    def infer(self, evidence, normalized=True, decision_threshold=None) -> dict:
+    def infer(self, evidence, normalized=True, decision_threshold=None) -> tuple:
         '''
         infers the probabilities for the intentions with given evidence.
 
@@ -361,8 +361,8 @@ class BayesNet():
             normalized: Flag if the returned inference is normalized to sum up to 1.
         Returns:
             tuple:
-            Returns the highest ranking intention (or None if decision_threshold is not reached) and 
-                a dictionary of intentions and the corresponding probabilities.
+            Returns the highest ranking intention (or None if decision_threshold is not reached), the decision threshold
+            and a dictionary of intentions and the corresponding probabilities.
         '''
         # check if evidence values are in instantiations and create a card form of bnlearn
         if decision_threshold is None:
@@ -765,6 +765,9 @@ class BayesNet():
         """
         if not contexts:
             raise ValueError('Contexts list cannot be empty.')
+        if intention not in self.config['intentions']:
+            raise ValueError(
+                f'"{intention}" does not exist in the list of intentions')
         for i, instantiation in enumerate(instantiations):
             if instantiation not in self.config['intentions'][intention][contexts[i]]:
                 raise ValueError(

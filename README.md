@@ -5,10 +5,11 @@ It provides the means to infer an intention from given context.
 An intention is a binary value e.g. `repair pipe` that can either be present or not. Only one intention can be present at a time.
 Context on the otherhand can have multiple discrete instantiations e.g. `weather:sunny|cloudy|raining`.
 If context values are continuous, discretizer functions can be used to create discrete values.
-From the infered intention in a HRI scenario the robot can perform corresponding actions to help the human with a specific task.
+From the inferred intention in a HRI scenario the robot can perform corresponding actions to help the human with a specific task.
 
 ## Publications
 For a more in-depth explanation consult the following papers:
+
 - [Concept Paper](https://www.dfki.de/fileadmin/user_upload/import/12351_lubitz_kimmi_cobabir_2022_-_Adrian_Lubitz.pdf)
 - [Full Paper for IEEE RO-MAN Conference](https://arxiv.org/abs/2308.05627)
 
@@ -36,10 +37,12 @@ if you want to start the GUI with a loaded config use
 ```bash
 python start_configurator.py -f config.yml
 ```
-
+## Tutorial
+For a step-by-step guide on how to use CoBaIR, check out our [Tutorial](docs/Tutorial.md).
 
 ## Documentation
 The Documentation can be accessed on https://dfki-ric.github.io/CoBaIR/
+
 
 ## Bayesian Approach
 In the bayesian approach CoBaIR uses a two-layer Bayesian Net of the following structure.
