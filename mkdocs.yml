@@ -18,3 +18,4 @@ markdown_extensions:
 nav:
   - Getting started: index.md
   - API Documentation: API.md
+  - Tutorial: Tutorial.md

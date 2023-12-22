@@ -1,63 +1,63 @@
-# Purpose of CoBaIR
+## Purpose of CoBaIR
 The CoBaIR framework is designed to interpret human intentions within diverse settings, assigning probabilities to these intentions based on the contextual information provided in multimodal scenarios.
 
-# Prerequisites
+## Prerequisites
 Before starting to design a scenario with CoBaIR you need to understand some basics.
 
-## Intentions
+### Intentions
 Intentions denote what a human in an HRI scenario wants to do in a certain situation.
 An intention is a binary value e.g. `repair pipe` that can either be present or not. Only one intention can be present at a time.
 
-## Context
+### Context
 Every perceivable aspect of the scenario is considered to be context in CoBaIR.
 Context can have multiple discrete instantiations e.g. `weather:sunny|cloudy|raining`.
 If context values are continuous, discretizer functions can be used to create discrete values.
 
 
 
-# Configuring a CoBaIR Scenario with the GUI
+## Configuring a CoBaIR Scenario with the GUI
 
-## Apriori Probabilities
+### Apriori Probabilities
 
 Apriori probabilities are initial probabilities based on prior knowledge or assumptions, indicating the likelihood of context states. These apriori probabilities will be used during inference if a specific context cannot be observed. In this case it assumed that the instantiations of the context occur with the given probabilities.  
 
-### Setting Apriori Probabilities
+#### Setting Apriori Probabilities
 In the `Apriori Probability of Context`` section:
 1. Select a context or create a new one.
 2. Assign probabilities ensuring they sum to 1.
 
 ![GUI](images/apriori_probability.gif "Setting Apriori Probabilities")
 
-## Influence Values
+### Influence Values
 
 These values indicate how much a context influences a particular intention.
 
-### Setting Influence Values
+#### Setting Influence Values
 In the `Influence of Context on Intention` area:
 1. Choose a context and an intention.
 2. Use a slider to assign an influence value on a 0-5 scale.
 
 ![GUI](images/influence.gif "Setting Influence Values")
 
-## Decision Threshold
+### Decision Threshold
 
 A pre-set level that an intention must meet or exceed to be selected.
 
-### Importance of Setting It
+#### Importance of Setting It
 It ensures the system acts on intentions with a certain confidence level, reducing the chance of incorrect actions based on low-probability guesses.
 
-### How to Set
+#### How to Set
 In the `Decision threshold` setting:
 1. Enter a numeric value.
 2. Adjust to balance responsiveness and accuracy. 
 
 ![GUI](images/decision_threshold.gif "Decision Threshold")
 
-## Combined Context Influence
+### Combined Context Influence
 
 In complex decision-making circumstances, the end result is shaped by the interaction of numerous contexts rather than by a single context in isolation. To effectively simulate the complexity in the real world, the Combined Context Influence is required. 
 
-### Configuring Combined Context Influence
+#### Configuring Combined Context Influence
 
 In the `new combined context influence` setting.
 1. Input pairs of contexts that interact with each other.
@@ -65,7 +65,7 @@ In the `new combined context influence` setting.
 
 ![GUI](images/combined_context.gif "Combined Context Influence")
 
-## Graphical Representation
+### Graphical Representation
 
 - **Visual Overview**: 
   - The graph provides a visual representation of how different contexts and intentions are interconnected.
@@ -76,7 +76,7 @@ In the `new combined context influence` setting.
 - **Edges**: 
   - Edges between nodes show the relationships and their strength, based on the influence values set in the previous steps. The higher the influence, the thicker and greener the edge.
 
-### Interacting with the Graph
+#### Interacting with the Graph
 
 - **Expanding Contexts**: 
   - Upon clicking, a context node unfolds to reveal specific instantiations, each connected to relevant intentions.
@@ -92,7 +92,7 @@ In the `new combined context influence` setting.
 This graphical representation is allowing for a clear and intuitive understanding of how various contexts and intentions are interrelated. It aids in verifying and adjusting configurations, ensuring that the system accurately interprets intentions based on the given context.
 
 
-# Example Scenario
+## Example Scenario
 Here we describe an example scenario which can be loaded from the file `small_example.yml`. We have a very small scenario where a human can be assisted by a robot. In this scenario the human either wants the robot to pick up a tool or hand over a tool. What the robot can perceive is if the human is holding an object, the human activity and a speech command from the human.
 
 
