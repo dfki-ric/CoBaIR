@@ -20,4 +20,4 @@ jobs:
           path: .cache
       - run: pip install -r requirements/doc_requirements.txt
       - run: pip install .
-      - run: mkdocs gh-deploy
+      - run: mkdocs gh-deploy --force
