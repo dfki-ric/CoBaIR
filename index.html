@@ -1,0 +1,700 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+      
+        <link rel="next" href="API/">
+      
+      
+      <link rel="icon" href="images/logo_no_text.png">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.5.2">
+    
+    
+      
+        <title>CoBaIR - Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="assets/stylesheets/main.50c56a3b.min.css">
+      
+        
+        <link rel="stylesheet" href="assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="orange" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#_1" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="." title="CoBaIR - Documentation" class="md-header__button md-logo" aria-label="CoBaIR - Documentation" data-md-component="logo">
+      
+  <img src="images/logo_no_text_monochrome.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            CoBaIR - Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Getting started
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="." title="CoBaIR - Documentation" class="md-nav__button md-logo" aria-label="CoBaIR - Documentation" data-md-component="logo">
+      
+  <img src="images/logo_no_text_monochrome.png" alt="logo">
+
+    </a>
+    CoBaIR - Documentation
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Getting started
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="." class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Getting started
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#publications" class="md-nav__link">
+    <span class="md-ellipsis">
+      Publications
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#install" class="md-nav__link">
+    <span class="md-ellipsis">
+      Install
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Install">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#known-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      Known Issues
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#graphical-user-interface" class="md-nav__link">
+    <span class="md-ellipsis">
+      Graphical User Interface
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tutorial" class="md-nav__link">
+    <span class="md-ellipsis">
+      Tutorial
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Documentation
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#bayesian-approach" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bayesian Approach
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#config-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      Config Format
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Config Format">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bayesian-approach_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bayesian Approach
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="API/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    API Documentation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Tutorial/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Tutorial
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#publications" class="md-nav__link">
+    <span class="md-ellipsis">
+      Publications
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#install" class="md-nav__link">
+    <span class="md-ellipsis">
+      Install
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Install">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#known-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      Known Issues
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#graphical-user-interface" class="md-nav__link">
+    <span class="md-ellipsis">
+      Graphical User Interface
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tutorial" class="md-nav__link">
+    <span class="md-ellipsis">
+      Tutorial
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Documentation
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#bayesian-approach" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bayesian Approach
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#config-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      Config Format
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Config Format">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#bayesian-approach_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bayesian Approach
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+<!-- BEGIN INCLUDE ../README.md   -->
+<h1 id="_1"><img alt="CoBaIR" src="images/logo.svg" /></h1>
+<p>CoBaIR is a python library for <strong>Co</strong>ntext <strong>Ba</strong>sed <strong>I</strong>ntention <strong>R</strong>ecognition. 
+It provides the means to infer an intention from given context. 
+An intention is a binary value e.g. <code>repair pipe</code> that can either be present or not. Only one intention can be present at a time.
+Context on the otherhand can have multiple discrete instantiations e.g. <code>weather:sunny|cloudy|raining</code>.
+If context values are continuous, discretizer functions can be used to create discrete values.
+From the inferred intention in a HRI scenario the robot can perform corresponding actions to help the human with a specific task.</p>
+<h2 id="publications">Publications</h2>
+<p>For a more in-depth explanation consult the following papers:</p>
+<ul>
+<li><a href="https://www.dfki.de/fileadmin/user_upload/import/12351_lubitz_kimmi_cobabir_2022_-_Adrian_Lubitz.pdf">Concept Paper</a></li>
+<li><a href="https://arxiv.org/abs/2308.05627">Full Paper for IEEE RO-MAN Conference</a></li>
+</ul>
+<h2 id="install">Install</h2>
+<pre><code class="language-bash">pip install CoBaIR
+</code></pre>
+<p>You can install the library from your local copy after cloning this repo with pip using <code>pip install .</code> 
+or install the newest experimental features from the <code>develop</code> branch with <code>pip install git+https://github.com/dfki-ric/CoBaIR.git@develop</code></p>
+<h3 id="known-issues">Known Issues</h3>
+<p>On some Linux Distros there seems to be a problem with a shared library. <a href="https://stackoverflow.com/questions/71010343/cannot-load-swrast-and-iris-drivers-in-fedora-35/72200748#72200748">This Solutions</a> suggests to <code>export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6</code> which works on Ubuntu 22.04.</p>
+<h2 id="graphical-user-interface">Graphical User Interface</h2>
+<p><img alt="GUI" src="images/simpleConfig.gif" title="A simple configuration in the GUI" /></p>
+<p>To make the configuration of a scenario easier we provide a Graphical User Interface(GUI). The GUI can be started with</p>
+<pre><code class="language-bash">python start_configurator.py
+</code></pre>
+<p>if you want to start the GUI with a loaded config use</p>
+<pre><code class="language-bash">python start_configurator.py -f config.yml
+</code></pre>
+<h2 id="tutorial">Tutorial</h2>
+<p>For a step-by-step guide on how to use CoBaIR, check out our <a href="Tutorial/">Tutorial</a>.</p>
+<h2 id="documentation">Documentation</h2>
+<p>The Documentation can be accessed on https://dfki-ric.github.io/CoBaIR/</p>
+<h2 id="bayesian-approach">Bayesian Approach</h2>
+<p>In the bayesian approach CoBaIR uses a two-layer Bayesian Net of the following structure.
+<img alt="two-layer Bayesian Net" src="images/2layerbayesian.svg" /></p>
+<h2 id="config-format">Config Format</h2>
+<p>Configs will be saved in yml files. For convenience the is a configurator which can be started with</p>
+<pre><code class="language-bash">python start_configurator.py
+</code></pre>
+<h3 id="bayesian-approach_1">Bayesian Approach</h3>
+<p>The configuration file for a two layer bayesian net for context based intention recognition follows the given format:</p>
+<pre><code class="language-yaml"># List of contexts. Contexts can have different discrete instantiations. 
+# Number of instantiations must be larger than 1.
+# For all discrete instantiations a prior probability must be given(sum for one context must be 1)
+contexts:
+  context 1:
+    instantiation 1 : float
+      .
+    instantiation m_1 : float
+  context n:
+    instantiation 1 : float
+      .
+    instantiation m_n : float
+# List of intentions. Intentions are always binary(either present or not)
+# For every intention the context variables and their influence on the intention is given
+# [very high, high, medium, low, very low, no] =&gt; [5, 4, 3, 2, 1, 0]
+intentions: 
+  intention 1:
+    context 1:
+        instantiation 1: int # one out of [5, 4, 3, 2, 1, 0]
+        .
+        instantiation m_1: int # one out of [5, 4, 3, 2, 1, 0]
+    context n:
+        instantiation 1: int # one out of [5, 4, 3, 2, 1, 0]
+        .
+        instantiation m_n: int # one out of [5, 4, 3, 2, 1, 0]
+  intention p:
+    context 1:
+        instantiation 1: int # one out of [5, 4, 3, 2, 1, 0]
+        .
+        instantiation m_1: int # one out of [5, 4, 3, 2, 1, 0]
+    context n:
+        instantiation 1: int # one out of [5, 4, 3, 2, 1, 0]
+        .
+        instantiation m_n: int # one out of [5, 4, 3, 2, 1, 0]
+# decision_threshold is a float value between 0 and 1 which decides 
+# when an intention should be considered in inference.
+# Probability must be greater than decision_threshold.
+decision_threshold: float
+
+</code></pre>
+<h1 id="how-to-contribute">How to contribute</h1>
+<p>If you find any Bugs or want to contribute/suggest a new feature you can create a Merge Request / Pull Request or contact me directly via adrian.lubitz@dfki.de</p>
+<h2 id="run-tests">Run tests</h2>
+<p>Tests are implemented with <a href="https://docs.pytest.org/en/7.1.x/">pytest</a>.
+To install test dependencies you need to run </p>
+<pre><code class="language-bash">pip install -r requirements/test_requirements.txt
+</code></pre>
+<p>Then you can run </p>
+<pre><code class="language-bash">python -m pytest tests/
+</code></pre>
+<p>You can as well see the test report for a specific commit in gitlab under <a href="hhttps://git.hb.dfki.de/kimmi_sf/implementation/CoBaIR/-/pipelines/39889/test_report">pipeline-&gt;Tests</a></p>
+<h3 id="coverage">Coverage</h3>
+<p>If you want to see coverage for the tests you can run</p>
+<pre><code class="language-bash">coverage run -m pytest tests/
+</code></pre>
+<p>Use </p>
+<pre><code class="language-bash">coverage report
+</code></pre>
+<p>or </p>
+<pre><code class="language-bash">coverage html
+</code></pre>
+<p>You can as well see the coverage for a specific job in gitlab under <a href="https://git.hb.dfki.de/kimmi_sf/implementation/CoBaIR/-/jobs">jobs</a></p>
+<p>To show results of the coverage analysis.</p>
+<h2 id="build-docu">Build docu</h2>
+<p>Documentation is implemented with the <a href="https://squidfunk.github.io/mkdocs-material/">material theme</a> for <a href="https://www.mkdocs.org/">mkdocs</a>.</p>
+<h3 id="dependencies">Dependencies</h3>
+<p>Install all dependencies for building the docu with </p>
+<pre><code class="language-bash">pip install -r requirements/doc_requirements.txt
+</code></pre>
+<h3 id="build">Build</h3>
+<p>Build the docu with </p>
+<pre><code class="language-bash">mkdocs build
+</code></pre>
+<p>The documentation will be in the <code>site</code> folder.</p>
+<h1 id="authors">Authors</h1>
+<p>Adrian Lubitz &amp; Arunima Gopikrishnan</p>
+<h2 id="funding">Funding</h2>
+<p>CoBaIR is currently developed in the <a href="https://robotik.dfki-bremen.de/de/ueber-uns/universitaet-bremen-arbeitsgruppe-robotik.html">Robotics Group</a> of the <a href="https://www.uni-bremen.de/">University of Bremen</a>, together with the <a href="https://robotik.dfki-bremen.de/en/startpage.html">Robotics Innovation Center</a> of the <strong>German Research Center for Artificial Intelligence</strong> (DFKI) in <strong>Bremen</strong>.
+CoBaIR has been funded by the German Federal Ministry for Economic Affairs and Energy and the <a href="https://www.dlr.de/DE/Home/home_node.html">German Aerospace Center</a> (DLR).
+CoBaIR been used and/or developed in the <a href="https://robotik.dfki-bremen.de/en/research/projects/kimmi-sf/">KiMMI-SF</a> project.</p>
+<p align="center">
+<img src="https://raw.githubusercontent.com/oarriaga/altamira-data/master/images/funding_partners.png" width="1200">
+</p>
+
+<!-- END INCLUDE -->
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": ".", "features": [], "search": "assets/javascripts/workers/search.f886a092.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="assets/javascripts/bundle.d7c377c4.min.js"></script>
+      
+    
+  </body>
+</html>
