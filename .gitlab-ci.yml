@@ -93,21 +93,23 @@ build_docu:
     paths:
       - site
 
-deploy_docu:
-  image: python:3.8-bullseye
-  stage: deploy
-  script:
-    - pip install --upgrade pip
-    - pip install -r requirements/doc_requirements.txt
-    - pip install .
-    - mkdocs build
-    - echo "pushing docu to gh-pages branch"
-    - mkdocs gh-deploy --force
-  artifacts:
-    paths:
-      - site
-  rules:
-    - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/'
+# THIS is done by github action
+# deploy_docu:
+#   image: python:3.8-bullseye
+#   stage: deploy
+#   script:
+#     - git config user.email "adrian.auer@dfki.de"
+#     - git config user.name "docu-bot"
+#     - pip install --upgrade pip
+#     - pip install -r requirements/doc_requirements.txt
+#     - pip install .
+#     - echo "pushing docu to gh-pages branch"
+#     - mkdocs gh-deploy
+#   artifacts:
+#     paths:
+#       - site
+#   rules:
+#     - if: '$CI_COMMIT_TAG =~ /^\d+\.\d+\.\d+$/'
 
 
 upload_docu:
