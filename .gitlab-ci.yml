@@ -87,8 +87,6 @@ build_docu:
     - pip install -r requirements/doc_requirements.txt
     - pip install .
     - mkdocs build
-    - echo "pushing docu to gh-pages branch"
-    - mkdocs gh-deploy --force
   artifacts:
     paths:
       - site
