@@ -473,7 +473,7 @@ class Configurator(QtWidgets.QMainWindow):
         self.graph_item = TwoLayerGraph()
         self.view.addItem(self.graph_item)
         # settings for showing - TODO: maybe this can go to a separate method that can be called in load etc
-        self.current_file_name = Path()
+        self.current_file_name = None
         self.setup_layout()
         self.bayesNet = BayesNet(config)
         self.original_config = deepcopy(self.bayesNet.config)
@@ -865,7 +865,7 @@ class Configurator(QtWidgets.QMainWindow):
 
         self.bayesNet = BayesNet()
         self.graph_item.clear()
-        self.current_file_name = Path()
+        self.current_file_name = None
         self.error_label.setText("")
         self.create_fields()
 
@@ -1131,11 +1131,14 @@ class Configurator(QtWidgets.QMainWindow):
         """
         Updates the title of the application window based on the configuration status.
         """
-        _ = '-' if self.current_file_name.name else ''
-        if self.config_status():
-            self.setWindowTitle(f"CoBaIR {_} {self.current_file_name.name} *")
-        else:
-            self.setWindowTitle(f"CoBaIR {_} {self.current_file_name.name} ")
+        title = "CoBaIR - New Configuration"
+
+        if self.current_file_name is not None:
+            file_name = self.current_file_name.name
+            modified_indicator = '*' if self.config_status() else ''
+            title = f"CoBaIR - {file_name} {modified_indicator}"
+
+        self.setWindowTitle(title)
 
     def config_status(self):
         """
@@ -1152,11 +1155,15 @@ class Configurator(QtWidgets.QMainWindow):
         or asks for a filename if it's a new configuration.
         """
 
-        if self.current_file_name is None or os.path.isdir(self.current_file_name):
+        if self.current_file_name is None:
             options = QFileDialog.Options()
-            self.current_file_name, _ = QFileDialog.getSaveFileName(
+            file_name, _ = QFileDialog.getSaveFileName(
                 None, "Save", "", "Yaml files (*.yml);;All Files (*)", options=options)
-            self.current_file_name = Path(self.current_file_name).absolute()
+            if file_name:  
+                self.current_file_name = Path(file_name).absolute()
+            else:
+                return  
+
         if self.current_file_name:
             self.bayesNet.save(self.current_file_name)
             self.original_config = deepcopy(self.bayesNet.config)
