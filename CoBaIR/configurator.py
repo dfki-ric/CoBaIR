@@ -1152,7 +1152,7 @@ class Configurator(QtWidgets.QMainWindow):
         or asks for a filename if it's a new configuration.
         """
 
-        if self.current_file_name is None:
+        if self.current_file_name is None or os.path.isdir(self.current_file_name):
             options = QFileDialog.Options()
             self.current_file_name, _ = QFileDialog.getSaveFileName(
                 None, "Save", "", "Yaml files (*.yml);;All Files (*)", options=options)
