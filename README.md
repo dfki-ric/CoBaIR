@@ -164,7 +164,10 @@ If you use CoBaIR please consider citating it.
   author={Lubitz, Adrian and Gutzeit, Lisa and Kirchner, Frank},
   booktitle={2023 32nd IEEE International Conference on Robot and Human Interactive Communication (RO-MAN)},
   pages={2003--2009},
+  url={https://ieeexplore.ieee.org/document/10309581/},
+	doi={10.1109/RO-MAN57019.2023.10309581},
   year={2023},
+  month=aug,
   organization={IEEE}
 }
 ```
