@@ -29,7 +29,7 @@ def read(fname: str) -> str:
 
 
 setup(
-    name='CoBaIR',
+    name='cobair',
     version=VERSION,
     description='CoBaIR is a Python library for Context Based Intention Recognition',
     author='Adrian Lubitz',
