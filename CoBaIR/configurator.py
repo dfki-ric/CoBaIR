@@ -922,14 +922,26 @@ class Configurator(QtWidgets.QMainWindow):
         '''
         This draws the graph from the current config.
         '''
-        # TODO: clearing graph
-        # self.graph_item.clear()
-        # only if config is valid
         if self.bayesNet.valid:
-            self.view.addItem(self.graph_item)
+            if self.graph_item is None:
+                self.graph_item = TwoLayerGraph()
+                self.view.addItem(self.graph_item)
             self.graph_item.set_config(self.bayesNet.config)
         else:
+            self.clear_and_create_graph()
+      
+    def clear_and_create_graph(self):
+        """
+        Clear the current graph and create a new TwoLayerGraph object.
+    
+        """
+        if self.graph_item:
+            self.view.removeItem(self.graph_item)
             self.graph_item.setParentItem(None)
+            self.graph_item.deleteLater()
+            self.graph_item = None
+        self.graph_item = TwoLayerGraph()
+        self.view.addItem(self.graph_item)
 
     def set_influencing_context_dropdown(self, options: list, command: function = None):
         '''
