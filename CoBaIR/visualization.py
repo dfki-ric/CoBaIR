@@ -38,9 +38,6 @@ class TwoLayerGraph(pg.GraphItem):
         self.pxMode = pxMode
         self.unfolded_context = set()
         self.textItems = []
-        # TODO: [Refactoring update config] this is missleading - The graph does not only have one context and one intention!
-        self.context = None
-        self.intention = None
 
     def _set_pos(self):
         """
@@ -92,15 +89,6 @@ class TwoLayerGraph(pg.GraphItem):
             self.data["instantiation_indices"]
         self.data["adj"] = list(itertools.product(
             left_side, self.data["intention_indices"]))
-
-    # TODO: [Refactoring update config] why are we doing this? On slider movement the config should be updated and then it should just normally redraw
-    def update_value(self, context, intention):
-        """
-        Gets the values from configurator when slider is modified by the user 
-        """
-        self.context = context
-        self.intention = intention
-        self.set_config(self.config)
 
     def _set_pen(self):
         """
@@ -154,19 +142,6 @@ class TwoLayerGraph(pg.GraphItem):
             alpha = 255 if normalized_mean > 0 else 0
             width = calculate_width(normalized_mean)
 
-            self.data["pen"].append(np.array((red, green, blue, alpha, width), dtype=[
-                ('red', np.uint8), ('green', np.uint8), ('blue', np.uint8), ('alpha', np.uint8), ('width', np.uint8)]))
-
-        # TODO: [Refactoring update config] This should not be a special case!
-        if self.context or self.intention is not None:
-            context = self.context
-            intention = self.intention
-            normalized_mean = calculate_normalized_mean(context, intention)
-            if self.data["names"][start] == context and self.data["names"][end] == intention:
-                red, green, blue = calculate_color(normalized_mean)
-
-            width = calculate_width(normalized_mean)
-            alpha = 255 if normalized_mean > 0 else 0
             self.data["pen"].append(np.array((red, green, blue, alpha, width), dtype=[
                 ('red', np.uint8), ('green', np.uint8), ('blue', np.uint8), ('alpha', np.uint8), ('width', np.uint8)]))
 

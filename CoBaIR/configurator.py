@@ -1276,7 +1276,6 @@ class Configurator(QtWidgets.QMainWindow):
 
         except AssertionError as e:
             self.error_label.setText(str(e))
-        self.graph_item.update_value(context, intention)
         if context or intention is not None:
             self.graph_item.set_config(self.bayesNet.config)
         self.title_update()
