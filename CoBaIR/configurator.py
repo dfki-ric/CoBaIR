@@ -826,7 +826,7 @@ class Configurator(QtWidgets.QMainWindow):
         self.advanced_folded = False
         self.advanced_label.clicked.connect(self.on_clicked_advanced)
 
-        self.COLORS = {0: 'White', 1: 'Red', 2: 'Orange',
+        self.COLORS = {0: 'Black', 1: 'Red', 2: 'Orange',
                        3: 'Yellow', 4: 'darkCyan', 5: 'Green'}
         # Adding the canvas
         self.canvas_frame.layout().addWidget(self.win, 0, 0)
@@ -1065,12 +1065,22 @@ class Configurator(QtWidgets.QMainWindow):
             return
         self.intention_instantiations = defaultdict(lambda: defaultdict(dict))
         layout = self.gridLayout_3
-        row_count = 0
+        row_count = layout.rowCount()
+        self.SCALE_MAPPING = {
+            0: ('no'),        
+            1: ('very'),     
+            2: ('low'),    
+            3: ('medium'),
+            4: ('high'), 
+            5: ('very high')
+        }
         for instantiation, value in self.bayesNet.config['intentions'][intention][context].items():
-            influence_text = f'Influence of {context}:{instantiation} on {intention}:'
+            influence_text = f'Influence of {context}:{instantiation} on {intention} is'
             instantiation_label = QLabel(
                 influence_text, self.influencing_context_frame)
             instantiation_label.setFont(QFont('Times New Roman', 13))
+
+
             low_label = QLabel('LOW', self.influencing_context_frame)
             low_label.setFont(QFont('Times New Roman', 13))
 
@@ -1079,12 +1089,20 @@ class Configurator(QtWidgets.QMainWindow):
             high_label = QLabel('HIGH', self.influencing_context_frame)
             high_label.setFont(QFont('Times New Roman', 13))
 
+            slider_label = QLabel(self.SCALE_MAPPING[value], self.influencing_context_frame)
+            slider_label.setFont(QFont('Times New Roman', 13))
+            slider_label.setFixedWidth(80) 
+            slider_label.setStyleSheet(f"QLabel {{ color: {self.COLORS[value]}; }}")
+            
             layout.setColumnStretch(0, 1)
-            layout.addWidget(instantiation_label, row_count, 1)
-            layout.addWidget(low_label, row_count, 2)
-            layout.addWidget(slider, row_count, 3)
-            layout.addWidget(high_label, row_count, 4)
-            layout.setColumnStretch(5, 1)
+            layout.addWidget(instantiation_label, row_count*2, 1)
+            layout.addWidget(slider_label, row_count*2, 2)
+
+            layout.addWidget(low_label, row_count*2+1, 1, alignment=Qt.AlignRight)
+            layout.addWidget(slider, row_count*2+1, 2)
+            layout.addWidget(high_label, row_count*2+1, 3)
+
+            layout.setColumnStretch(6, 1)
 
             slider.setMinimum(0)
             slider.setMaximum(5)
@@ -1095,13 +1113,15 @@ class Configurator(QtWidgets.QMainWindow):
             slider.setValue(value)
 
             slider.valueChanged.connect(lambda value, context=context, intention=intention,
-                                        instantiation=instantiation, slider=slider:
-                                        self.influence_values_changed(value, context, intention, instantiation, slider))
+                                        instantiation=instantiation, slider=slider, slider_label=slider_label:
+                                        self.influence_values_changed(value, context, intention, instantiation, slider, slider_label))
+
             self.intention_instantiations[intention][context][instantiation] = (
                 instantiation_label,
                 low_label,
                 slider,
                 high_label,
+                slider_label  
             )
 
             row_count += 1
@@ -1232,7 +1252,7 @@ class Configurator(QtWidgets.QMainWindow):
         except Exception as error_message:
             self.error_label.setText(str(error_message))
 
-    def influence_values_changed(self, value, context, intention, instantiation, slider):
+    def influence_values_changed(self, value, context, intention, instantiation, slider, slider_label):
         """
         Callback for change of the influence values.
 
@@ -1251,7 +1271,10 @@ class Configurator(QtWidgets.QMainWindow):
                 intention=intention, context=context, instantiation=instantiation, value=int(value))
             slider.setStyleSheet(
                 f"QSlider::handle:horizontal {{background-color: {self.COLORS[value]}}}")
-        except Exception as e:
+            slider_label.setText(self.SCALE_MAPPING[value])
+            slider_label.setStyleSheet(f"QLabel {{ color: {self.COLORS[value]}; }}")
+
+        except AssertionError as e:
             self.error_label.setText(str(e))
         self.graph_item.update_value(context, intention)
         if context or intention is not None:
