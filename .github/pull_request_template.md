@@ -1,12 +1,12 @@
 # Version XXXXX(this needs to be updated according to the changes made, using semantic versioning)
 ## Changelog
-- MR 1 (breaking/minor/patch) Link to MR
-- MR 2 (breaking/minor/patch) Link to MR
+- PR 1 (breaking/minor/patch) Link to PR
+- PR 2 (breaking/minor/patch) Link to PR
 - ...
 
 # Before Merging!
 - [ ] check if all tests passed
-- [ ] Perform the manual Tests and fill the protocol. This can be found in `test/gui_test_protocol.md`
+- [ ] Perform the manual Tests and fill the protocol. This can be found in `tests/gui_test_protocol.md`
 
 
 # After Merging!

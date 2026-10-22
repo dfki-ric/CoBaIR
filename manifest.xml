@@ -6,7 +6,7 @@
   <author>Adrian Lubitz/Adrian.Lubitz@dfki.de</author>
   <maintainer>Adrian Lubitz/Adrian.Lubitz@dfki.de</maintainer>
   <license>BSD 3-Clause</license>
-  <url>https://git.hb.dfki.de/kimmi_sf/implementation/bayesian-net-for-intention-recognition</url>
+  <url>https://github.com/dfki-ric/CoBaIR</url>
 
   <!---Dependencies is only neccessary because autoproj is not installing the lib propperly-->
   <depend package="pgmpy" />

@@ -13,9 +13,9 @@ from setuptools import setup, find_packages
 __author__ = 'Adrian Lubitz'
 
 
-# TODO: if TAG in pipeline given use tag
-if 'CI_COMMIT_TAG' in os.environ:
-    VERSION = os.environ['CI_COMMIT_TAG']
+# use the tag as version when building in a GitHub Actions tag pipeline
+if os.environ.get('GITHUB_REF_TYPE') == 'tag':
+    VERSION = os.environ['GITHUB_REF_NAME']
 else:
     VERSION = '0.0.0'
 

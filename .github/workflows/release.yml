@@ -1,0 +1,19 @@
+name: release
+on:
+  push:
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+'
+
+jobs:
+  upload_pypi:
+    runs-on: ubuntu-latest
+    container: python:3.8-bullseye
+    steps:
+      - uses: actions/checkout@v4
+      - run: pip install setuptools wheel twine
+      # setup.py takes the version from the tag (GITHUB_REF_NAME)
+      - run: python setup.py sdist bdist_wheel
+      - run: twine upload --verbose dist/*
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
