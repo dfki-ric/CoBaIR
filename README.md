@@ -20,7 +20,7 @@ For a more in-depth explanation consult the following papers:
 pip install CoBaIR
 ```
 You can install the library from your local copy after cloning this repo with pip using `pip install .`
-or install the newest experimental features from the `develop` branch with `pip install git+https://github.com/dfki-ric/CoBaIR.git@develop`
+or install the newest unreleased features from the `main` branch with `pip install git+https://github.com/dfki-ric/CoBaIR.git@main`
 
 ### Known Issues
 On some Linux Distros there seems to be a problem with a shared library. [This Solutions](https://stackoverflow.com/questions/71010343/cannot-load-swrast-and-iris-drivers-in-fedora-35/72200748#72200748) suggests to `export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6
@@ -100,7 +100,8 @@ decision_threshold: float
 
 ```
 # How to contribute
-If you find any Bugs or want to contribute/suggest a new feature you can create a Merge Request / Pull Request or contact me directly via adrian.auer@dfki.de
+If you find any Bugs or want to contribute/suggest a new feature you can create an [Issue](https://github.com/dfki-ric/CoBaIR/issues) or a Pull Request or contact me directly via adrian.auer@dfki.de.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the development and versioning workflow.
 
 ## Run tests
 Tests are implemented with [pytest](https://docs.pytest.org/en/7.1.x/).
@@ -113,7 +114,7 @@ Then you can run
 ```bash
 python -m pytest tests/
 ```
-You can as well see the test report for a specific commit in gitlab under [pipeline->Tests](hhttps://git.hb.dfki.de/kimmi_sf/implementation/CoBaIR/-/pipelines/39889/test_report)
+You can as well see the test report for a specific commit in the [GitHub Actions runs](https://github.com/dfki-ric/CoBaIR/actions/workflows/ci.yml) (artifact `test-reports-py<version>`)
 
 ### Coverage
 If you want to see coverage for the tests you can run
@@ -134,7 +135,7 @@ or
 coverage html
 ```
 
-You can as well see the coverage for a specific job in gitlab under [jobs](https://git.hb.dfki.de/kimmi_sf/implementation/CoBaIR/-/jobs)
+You can as well see the coverage for a specific run in the job summary of the [GitHub Actions runs](https://github.com/dfki-ric/CoBaIR/actions/workflows/ci.yml)
 
 To show results of the coverage analysis.
 ## Build docu
