@@ -113,8 +113,9 @@ def main():
 
     if args.apply:
         labels = {l['name']: l for l in paginate(f'{gl_api}/labels', gl_auth)}
-        existing = {l['name'] for l in paginate(f'{gh_api}/labels', gh_auth)}
-        for name in sorted({n for i in issues for n in i['labels']} - existing):
+        # GitHub label names are case-insensitive
+        existing = {l['name'].lower() for l in paginate(f'{gh_api}/labels', gh_auth)}
+        for name in sorted({n for i in issues for n in i['labels'] if n.lower() not in existing}):
             info = labels.get(name, {})
             request(f'{gh_api}/labels', gh_auth, method='POST', data={
                 'name': name,

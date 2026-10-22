@@ -100,7 +100,8 @@ decision_threshold: float
 
 ```
 # How to contribute
-If you find any Bugs or want to contribute/suggest a new feature you can create an [Issue](https://github.com/dfki-ric/CoBaIR/issues) or a Pull Request or contact me directly via adrian.auer@dfki.de
+If you find any Bugs or want to contribute/suggest a new feature you can create an [Issue](https://github.com/dfki-ric/CoBaIR/issues) or a Pull Request or contact me directly via adrian.auer@dfki.de.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the development and versioning workflow.
 
 ## Run tests
 Tests are implemented with [pytest](https://docs.pytest.org/en/7.1.x/).

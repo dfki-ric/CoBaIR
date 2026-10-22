@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     container: python:3.8-bullseye
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - run: pip install setuptools wheel twine
       # setup.py takes the version from the tag (GITHUB_REF_NAME)
       - run: python setup.py sdist bdist_wheel

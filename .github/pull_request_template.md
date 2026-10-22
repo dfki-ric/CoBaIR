@@ -10,5 +10,6 @@
 
 
 # After Merging!
+- [ ] move the `Unreleased` entries in `CHANGELOG.md` to the new version
 - [ ] create a Tag with the Version Name and include the Changelog
 - [ ] create a Release from the Tag

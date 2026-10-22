@@ -13,8 +13,8 @@ jobs:
       matrix:
         python-version: ["3.8", "3.9", "3.10", "3.11"]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/cache@v4
+      - uses: actions/checkout@v7
+      - uses: actions/cache@v6
         with:
           path: ~/.cache/pip
           key: pip-${{ matrix.python-version }}-${{ hashFiles('requirements/*.txt') }}
@@ -30,7 +30,7 @@ jobs:
         if: always()
       - run: coverage xml && coverage html
         if: always()
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: test-reports-py${{ matrix.python-version }}
@@ -44,14 +44,14 @@ jobs:
     runs-on: ubuntu-latest
     container: python:3.8-bullseye
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - run: pip install --upgrade pip
       - run: pip install -r requirements/test_requirements.txt
       - run: pip install .
       - run: |
           pylint --exit-zero --output-format=text $(find -type f -name "*.py" ! -path "**/.venv/**") | tee pylint.txt
           echo "Pylint score: $(sed -n 's/^Your code has been rated at \([-0-9.]*\)\/.*/\1/p' pylint.txt)" >> "$GITHUB_STEP_SUMMARY"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: pylint-report
           path: pylint.txt
@@ -60,12 +60,12 @@ jobs:
     runs-on: ubuntu-latest
     container: python:3.8-bullseye
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - run: pip install --upgrade pip
       - run: pip install -r requirements/doc_requirements.txt
       - run: pip install .
       - run: mkdocs build
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: site
           path: site
@@ -74,10 +74,10 @@ jobs:
     runs-on: ubuntu-latest
     container: python:3.8-bullseye
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - run: pip install setuptools wheel
       - run: python setup.py sdist bdist_wheel
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: dist
           path: dist
