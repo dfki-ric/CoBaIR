@@ -6,6 +6,8 @@ References like `GitLab MR !123` point to the former internal GitLab project.
 
 ## Unreleased
 - moved completely from GitLab to GitHub (issues, CI pipelines, templates)
+- workflow with feature/fix branches into `main` only, releases are created from tags, docu is published on release tags
+- `@claude` can be mentioned in issues and Pull Requests
 - make scale more human readable
 - refactoring of update config
 - fixed graph bug

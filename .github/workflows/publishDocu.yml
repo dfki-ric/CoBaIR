@@ -1,22 +1,22 @@
-name: publish_docu 
+name: publish_docu
 on:
   push:
-    branches:
-      - main
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+'
+  workflow_dispatch:
 permissions:
   contents: write
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    container: python:3.8-bullseye
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-python@v7
         with:
-          python-version: 3.8
-      - uses: actions/cache@v6
-        with:
-          key: ${{ github.ref }}
-          path: .cache
+          fetch-depth: 0  # gh-deploy needs the gh-pages branch
       - run: pip install -r requirements/doc_requirements.txt
       - run: pip install .
+      - run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
       - run: mkdocs gh-deploy --force

@@ -1,15 +1,14 @@
-# Version XXXXX(this needs to be updated according to the changes made, using semantic versioning)
-## Changelog
-- PR 1 (breaking/minor/patch) Link to PR
-- PR 2 (breaking/minor/patch) Link to PR
-- ...
+## Description
+Closes #
 
-# Before Merging!
-- [ ] check if all tests passed
-- [ ] Perform the manual Tests and fill the protocol. This can be found in `tests/gui_test_protocol.md`
+What does this change and why?
 
+## Type of change
+- [ ] breaking
+- [ ] minor
+- [ ] patch
 
-# After Merging!
-- [ ] move the `Unreleased` entries in `CHANGELOG.md` to the new version
-- [ ] create a Tag with the Version Name and include the Changelog
-- [ ] create a Release from the Tag
+## Checklist
+- [ ] tests added or adjusted
+- [ ] entry added to the `Unreleased` section of `CHANGELOG.md`
+- [ ] for releases: manual GUI tests performed according to `tests/gui_test_protocol.md`
