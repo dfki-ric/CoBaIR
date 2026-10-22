@@ -9,6 +9,7 @@ References like `GitLab MR !123` point to the former internal GitLab project.
 - make scale more human readable
 - refactoring of update config
 - fixed graph bug
+- require setuptools<81, pgmpy 0.1.20 still needs `pkg_resources` (fixes import errors on Python >= 3.10)
 
 ## 4.0.5 - 2026-04-21
 - re-release of 4.0.4 to fix the PyPI upload (normalized package name `cobair`)
