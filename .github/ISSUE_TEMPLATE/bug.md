@@ -1,3 +1,9 @@
+---
+name: BUG
+about: Report a bug
+labels: ["type::bug"]
+---
+
 ## Description of the BUG
 This occured when doing that...Please be as precise as possible to make the BUG reproducible.
 
@@ -6,5 +12,3 @@ Please add your OS here
 
 ## Dependencies
 Please add a list produced by `pip freeze` here.
-
-/label ~"type::bug"

@@ -1,0 +1,117 @@
+# Changelog
+
+All notable changes to this project are documented in this file.
+Versions follow [semantic versioning](https://semver.org/); see [CONTRIBUTING.md](CONTRIBUTING.md).
+References like `GitLab MR !123` point to the former internal GitLab project.
+
+## Unreleased
+- moved completely from GitLab to GitHub (issues, CI pipelines, templates)
+- workflow with feature/fix branches into `main` only, releases are created from tags, docu is published on release tags
+- `@claude` can be mentioned in issues and Pull Requests
+- make scale more human readable
+- refactoring of update config
+- fixed graph bug
+- require setuptools<81, pgmpy 0.1.20 still needs `pkg_resources` (fixes import errors on Python >= 3.10)
+
+## 4.0.5 - 2026-04-21
+- re-release of 4.0.4 to fix the PyPI upload (normalized package name `cobair`)
+
+## 4.0.4 - 2026-04-21
+- moved docu build pipeline to gitlab (patch) (GitLab MR !156)
+- fix for save (patch) (GitLab MR !159)
+- initialized current file name with None (patch) (GitLab MR !160)
+- added citation section and adjusted deps for tests (patch) (GitLab MR !161)
+- upgraded to actions/cache@v5 (patch) (GitLab MR !163)
+- using twine upload --verbose now (patch) (GitLab MR !164)
+
+## 4.0.3 - 2023-12-20
+- moved building the docu to GitLab
+
+## 4.0.2 - 2023-12-20
+- added tutorial
+- added tests for Python Versions 3.9, 3.10, 3.11
+- adjusted link list for Papers in README to be displayed correctly in HTML
+
+## 4.0.1 - 2023-08-29
+- moved test related files to test folder (patch) (GitLab MR !147)
+- added full paper in README
+
+## 4.0.0 - 2023-08-10
+- draw connections (patch)
+- fixed layout warnings (patch) (GitLab MR !123)
+- removed save_invalid from the method signature (breaking) (GitLab MR !124)
+- added astrix on changes to the title (minor)
+- moved TwoLayerGraph to visualization module (breaking) (GitLab MR !128)
+- adjustment of labels (patch)
+- create new config menu entry and shortcut (minor)
+- fixed Bug with pop-up after clicking on graph (patch)
+- Added GIF to Readme (patch) (GitLab MR !138)
+- Match colors of graph and slider (minor) (GitLab MR !125)
+- graph alignment (patch) (GitLab MR !126)
+- Issue and MR templates (minor) (GitLab MR !142)
+- Added GUI Test Protocol (minor) (GitLab MR !113)
+- clearing sliders correctly for invalid config (patch) (GitLab MR !132)
+- fixed bug in button for deleting context (patch) (GitLab MR !131)
+- Activate corresponding fields in GUI by clicking on graph (minor) (GitLab MR !133)
+- Logging (minor) (GitLab MR !134)
+- Warnings for evidence that will be ignored (breaking) (GitLab MR !139)
+- Changed assert to warn (breaking) (GitLab MR !136)
+- Enhanced connection style (minor) (GitLab MR !135)
+- Fix for problem with official pyqtgraph version (patch) (GitLab MR !144)
+- New Logo (minor) (GitLab MR !145)
+- Fixed layout bugs (minor) (GitLab MR !146)
+
+## 3.0.0 - 2023-05-09
+- QT Version bump(minor)
+- Layout moved completely to UI file (minor)
+- Slider colors (patch)
+- error handling for "new combined context" (patch)
+- changed the way layout elements are accessed (patch)
+- change of return to transport decision_threshold (breaking)
+
+## 2.1.0 - 2023-04-17
+- Graph Viz (Minor)
+- some docu (patch)
+
+## 2.0.5 - 2023-03-17
+- fixed dependency versions (bnlearn==0.7.10 with pgmpy==0.1.20)
+- docu published on GitHub Pages
+- more info for the PyPI package
+- adjusted manifest
+
+## 2.0.0 - 2023-03-15
+- create, edit and delete contexts and intentions in the GUI
+- new combined context influence
+- how to contribute section in README
+
+## 1.1.0 - 2022-09-12
+- supports removing instantiations and validation on that(minor)
+
+## 1.0.1 - 2022-09-09
+- fixed bug with max_intention - now correctly using the normalized inference (minor)
+
+## 1.0.0 - 2022-09-09
+- visual bug with showing combined context(patch)
+- using pytest instead of unittest now (patch)
+- using coverage and providing badges (patch)
+- providing test and coverage reports in GitLab (patch)
+- introduced decision threshold and provide results from infer as tuple of intention with the highest likelihood and distribution of all intentions(major)
+- support for decision_threshold in config file and GUI (minor)
+
+## 0.2.2 - 2022-05-25
+- hotfix for Discretizer Functions returning None
+
+## 0.2.1 - 2022-05-18
+- adjusted readme
+- fix for import
+- Extended config
+- GUI for extended config
+
+## 0.1.1 - 2022-02-14
+- This version reduces bnlearn output
+
+## 0.1.0 - 2022-02-14
+- Now supporting edit and delete in configurator and None values in evidence
+
+## 0.0.0 - 2022-02-08
+- First Version
