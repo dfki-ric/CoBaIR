@@ -1,6 +1,7 @@
 
 *.gv*
 settings.json
+!.claude/settings.json
 *.pdf
 *.pyc
 .ipynb_checkpoints
