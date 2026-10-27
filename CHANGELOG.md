@@ -5,6 +5,7 @@ Versions follow [semantic versioning](https://semver.org/); see [CONTRIBUTING.md
 References like `GitLab MR !123` point to the former internal GitLab project.
 
 ## Unreleased
+- CI containers use Debian bookworm (bullseye is EOL) (patch)
 - the Qt configurator moved to `cobair.qt` and works on `cobair.model.Config`; start it with the new command `cobair-qt [-f config.yml]`; `cobair.configurator` / `cobair.visualization` are deprecated aliases (minor)
 - `[qt]` extra uses PyQt5 5.15.11 (5.15.9 segfaults with Python >= 3.12) and no longer needs `[infer]` (patch)
 - Qt configurator: File > New no longer crashes, the window icon is found in pip installs, every combined influence has its own row in the advanced table, influence 1 is labelled "very low" (patch)

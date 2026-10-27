@@ -7,8 +7,8 @@ on:
 jobs:
   run_tests:
     runs-on: ubuntu-latest
-    # same images as the former GitLab pipeline
-    container: python:${{ matrix.python-version }}-bullseye
+    # Debian bookworm images, bullseye is EOL and its apt repositories are gone
+    container: python:${{ matrix.python-version }}-bookworm
     env:
       QT_QPA_PLATFORM: offscreen
     strategy:
@@ -47,7 +47,7 @@ jobs:
 
   build_docu:
     runs-on: ubuntu-latest
-    container: python:3.11-bullseye
+    container: python:3.11-bookworm
     steps:
       - uses: actions/checkout@v7
       - run: pip install --upgrade pip
@@ -61,7 +61,7 @@ jobs:
 
   build_installable_package:
     runs-on: ubuntu-latest
-    container: python:3.11-bullseye
+    container: python:3.11-bookworm
     steps:
       - uses: actions/checkout@v7
       - run: pip install build
