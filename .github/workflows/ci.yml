@@ -78,9 +78,11 @@ jobs:
         run: |
           python -m venv /tmp/wheel-venv
           /tmp/wheel-venv/bin/pip install "$(ls dist/*.whl)[web]"
-          cd /tmp && PATH=/tmp/wheel-venv/bin:/usr/bin:/bin timeout 120 cobair-web --port 8123 --no-browser &
-          for i in $(seq 1 60); do curl -sf http://localhost:8123/ping && break; sleep 2; done
-          curl -sf -o /dev/null http://localhost:8123/
+          (cd /tmp && PATH=/tmp/wheel-venv/bin:/usr/bin:/bin timeout 300 cobair-web --port 8123 --no-browser > /tmp/cobair-web.log 2>&1 &)
+          for i in $(seq 1 90); do curl -sf -o /dev/null http://localhost:8123/ping && curl -sf -o /dev/null http://localhost:8123/ && exit 0; sleep 2; done
+          cat /tmp/cobair-web.log
+          echo "::error title=cobair-web from the wheel::$(tail -c 1500 /tmp/cobair-web.log | tr '\n' ' ')"
+          exit 1
       - uses: actions/upload-artifact@v7
         with:
           name: dist
