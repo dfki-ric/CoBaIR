@@ -52,3 +52,6 @@ A version is created by tagging a commit on `main`.
      and uploads it to [PyPI](https://pypi.org/project/cobair/),
    - the [docu workflow](.github/workflows/publishDocu.yml), which publishes the docu of this version on
      [GitHub Pages](https://dfki-ric.github.io/CoBaIR/).
+   - the [Space workflow](.github/workflows/deploy-space.yml), which deploys the web GUI of this version to the
+     Hugging Face Docker Space named in the repository variable `HF_SPACE` (needs the secret `HF_TOKEN`).
+     The Space is built from `deploy/hf-space`; CI builds and smoke-tests its Docker image on every Pull Request.

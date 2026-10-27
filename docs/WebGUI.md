@@ -8,6 +8,9 @@ cobair-web
 ```
 
 `cobair-web` serves the GUI on <http://localhost:8000> and opens it in your browser.
+
+Without installing anything, use the **Hugging Face Space `cobair-editor`**, which is updated with every release.
+It runs the same `cobair-web` (one worker, nothing is stored on the server).
 No Node.js is needed: the frontend is pre-built and part of the package.
 
 | option | |

@@ -114,3 +114,24 @@ jobs:
         with:
           name: web-e2e-report
           path: test_report
+
+  hf_space_image:
+    # the Docker image of the Hugging Face Space, built from the wheel of build_installable_package
+    needs: build_installable_package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v7
+        with:
+          name: dist
+          path: space/dist
+      - run: cp deploy/hf-space/Dockerfile deploy/hf-space/README.md space/
+      - run: docker build -t cobair-space space
+      - name: Serve the web GUI from the image
+        run: |
+          docker run -d --name space -p 7860:7860 cobair-space
+          for i in $(seq 1 90); do curl -sf -o /dev/null http://localhost:7860/ping && curl -sf -o /dev/null http://localhost:7860/ && exit 0; sleep 2; done
+          docker logs space > space.log 2>&1
+          cat space.log
+          python -c "t = open('space.log', errors='replace').read()[-3000:]; print('::error title=Space image::' + t.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A'))"
+          exit 1

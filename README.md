@@ -66,6 +66,7 @@ pip install "cobair[web]"
 cobair-web
 ```
 It opens <http://localhost:8000> in your browser, see the [Web GUI documentation](https://dfki-ric.github.io/CoBaIR/WebGUI/).
+Without installing anything, try the Hugging Face Space `cobair-editor` (deployed with every release).
 
 ![Web GUI](docs/images/web_gui.png "The CoBaIR web GUI")
 
