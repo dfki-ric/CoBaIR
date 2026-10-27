@@ -20,6 +20,9 @@ from pathlib import Path
 # local imports
 from . import FRONTEND_DIR, PROJECT_DIR
 
+#: Same as `cobair.web.state.FILE_ENV`, not imported to keep the start fast.
+FILE_ENV = 'COBAIR_WEB_FILE'
+
 # end file header
 __author__ = 'Adrian Lubitz'
 
@@ -86,6 +89,9 @@ def main(argv: list = None) -> int:
         int: The exit code.
     """
     parser = argparse.ArgumentParser(prog='cobair-web', description='CoBaIR web GUI')
+    parser.add_argument('file', nargs='?',
+                        help='Config file to open; the GUI can save to it. Without a file, '
+                             'configs are only up- and downloaded.')
     parser.add_argument('--host', default='127.0.0.1',
                         help='Host to listen on, use 0.0.0.0 to allow other machines '
                              '(default: %(default)s)')
@@ -103,6 +109,9 @@ def main(argv: list = None) -> int:
         print(error, file=sys.stderr)
         return 1
 
+    if args.file:
+        # read by the state of every worker
+        os.environ[FILE_ENV] = str(Path(args.file).resolve())
     url = f'http://localhost:{args.port}'
     print(f'CoBaIR web GUI: {url}')
     if not args.no_browser:

@@ -12,6 +12,7 @@ No Node.js is needed: the frontend is pre-built and part of the package.
 
 | option | |
 |---|---|
+| `config.yml` | config file to open, **Save** writes back to it (created on save if it doesn't exist) |
 | `--port 8000` | port to listen on |
 | `--host 127.0.0.1` | host to listen on, use `0.0.0.0` to open the GUI to other machines |
 | `--no-browser` | don't open the browser |
@@ -19,8 +20,28 @@ No Node.js is needed: the frontend is pre-built and part of the package.
 ![The CoBaIR web GUI](images/web_gui.png)
 
 ## Configs
-Load a config with **Load YAML** (or drop a file on the button) or start with **Load example**.
-The configs stay on your machine, the GUI only keeps them in memory while the page is open.
+- **New** starts an empty config, **Load YAML** opens a file (or drop it on the button), **Load example** loads the
+  example of the [Tutorial](Tutorial.md#example-scenario).
+- **Download YAML** saves the config as a file. **Save** is shown when `cobair-web` was started with a file and
+  writes to that file.
+- Every change is kept as a **draft in your browser**. If you close the tab without saving, the draft is restored
+  the next time you open the GUI. The browser asks before you leave the page with unsaved changes.
+- **Undo** / **Redo** step through your changes.
+
+The config is only sent to the `cobair-web` process that serves the page, nothing is stored on a server.
+
+## Editing
+The [Tutorial](Tutorial.md#configuring-a-cobair-scenario-with-the-gui) explains every setting; the
+info icons in the GUI link there.
+
+- **Contexts**: *Add* or the pencil icon open a dialog for the name, the instantiations and their apriori
+  probabilities. Apriori probabilities can also be changed directly in the cards.
+- **Intentions**: *Add*, rename (pencil icon) and delete (trash icon).
+- **Influences**: choose a context, then choose a value for every instantiation and intention.
+- **Combined influences**: *Add* a value for a combination of instantiations, remove it with the trash icon.
+- **Decision threshold**: a number between 0 and 1.
+
+Problems of the config (e.g. apriori probabilities that don't sum up to 1) are listed at the top while you edit.
 
 ## For developers
 The web GUI is a [Reflex](https://reflex.dev) app in `cobair/web` (Reflex is pinned to an exact version).
