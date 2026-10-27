@@ -77,7 +77,12 @@ jobs:
       - name: Install the wheel in a clean venv
         run: |
           python -m venv /tmp/wheel-venv
-          /tmp/wheel-venv/bin/pip install "$(ls dist/*.whl)[web]"
+          /tmp/wheel-venv/bin/pip install --upgrade pip
+          if ! /tmp/wheel-venv/bin/pip install "$(ls dist/*.whl)[web]" > pip.log 2>&1; then
+            cat pip.log
+            python -c "t = open('pip.log', errors='replace').read()[-3000:]; print('::error title=pip install of the wheel::' + t.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A'))"
+            exit 1
+          fi
       - name: Serve the web GUI from the installed wheel (no Node.js)
         run: |
           (cd /tmp && PATH=/tmp/wheel-venv/bin:/usr/bin:/bin timeout 300 cobair-web --port 8123 --no-browser > /tmp/cobair-web.log 2>&1 &)
