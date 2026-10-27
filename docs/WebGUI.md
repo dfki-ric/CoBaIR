@@ -44,6 +44,22 @@ info icons in the GUI link there.
 
 Problems of the config (e.g. apriori probabilities that don't sum up to 1) are listed at the top while you edit.
 
+## Live inference
+The *Live inference* tab tests your config while you build it:
+
+- Choose for every context what is observed, or *unknown*. Unknown contexts use their apriori probabilities.
+- The chart shows the probability of every intention, the dashed line is the decision threshold. The intention
+  above the threshold is highlighted and named above the chart, otherwise no intention is recognized.
+- The graph shows the observed instantiations and colors the intentions by their probability.
+- Switch back to the *Editor*, change values and come back: the evidence is kept and the result recomputed.
+
+![Live inference](images/web_live_inference.png "Live inference with evidence")
+
+![Graph during the live inference](images/web_graph_inference.png "The graph shows the evidence and the probabilities")
+
+In your own code, the same inference is `cobair.infer.Inference(config).infer(evidence)`, see the
+[API](API.md).
+
 ## For developers
 The web GUI is a [Reflex](https://reflex.dev) app in `cobair/web` (Reflex is pinned to an exact version).
 

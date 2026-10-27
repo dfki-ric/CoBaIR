@@ -237,3 +237,30 @@ def test_graph(page):
     page.wait_for_function(
         "getComputedStyle(document.querySelectorAll('.intention-column')[1]).color "
         "!== getComputedStyle(document.querySelectorAll('.intention-column')[0]).color")
+
+
+def test_live_inference(page):
+    """Evidence selects change the chart and the recognized intention (#207)."""
+    load_example(page)
+    page.click('#tab-inference')
+    page.wait_for_selector('#recognized')
+    assert page.text_content('#recognized') == \
+        'No intention above the decision threshold (80%)'
+    selects = page.locator('.evidence-select')
+    choose(page, selects.nth(2), 'pickup')
+    choose(page, selects.nth(0), 'working')
+    choose(page, selects.nth(1), 'True')
+    page.wait_for_function(
+        "document.querySelector('#recognized').textContent === 'Recognized: pick up tool (95%)'")
+    assert page.locator('#inference-chart .recharts-bar-rectangle').count() == 2
+    page.wait_for_selector('#graph .react-flow__node:has-text("pick up tool 95%")')
+    page.click('#reset-evidence')
+    page.wait_for_function(
+        "document.querySelector('#recognized').textContent.startsWith('No intention')")
+
+
+def test_inference_needs_valid_config(page):
+    """An invalid config shows a hint instead of the inference."""
+    page.click('#tab-inference')
+    page.wait_for_selector('#inference-error')
+    assert 'Fix the problems' in page.text_content('#inference-error')

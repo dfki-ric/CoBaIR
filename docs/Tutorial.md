@@ -143,7 +143,12 @@ In this scenario we only have the intentions `hand over tool` and `pick up tool`
 
 
 ### 4. Outcome:
-To test the inference on your config you can use the script `small_example_from_yml.py` in an interactive Jupyter Shell. Try to change the evidence to see if your configuration describes the scenario as expected.
+Load the example in the web GUI (**Load example**) and open the *Live inference* tab. Choose `pickup` as
+speech command: `pick up tool` gets 77 %, which is below the threshold of 80 %. Add that the human is `working`
+and holding an object: the combined influence lifts `pick up tool` to 95 % and it is recognized. Try other evidence
+to see if your configuration describes the scenario as expected, see [Live inference](WebGUI.md#live-inference).
+
+You can do the same in Python with the script `small_example_from_yml.py`, e.g. in an interactive Jupyter shell.
 
 In your own code, load the config and create an inference for it:
 

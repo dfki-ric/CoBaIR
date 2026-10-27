@@ -412,3 +412,59 @@ def test_graph_follows_edits(example):
     call(EditorState.delete_context, example, 2)
     assert example.expanded_contexts == []
     assert len(example.graph_nodes) == 4  # 2 contexts, 2 intentions, no combination
+
+
+def probabilities(state) -> dict:
+    """Return the inferred probabilities of the state.
+
+    Args:
+        state: The state.
+
+    Returns:
+        dict: `{intention: probability in %}`
+    """
+    return {result['name']: result['probability'] for result in state.results}
+
+
+def test_inference_only_in_its_tab(example):
+    """The inference runs when its tab is open."""
+    assert example.results == []
+    call(EditorState.set_tab, example, 'inference')
+    assert probabilities(example) == {'hand over tool': 37.8, 'pick up tool': 62.2}
+    assert example.recognized == 'No intention above the decision threshold (80%)'
+    assert example.threshold_percent == 80.0
+    assert example.evidence == [-1, -1, -1]
+    call(EditorState.set_tab, example, 'editor')
+    assert example.results == []
+
+
+def test_evidence(example):
+    """Evidence changes the inference like in tests/test_infer.py and is shown in the graph."""
+    call(EditorState.set_tab, example, 'inference')
+    call(EditorState.set_evidence, example, 2, '2')  # speech commands = pickup
+    assert probabilities(example) == {'hand over tool': 23.2, 'pick up tool': 76.8}
+    call(EditorState.set_evidence, example, 0, '1')  # human activity = working
+    call(EditorState.set_evidence, example, 1, '1')  # human holding object = True
+    assert probabilities(example) == {'hand over tool': 4.9, 'pick up tool': 95.1}
+    assert example.recognized == 'Recognized: pick up tool (95%)'
+    fills = {result['name']: result['fill'] for result in example.results}
+    assert fills['pick up tool'] != fills['hand over tool']
+    labels = [node['data']['label'] for node in example.graph_nodes]
+    assert 'pick up tool 95%' in labels
+    assert any(label.startswith('speech commands = pickup') for label in labels)
+    call(EditorState.reset_evidence, example)
+    assert example.evidence == [-1, -1, -1]
+    assert probabilities(example)['pick up tool'] == 62.2
+
+
+def test_inference_follows_edits(example):
+    """Edits change the inference, evidence of deleted contexts is dropped."""
+    call(EditorState.set_tab, example, 'inference')
+    call(EditorState.set_evidence, example, 2, '2')
+    call(EditorState.set_threshold, example, '0.7')
+    assert example.recognized == 'Recognized: pick up tool (77%)'
+    call(EditorState.delete_context, example, 0)
+    assert example.evidence == [-1, 2]
+    call(EditorState.set_apriori, example, 0, 0, '0.9')  # invalid sum
+    assert example.results == []
+    assert 'Fix the problems' in example.inference_error

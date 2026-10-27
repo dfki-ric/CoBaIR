@@ -5,6 +5,7 @@ Versions follow [semantic versioning](https://semver.org/); see [CONTRIBUTING.md
 References like `GitLab MR !123` point to the former internal GitLab project.
 
 ## Unreleased
+- web GUI live inference: evidence per context (or unknown), bar chart of the intention probabilities with the decision threshold and the recognized intention, graph highlights the evidence and colors the intentions (#207) (minor)
 - web GUI graph (React Flow): contexts, intentions and combined influences, edge thickness/color show the influence, clicking unfolds contexts and selects them in the editor (#182) (minor)
 - web GUI editor: edit contexts, intentions, apriori probabilities, influences (human readable scale, #144), combined influences and the decision threshold; undo/redo; download YAML; `cobair-web config.yml` opens a file and saves to it; drafts are autosaved in the browser; warning before leaving with unsaved changes; info tooltips link to the Tutorial (minor)
 - Tutorial describes apriori probabilities, influence values, decision threshold and combined influences in more detail, with web GUI screenshots (#178 - #181) (patch)

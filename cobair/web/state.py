@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import dataclasses
 import os
+import warnings
 from importlib import resources
 from pathlib import Path
 
@@ -20,6 +21,11 @@ import reflex as rx
 # local imports
 from ..model import INFLUENCE_TO_PROBABILITY, Config
 from .graph import build_graph
+
+try:
+    from ..infer import Inference
+except ImportError:  # pragma: no cover - the [web] extra always installs [infer]
+    Inference = None
 
 # end file header
 __author__ = 'Adrian Lubitz'
@@ -143,6 +149,7 @@ class EditorState(rx.State):
     _redo: list = []
     _combined_keys: list = []
     _initialized: bool = False
+    _evidence: dict = {}
 
     #: Name of the loaded or last saved file.
     file_name: str = ''
@@ -181,6 +188,20 @@ class EditorState(rx.State):
     expanded_contexts: list[int] = []
     #: Changes when the graph needs a new layout (React Flow fits the view on mount only).
     graph_key: str = ''
+
+    #: The open tab, `editor` or `inference`.
+    tab: str = 'editor'
+    #: Evidence of every context: position of the instantiation, -1 for unknown.
+    evidence: list[int] = []
+    #: Inferred probabilities, the bars of the chart: `{'name', 'probability' (%), 'fill'}`.
+    results: list[dict] = []
+    #: Text of the inference result.
+    recognized: str = ''
+    #: The decision threshold in percent, the reference line of the chart.
+    threshold_percent: float = 0.0
+    #: Why no inference is shown (invalid config, missing dependencies).
+    inference_error: str = ''
+    inference_available: bool = Inference is not None
 
     #: Draft of the config in the browser storage.
     draft: str = rx.LocalStorage('', name='cobair_draft', sync=False)
@@ -287,14 +308,61 @@ class EditorState(rx.State):
         self._sync_graph()
 
     def _sync_graph(self) -> None:
-        """Derive the nodes and edges of the graph."""
+        """Derive the nodes and edges of the graph, with the inference if its tab is open."""
         config = self._model()
         self.expanded_contexts = [index for index in self.expanded_contexts
                                   if index < len(config.contexts)]
         if self.selected_intention >= len(config.intentions):
             self.selected_intention = -1
-        self.graph_nodes, self.graph_edges = build_graph(config, self.expanded_contexts)
+        self._sync_inference()
+        evidence, probabilities = None, None
+        if self.tab == 'inference' and self.results:
+            evidence = {context: instantiation
+                        for context, instantiation in enumerate(self.evidence)
+                        if instantiation >= 0}
+            probabilities = [result['probability'] / 100 for result in self.results]
+        self.graph_nodes, self.graph_edges = build_graph(config, self.expanded_contexts,
+                                                         evidence, probabilities)
         self.graph_key = f'{len(self.graph_nodes)}-{self.expanded_contexts}'
+
+    def _sync_inference(self) -> None:
+        """Keep the evidence valid and infer the intentions if the inference tab is open."""
+        config = self._model()
+        # evidence is kept by key, so it follows the contexts when others are deleted
+        self._evidence = {context: instantiation
+                          for context, instantiation in self._evidence.items()
+                          if instantiation in config.contexts.get(context, {})}
+        self.evidence = [list(instantiations).index(self._evidence[context])
+                         if context in self._evidence else -1
+                         for context, instantiations in config.contexts.items()]
+        self.results = []
+        self.recognized = ''
+        self.inference_error = ''
+        if self.tab != 'inference':
+            return
+        if Inference is None:
+            self.inference_error = ('The inference needs the [infer] extra: '
+                                    'pip install "cobair[infer]"')
+            return
+        problems = config.validate()
+        if problems:
+            self.inference_error = 'Fix the problems of the config to test the inference.'
+            return
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore')
+            result = Inference(config).infer(dict(self._evidence))
+        for name, probability in result.probabilities.items():
+            winner = name == result.intention
+            self.results.append({'name': label(name),
+                                 'probability': round(float(probability) * 100, 1),
+                                 'fill': 'var(--accent-9)' if winner else 'var(--gray-8)'})
+        self.threshold_percent = round(config.decision_threshold * 100, 1)
+        threshold = f'{config.decision_threshold:.0%}'
+        if result.intention is None:
+            self.recognized = f'No intention above the decision threshold ({threshold})'
+        else:
+            probability = result.probabilities[result.intention]
+            self.recognized = f'Recognized: {label(result.intention)} ({probability:.0%})'
 
     def _sync_influences(self) -> None:
         """Derive the influence table of the selected context."""
@@ -593,6 +661,42 @@ class EditorState(rx.State):
         intention = self._intention_key(intention_index)
         self._edit('change_influence_value', intention, context, instantiation, int(value))
         yield self._unload_guard()
+
+    # ------------------------------------------------------------------------------------------
+    # live inference
+
+    @rx.event
+    def set_tab(self, tab: str):
+        """Switch between the editor and the live inference.
+
+        Args:
+            tab: `editor` or `inference`.
+        """
+        self.tab = tab
+        self._sync_graph()
+
+    @rx.event
+    def set_evidence(self, context_index: int, instantiation_index: str):
+        """Set the evidence of a context.
+
+        Args:
+            context_index: Position of the context.
+            instantiation_index: Position of the instantiation, `-1` for unknown.
+        """
+        context = self._context_key(context_index)
+        evidence = dict(self._evidence)
+        if int(instantiation_index) < 0:
+            evidence.pop(context, None)
+        else:
+            evidence[context] = self._instantiation_key(context, instantiation_index)
+        self._evidence = evidence
+        self._sync_graph()
+
+    @rx.event
+    def reset_evidence(self):
+        """Set all contexts to unknown."""
+        self._evidence = {}
+        self._sync_graph()
 
     # ------------------------------------------------------------------------------------------
     # graph

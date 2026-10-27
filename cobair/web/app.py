@@ -427,6 +427,95 @@ def threshold() -> rx.Component:
 
 
 # ----------------------------------------------------------------------------------------------
+# live inference
+
+def evidence_select(context: ContextView, index: rx.Var) -> rx.Component:
+    """Select the evidence of a context.
+
+    Args:
+        context: The context.
+        index: Position of the context.
+
+    Returns:
+        rx.Component: Label and select.
+    """
+    return rx.hstack(
+        rx.text(context.name, width='45%'),
+        rx.select.root(
+            rx.select.trigger(flex='1', class_name='evidence-select'),
+            rx.select.content(
+                rx.select.item('unknown', value='-1'),
+                rx.foreach(context.instantiations,
+                           lambda instantiation, instantiation_index: rx.select.item(
+                               instantiation.name, value=instantiation_index.to_string())),
+            ),
+            value=EditorState.evidence[index].to_string(),
+            on_change=lambda value: EditorState.set_evidence(index, value),
+        ),
+        width='100%',
+        align='center',
+    )
+
+
+def live_inference() -> rx.Component:
+    """Evidence selects and the inferred probabilities.
+
+    Returns:
+        rx.Component: The section.
+    """
+    chart = rx.recharts.bar_chart(
+        rx.recharts.cartesian_grid(stroke_dasharray='3 3', vertical=False),
+        rx.recharts.x_axis(data_key='name'),
+        rx.recharts.y_axis(domain=[0, 100], unit='%'),
+        rx.recharts.graphing_tooltip(),
+        rx.recharts.bar(
+            rx.foreach(EditorState.results, lambda result: rx.recharts.cell(fill=result['fill'])),
+            data_key='probability',
+            name='Probability',
+            unit='%',
+            is_animation_active=False,
+        ),
+        rx.recharts.reference_line(
+            y=EditorState.threshold_percent.to_string(),
+            stroke='var(--red-9)',
+            stroke_dasharray='6 4',
+            label='decision threshold',
+        ),
+        data=EditorState.results,
+        height=320,
+        width='100%',
+    )
+    return section(
+        'Live inference',
+        rx.text('Choose what is observed, unknown contexts use their apriori probabilities.',
+                color_scheme='gray', size='2'),
+        rx.cond(
+            EditorState.inference_error != '',
+            rx.callout(EditorState.inference_error, icon='info', color_scheme='orange',
+                       id='inference-error', width='100%'),
+            rx.grid(
+                rx.vstack(
+                    rx.foreach(EditorState.contexts, evidence_select),
+                    rx.button('All unknown', size='1', variant='soft',
+                              on_click=EditorState.reset_evidence, id='reset-evidence'),
+                    width='100%',
+                ),
+                rx.vstack(
+                    rx.heading(EditorState.recognized, size='4', id='recognized'),
+                    rx.box(chart, width='100%', id='inference-chart'),
+                    width='100%',
+                ),
+                columns=rx.breakpoints(initial='1', md='2'),
+                spacing='5',
+                width='100%',
+            ),
+        ),
+        topic='threshold',
+        id='inference-section',
+    )
+
+
+# ----------------------------------------------------------------------------------------------
 # dialogs
 
 def dialog_error(error: rx.Var, id_: str) -> rx.Component:
@@ -616,6 +705,42 @@ def combined_dialog() -> rx.Component:
 # ----------------------------------------------------------------------------------------------
 # page
 
+def editor() -> rx.Component:
+    """Everything to edit the config.
+
+    Returns:
+        rx.Component: The editor.
+    """
+    return rx.vstack(
+        rx.grid(
+            section(
+                'Contexts',
+                rx.foreach(EditorState.contexts, context_card),
+                topic='apriori',
+                actions=rx.button(rx.icon('plus', size=16), 'Add', size='1', variant='soft',
+                                  on_click=EditorState.open_new_context, id='add-context'),
+                id='contexts',
+            ),
+            section(
+                'Intentions',
+                rx.foreach(EditorState.intentions, intention_card),
+                actions=rx.button(rx.icon('plus', size=16), 'Add', size='1', variant='soft',
+                                  on_click=EditorState.open_new_intention,
+                                  id='add-intention'),
+                id='intentions',
+            ),
+            columns=rx.breakpoints(initial='1', md='2'),
+            spacing='4',
+            width='100%',
+        ),
+        influences(),
+        combined_influences(),
+        threshold(),
+        spacing='5',
+        width='100%',
+    )
+
+
 def index() -> rx.Component:
     """The editor page.
 
@@ -635,31 +760,18 @@ def index() -> rx.Component:
             ),
             toolbar(),
             messages(),
-            rx.grid(
-                section(
-                    'Contexts',
-                    rx.foreach(EditorState.contexts, context_card),
-                    topic='apriori',
-                    actions=rx.button(rx.icon('plus', size=16), 'Add', size='1', variant='soft',
-                                      on_click=EditorState.open_new_context, id='add-context'),
-                    id='contexts',
+            graph(),
+            rx.tabs.root(
+                rx.tabs.list(
+                    rx.tabs.trigger('Editor', value='editor', id='tab-editor'),
+                    rx.tabs.trigger('Live inference', value='inference', id='tab-inference'),
                 ),
-                section(
-                    'Intentions',
-                    rx.foreach(EditorState.intentions, intention_card),
-                    actions=rx.button(rx.icon('plus', size=16), 'Add', size='1', variant='soft',
-                                      on_click=EditorState.open_new_intention,
-                                      id='add-intention'),
-                    id='intentions',
-                ),
-                columns=rx.breakpoints(initial='1', md='2'),
-                spacing='4',
+                rx.tabs.content(editor(), value='editor', padding_top='1em'),
+                rx.tabs.content(live_inference(), value='inference', padding_top='1em'),
+                value=EditorState.tab,
+                on_change=EditorState.set_tab,
                 width='100%',
             ),
-            graph(),
-            influences(),
-            combined_influences(),
-            threshold(),
             spacing='5',
             width='100%',
             padding_bottom='4em',
