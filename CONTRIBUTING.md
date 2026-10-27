@@ -13,6 +13,9 @@ Thanks for your interest in CoBaIR! Bugs, feature requests and questions are wel
   The [Quality workflow](https://github.com/dfki-ric/CoBaIR/actions/workflows/quality.yml) counts ruff linting issues
   and the docstring coverage and fails if one of them got worse than `.github/quality-baseline.json`
   (see [Code quality](README.md#code-quality)). All checks must pass before merging.
+- The web GUI (`cobair/web`) is a [Reflex](https://reflex.dev) app, see the
+  [developer notes](docs/WebGUI.md#for-developers). Reflex is pinned exactly and only upgraded
+  deliberately, together with the end-to-end tests (`tests/web`).
 - Add tests for new functionality (see the README on how to run tests and coverage) and add a line
   to the `Unreleased` section of [CHANGELOG.md](CHANGELOG.md), marked as breaking, minor or patch.
 

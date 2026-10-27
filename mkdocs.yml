@@ -17,5 +17,6 @@ markdown_extensions:
 
 nav:
   - Getting started: index.md
+  - Web GUI: WebGUI.md
   - API Documentation: API.md
   - Tutorial: Tutorial.md

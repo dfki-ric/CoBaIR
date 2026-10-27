@@ -60,13 +60,47 @@ jobs:
           path: site
 
   build_installable_package:
+    # on the runner (not in a container): Reflex needs curl/unzip to fetch bun for the frontend build
     runs-on: ubuntu-latest
-    container: python:3.11-bookworm
     steps:
       - uses: actions/checkout@v7
-      - run: pip install build
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+      - run: pip install --upgrade pip build
+      - run: pip install -e .[web]
+      # the wheel ships the pre-built web GUI frontend
+      - run: python -m cobair.web.build
       - run: python -m build
+      - name: Check the wheel contains the frontend
+        run: unzip -l dist/*.whl | grep -q 'cobair/web/frontend/index.html'
+      - name: Serve the web GUI from the installed wheel (no Node.js)
+        run: |
+          python -m venv /tmp/wheel-venv
+          /tmp/wheel-venv/bin/pip install "$(ls dist/*.whl)[web]"
+          cd /tmp && PATH=/tmp/wheel-venv/bin:/usr/bin:/bin timeout 120 cobair-web --port 8123 --no-browser &
+          for i in $(seq 1 60); do curl -sf http://localhost:8123/ping && break; sleep 2; done
+          curl -sf -o /dev/null http://localhost:8123/
       - uses: actions/upload-artifact@v7
         with:
           name: dist
           path: dist
+
+  web_e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install --upgrade pip
+      - run: pip install -r requirements/test_requirements.txt -e .[web] playwright==1.63.0
+      - run: python -m cobair.web.build
+      - run: python -m playwright install --with-deps chromium
+      - run: pytest tests/web --html=test_report/report.html
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: web-e2e-report
+          path: test_report
