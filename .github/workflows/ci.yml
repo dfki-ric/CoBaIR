@@ -98,7 +98,12 @@ jobs:
       - run: pip install -r requirements/test_requirements.txt -e .[web] playwright==1.63.0
       - run: python -m cobair.web.build
       - run: python -m playwright install --with-deps chromium
-      - run: pytest tests/web --html=test_report/report.html
+      - name: Run web tests (fail instead of skip)
+        env:
+          COBAIR_REQUIRE_E2E: "1"
+        run: |
+          pytest tests/web -rs --html=test_report/report.html | tee pytest.txt
+          echo "::notice title=web tests::$(tail -1 pytest.txt)"
       - uses: actions/upload-artifact@v7
         if: always()
         with:
