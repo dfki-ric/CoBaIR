@@ -100,32 +100,22 @@ The list shows all combined influences, the trash icon removes one.
 ![Combined influence dialog](images/web_combined_dialog.png "Adding a combined influence")
 
 ### Graphical Representation
-The graph is part of the Qt configurator; the web GUI gets its graph with #182.
+The *Graph* shows the two-layer Bayesian net of your config: contexts on the left, intentions on the right.
 
-- **Visual Overview**: 
-  - The graph provides a visual representation of how different contexts and intentions are interconnected.
+- **Edges** connect every context with every intention. The thicker and the more orange an edge, the higher the
+  influence. For a folded context the edge shows the mean influence of its instantiations; an influence of 0 is a
+  thin dashed line.
+- **Clicking a context** unfolds it into its instantiations, each with its own edges, and selects the context in the
+  *Influences* table. Click it again to fold it.
+- **Clicking an intention** highlights its column in the *Influences* table, clicking an edge selects both.
+- **Combined influences** are the dashed boxes in the middle: dashed lines come from the combined contexts, the edge
+  to the intention shows the combined influence value.
+- Use the buttons in the corner to zoom or to fit the graph.
 
-- **Nodes**: 
-  - Each node represents a context or intention. Context is displayed on the left side and intentions are displayed on the right side. Context nodes are linked to intentions they influence.
+![Graph](images/web_graph.png "The graph with an unfolded context")
 
-- **Edges**: 
-  - Edges between nodes show the relationships and their strength, based on the influence values set in the previous steps. The higher the influence, the thicker and greener the edge.
-
-#### Interacting with the Graph
-
-- **Expanding Contexts**: 
-  - Upon clicking, a context node unfolds to reveal specific instantiations, each connected to relevant intentions.
-
-- **Adjusting Views**: 
-  - The graph can be zoomed in or out for a more detailed or broader view, respectively.
-
-- **Dynamic Interaction**: 
-  - As you adjust influence values or apriori probabilities in the settings, these changes are reflected in the graph in real-time, offering immediate visual feedback.
-
-![GUI](images/graph.gif "Graphical representation")
-
-This graphical representation is allowing for a clear and intuitive understanding of how various contexts and intentions are interrelated. It aids in verifying and adjusting configurations, ensuring that the system accurately interprets intentions based on the given context.
-
+The graph changes with every edit, so you can check at a glance which contexts drive which intention.
+The Qt configurator has a similar graph.
 
 ## Example Scenario
 Here we describe an example scenario which can be loaded from the file `small_example.yml`. We have a very small scenario where a human can be assisted by a robot. In this scenario the human either wants the robot to pick up a tool or hand over a tool. What the robot can perceive is if the human is holding an object, the human activity and a speech command from the human.

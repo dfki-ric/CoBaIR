@@ -19,6 +19,7 @@ import reflex as rx
 
 # local imports
 from ..model import INFLUENCE_TO_PROBABILITY, Config
+from .graph import build_graph
 
 # end file header
 __author__ = 'Adrian Lubitz'
@@ -170,6 +171,16 @@ class EditorState(rx.State):
     influence_context: str = '0'
     influence_rows: list[InfluenceRow] = []
     combined: list[CombinedView] = []
+    #: Position of the intention highlighted in the influence table, -1 for none.
+    selected_intention: int = -1
+
+    #: React Flow nodes and edges of the graph.
+    graph_nodes: list[dict] = []
+    graph_edges: list[dict] = []
+    #: Positions of the contexts shown with their instantiations in the graph.
+    expanded_contexts: list[int] = []
+    #: Changes when the graph needs a new layout (React Flow fits the view on mount only).
+    graph_key: str = ''
 
     #: Draft of the config in the browser storage.
     draft: str = rx.LocalStorage('', name='cobair_draft', sync=False)
@@ -273,6 +284,17 @@ class EditorState(rx.State):
         self.draft = config.dumps() if config != Config() else ''
         self._sync_influences()
         self._sync_combined()
+        self._sync_graph()
+
+    def _sync_graph(self) -> None:
+        """Derive the nodes and edges of the graph."""
+        config = self._model()
+        self.expanded_contexts = [index for index in self.expanded_contexts
+                                  if index < len(config.contexts)]
+        if self.selected_intention >= len(config.intentions):
+            self.selected_intention = -1
+        self.graph_nodes, self.graph_edges = build_graph(config, self.expanded_contexts)
+        self.graph_key = f'{len(self.graph_nodes)}-{self.expanded_contexts}'
 
     def _sync_influences(self) -> None:
         """Derive the influence table of the selected context."""
@@ -571,6 +593,51 @@ class EditorState(rx.State):
         intention = self._intention_key(intention_index)
         self._edit('change_influence_value', intention, context, instantiation, int(value))
         yield self._unload_guard()
+
+    # ------------------------------------------------------------------------------------------
+    # graph
+
+    def _select_graph_item(self, node_id: str, toggle: bool) -> None:
+        """Select the context or intention of a graph node in the editor.
+
+        Args:
+            node_id: Id of the node.
+            toggle: Fold / unfold a clicked context.
+        """
+        kind, *positions = node_id.split(':')
+        if kind == 'c':
+            context = int(positions[0])
+            self.influence_context = str(context)
+            self._sync_influences()
+            if toggle:
+                expanded = set(self.expanded_contexts) ^ {context}
+                self.expanded_contexts = sorted(expanded)
+                self._sync_graph()
+        elif kind == 'i':
+            self.influence_context = positions[0]
+            self._sync_influences()
+        elif kind == 't':
+            self.selected_intention = int(positions[0])
+
+    @rx.event
+    def graph_node_click(self, node_id: str):
+        """Select the clicked node; a context node also folds / unfolds its instantiations.
+
+        Args:
+            node_id: Id of the node.
+        """
+        self._select_graph_item(node_id, toggle=True)
+
+    @rx.event
+    def graph_edge_click(self, edge_id: str):
+        """Select the context and intention of the clicked edge.
+
+        Args:
+            edge_id: Id of the edge, `<source>-><target>`.
+        """
+        source, target = edge_id.split('->')
+        self._select_graph_item(source, toggle=False)
+        self._select_graph_item(target, toggle=False)
 
     # ------------------------------------------------------------------------------------------
     # context dialog

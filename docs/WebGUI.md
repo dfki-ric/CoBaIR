@@ -38,6 +38,7 @@ info icons in the GUI link there.
   probabilities. Apriori probabilities can also be changed directly in the cards.
 - **Intentions**: *Add*, rename (pencil icon) and delete (trash icon).
 - **Influences**: choose a context, then choose a value for every instantiation and intention.
+- **Graph**: click a context to unfold it and select it in the influence table, click an intention to highlight it.
 - **Combined influences**: *Add* a value for a combination of instantiations, remove it with the trash icon.
 - **Decision threshold**: a number between 0 and 1.
 

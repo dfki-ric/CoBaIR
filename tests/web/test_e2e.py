@@ -222,3 +222,18 @@ def test_help_links(page):
                           ('threshold', 'decision-threshold')]:
         href = page.get_attribute(f'#help-{topic}', 'href')
         assert href == f'https://dfki-ric.github.io/CoBaIR/Tutorial/#{anchor}'
+
+
+def test_graph(page):
+    """The graph shows the config; clicking a context unfolds and selects it (#182)."""
+    load_example(page)
+    page.wait_for_selector('#graph .react-flow__node')
+    assert page.locator('#graph .react-flow__node').count() == 6
+    assert page.locator('#graph .react-flow__edge').count() == 9
+    page.locator('#graph .react-flow__node', has_text='speech commands').click()
+    page.wait_for_function("document.querySelectorAll('#graph .react-flow__node').length === 9")
+    assert page.text_content('#influence-context') == 'speech commands'
+    page.locator('#graph .react-flow__node', has_text='pick up tool').click()
+    page.wait_for_function(
+        "getComputedStyle(document.querySelectorAll('.intention-column')[1]).color "
+        "!== getComputedStyle(document.querySelectorAll('.intention-column')[0]).color")
