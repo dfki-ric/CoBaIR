@@ -3,8 +3,8 @@
 [![CI](https://github.com/dfki-ric/CoBaIR/actions/workflows/ci.yml/badge.svg)](https://github.com/dfki-ric/CoBaIR/actions/workflows/ci.yml)
 [![Quality](https://github.com/dfki-ric/CoBaIR/actions/workflows/quality.yml/badge.svg)](https://github.com/dfki-ric/CoBaIR/actions/workflows/quality.yml)
 <!-- badges:start -->
-[![Ruff linting issues](https://img.shields.io/badge/Ruff%20linting%20issues-615%20issues-yellow)](https://github.com/dfki-ric/CoBaIR/actions/workflows/quality.yml)
-[![Docstring coverage](https://img.shields.io/badge/Docstring%20coverage-97.6%25-brightgreen)](https://github.com/dfki-ric/CoBaIR/actions/workflows/quality.yml)
+[![Ruff linting issues](https://img.shields.io/badge/Ruff%20linting%20issues-597%20issues-yellow)](https://github.com/dfki-ric/CoBaIR/actions/workflows/quality.yml)
+[![Docstring coverage](https://img.shields.io/badge/Docstring%20coverage-97.8%25-brightgreen)](https://github.com/dfki-ric/CoBaIR/actions/workflows/quality.yml)
 <!-- badges:end -->
 
 CoBaIR is a python library for **Co**ntext **Ba**sed **I**ntention **R**ecognition.
@@ -62,14 +62,16 @@ On some Linux Distros there seems to be a problem with a shared library. [This S
 ## Graphical User Interface
 ![GUI](docs/images/simpleConfig.gif "A simple configuration in the GUI")
 
-To make the configuration of a scenario easier we provide a Graphical User Interface(GUI). The GUI can be started with
+To make the configuration of a scenario easier we provide a Graphical User Interface(GUI).
+Install it with `pip install "cobair[qt]"` and start it with
 ```bash
-python start_configurator.py
+cobair-qt
 ```
 if you want to start the GUI with a loaded config use
 ```bash
-python start_configurator.py -f config.yml
+cobair-qt -f config.yml
 ```
+From a source checkout, `python start_configurator.py [-f config.yml]` does the same.
 ## Tutorial
 For a step-by-step guide on how to use CoBaIR, check out our [Tutorial](docs/Tutorial.md).
 
@@ -82,10 +84,10 @@ In the bayesian approach CoBaIR uses a two-layer Bayesian Net of the following s
 ![two-layer Bayesian Net](docs/images/2layerbayesian.svg)
 
 ## Config Format
-Configs will be saved in yml files. For convenience the is a configurator which can be started with
+Configs will be saved in yml files. For convenience there is a configurator which can be started with
 
 ```bash
-python start_configurator.py
+cobair-qt
 ```
 
 ### Bayesian Approach

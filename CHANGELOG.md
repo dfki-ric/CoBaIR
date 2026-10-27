@@ -5,6 +5,9 @@ Versions follow [semantic versioning](https://semver.org/); see [CONTRIBUTING.md
 References like `GitLab MR !123` point to the former internal GitLab project.
 
 ## Unreleased
+- the Qt configurator moved to `cobair.qt` and works on `cobair.model.Config`; start it with the new command `cobair-qt [-f config.yml]`; `cobair.configurator` / `cobair.visualization` are deprecated aliases (minor)
+- `[qt]` extra uses PyQt5 5.15.11 (5.15.9 segfaults with Python >= 3.12) and no longer needs `[infer]` (patch)
+- Qt configurator: File > New no longer crashes, the window icon is found in pip installs, every combined influence has its own row in the advanced table, influence 1 is labelled "very low" (patch)
 - new API: `cobair.model.Config` (pure Python: editing, validation, files, CPT computation) and `cobair.infer.Inference` (pgmpy/bnlearn adapter); `cobair.bayes_net` (`BayesNet`, `load_config`, ...) is deprecated and will be removed in 6.0.0 (minor)
 - config files get a header comment and the keys `format_version` and `created_with`, keys keep their order instead of being sorted (minor)
 - editing or deleting a context no longer deletes all combined influences, renaming a context renames it in the combined influences (patch)

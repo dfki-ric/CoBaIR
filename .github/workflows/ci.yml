@@ -9,6 +9,8 @@ jobs:
     runs-on: ubuntu-latest
     # same images as the former GitLab pipeline
     container: python:${{ matrix.python-version }}-bullseye
+    env:
+      QT_QPA_PLATFORM: offscreen
     strategy:
       fail-fast: false
       matrix:
@@ -19,6 +21,8 @@ jobs:
         with:
           path: ~/.cache/pip
           key: pip-${{ matrix.python-version }}-${{ hashFiles('pyproject.toml', 'requirements/*.txt') }}
+      # system libraries for the Qt configurator tests (offscreen platform)
+      - run: apt-get update && apt-get install -y --no-install-recommends libgl1 libegl1 libxkbcommon0 libdbus-1-3 libfontconfig1 libglib2.0-0
       - run: pip install --upgrade pip
       - run: pip install -r requirements/test_requirements.txt
       - run: pip install .[infer,qt]
