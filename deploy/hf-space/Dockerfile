@@ -7,7 +7,9 @@ RUN useradd --create-home --uid 1000 user
 USER user
 ENV HOME=/home/user \
     PATH=/home/user/.local/bin:$PATH \
-    PYTHONUNBUFFERED=1
+    PYTHONUNBUFFERED=1 \
+    # CPU-only torch (pulled in by pgmpy/bnlearn): a much smaller image than with the CUDA wheels
+    PIP_EXTRA_INDEX_URL=https://download.pytorch.org/whl/cpu
 WORKDIR /home/user/app
 
 # the wheel built by the release workflow (contains the frontend)
