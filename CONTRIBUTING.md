@@ -8,8 +8,10 @@ Thanks for your interest in CoBaIR! Bugs, feature requests and questions are wel
 - `main` is the only long-lived branch. It always has to be in a working state.
 - Every change starts with an issue. Create a short-lived branch from `main` named after the type of change
   and the issue, e.g. `feature/153-live-inference` or `fix/171-graph-bug`, and open a Pull Request into `main`.
-- The [CI pipeline](https://github.com/dfki-ric/CoBaIR/actions/workflows/ci.yml) runs tests for all supported
-  Python versions, the docu build and the package build on every Pull Request.
+- The [CI pipeline](https://github.com/dfki-ric/CoBaIR/actions/workflows/ci.yml) runs on every Pull Request:
+  the tests for all supported Python versions (including the headless Qt tests), the docu build (`--strict`),
+  the package build (with the web GUI frontend, served once from the installed wheel), the end-to-end tests of
+  the web GUI (Playwright, `tests/web`) and a smoke test of the Hugging Face Space image.
   The [Quality workflow](https://github.com/dfki-ric/CoBaIR/actions/workflows/quality.yml) counts ruff linting issues
   and the docstring coverage and fails if one of them got worse than `.github/quality-baseline.json`
   (see [Code quality](README.md#code-quality)). All checks must pass before merging.
@@ -43,8 +45,8 @@ A version is created by tagging a commit on `main`.
 
 1. Open a Pull Request that moves the `Unreleased` entries in [CHANGELOG.md](CHANGELOG.md) to a section for the
    new version, e.g. `## 4.1.0 - 2026-11-02`.
-2. Before merging: check that all tests pass and perform the manual GUI tests documented in
-   [tests/gui_test_protocol.md](tests/gui_test_protocol.md).
+2. Before merging: check that all tests pass and perform the manual tests of the Qt configurator documented in
+   [tests/gui_test_protocol.md](tests/gui_test_protocol.md). The web GUI is covered by the end-to-end tests.
 3. After merging, create a GitHub Release on `main` with a new tag named exactly like the version
    (e.g. `4.1.0`, no `v` prefix) and the changelog of the version as description.
 4. The tag triggers
