@@ -9,8 +9,8 @@ is created from a config file.
 # 3rd party imports
 
 # local imports
-from CoBaIR.bayes_net import BayesNet, load_config
-from CoBaIR.default_discretizer import binary_decision
+from cobair.bayes_net import BayesNet, load_config
+from cobair.default_discretizer import binary_decision
 
 # end file header
 __author__ = 'Adrian Lubitz'

@@ -11,7 +11,7 @@ from collections import defaultdict
 
 # local imports
 from tests import N
-from CoBaIR.bayes_net import BayesNet, config_to_default_dict, default_to_regular, load_config
+from cobair.bayes_net import BayesNet, config_to_default_dict, default_to_regular, load_config
 
 # end file header
 __author__ = 'Arunima Gopikrishnan'

@@ -1,6 +1,6 @@
 # CoBaIR
 
 
-::: CoBaIR.bayes_net
+::: cobair.bayes_net
 
 
