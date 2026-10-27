@@ -2,4 +2,5 @@ pytest
 pytest-cov
 pytest-html
 pytest-timeout
-pylint
+ruff==0.17.3
+interrogate==1.7.0

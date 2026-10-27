@@ -1,0 +1,23 @@
+# Tool configuration only, packaging metadata still lives in setup.py.
+
+[tool.ruff]
+# Keep in sync with the ruff pin in .github/workflows/quality.yml: preview rules change between releases.
+required-version = "==0.17.3"
+line-length = 100
+extend-exclude = ["build", "site"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "D", "DOC"]
+preview = true
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.interrogate]
+ignore-init-method = true
+ignore-magic = true
+ignore-private = true
+ignore-module = false
+fail-under = 0
+exclude = ["build", "site", "docs", "scripts"]
+verbose = 1
