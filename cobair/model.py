@@ -259,15 +259,6 @@ class Config:
             return NotImplemented
         return self.to_dict() == other.to_dict()
 
-    def __repr__(self) -> str:
-        """Return a short representation.
-
-        Returns:
-            str: The representation.
-        """
-        return (f'Config(contexts={list(self.contexts)}, intentions={list(self.intentions)}, '
-                f'decision_threshold={self.decision_threshold})')
-
     # ------------------------------------------------------------------------------------------
     # validation
 
