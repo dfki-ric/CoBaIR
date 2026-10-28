@@ -133,18 +133,6 @@ class Inference:
                           f'{list(self.config.contexts[context])}')
         return True, ''
 
-    def _is_instantiation(self, context: Hashable, value) -> bool:
-        """Check if value is one of the instantiations of a context.
-
-        Args:
-            context: A context of the config.
-            value: Any value.
-
-        Returns:
-            bool: True if value is an instantiation of the context.
-        """
-        return isinstance(value, Hashable) and value in self.config.contexts[context]
-
     def _card_evidence(self, evidence: dict) -> dict:
         """Translate evidence into bnlearn's card form.
 
@@ -163,7 +151,8 @@ class Inference:
         errors = []
         for context, instantiation in evidence.items():
             if context in self.discretization_functions and instantiation is not None and \
-                    not self._is_instantiation(context, instantiation):
+                    not (isinstance(instantiation, Hashable)
+                         and instantiation in self.value_to_card[context]):
                 instantiation = self.discretization_functions[context](instantiation)
             valid, message = self.check_evidence(context, instantiation)
             if not valid:
