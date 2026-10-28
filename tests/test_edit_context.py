@@ -9,7 +9,7 @@ import pytest
 
 # local imports
 from tests import N
-from CoBaIR.bayes_net import BayesNet, default_to_regular, load_config
+from cobair.bayes_net import BayesNet, default_to_regular, load_config
 
 # end file header
 __author__ = 'Adrian Lubitz'
