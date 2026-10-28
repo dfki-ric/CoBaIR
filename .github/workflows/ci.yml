@@ -7,8 +7,10 @@ on:
 jobs:
   run_tests:
     runs-on: ubuntu-latest
-    # same images as the former GitLab pipeline
-    container: python:${{ matrix.python-version }}-bullseye
+    # Debian bookworm images, bullseye is EOL and its apt repositories are gone
+    container: python:${{ matrix.python-version }}-bookworm
+    env:
+      QT_QPA_PLATFORM: offscreen
     strategy:
       fail-fast: false
       matrix:
@@ -19,6 +21,8 @@ jobs:
         with:
           path: ~/.cache/pip
           key: pip-${{ matrix.python-version }}-${{ hashFiles('pyproject.toml', 'requirements/*.txt') }}
+      # system libraries for the Qt configurator tests (offscreen platform)
+      - run: apt-get update && apt-get install -y --no-install-recommends libgl1 libegl1 libxkbcommon0 libdbus-1-3 libfontconfig1 libglib2.0-0
       - run: pip install --upgrade pip
       - run: pip install -r requirements/test_requirements.txt
       - run: pip install .[infer,qt]
@@ -43,7 +47,7 @@ jobs:
 
   build_docu:
     runs-on: ubuntu-latest
-    container: python:3.11-bullseye
+    container: python:3.11-bookworm
     steps:
       - uses: actions/checkout@v7
       - run: pip install --upgrade pip
@@ -57,7 +61,7 @@ jobs:
 
   build_installable_package:
     runs-on: ubuntu-latest
-    container: python:3.11-bullseye
+    container: python:3.11-bookworm
     steps:
       - uses: actions/checkout@v7
       - run: pip install build

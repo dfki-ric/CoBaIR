@@ -37,7 +37,6 @@ infer = [
     "bnlearn==1.1.0",
 ]
 qt = [
-    "cobair[infer]",
     "PyQt5==5.15.11",
     "pyqtgraph==0.14.0",
 ]
@@ -48,6 +47,9 @@ web = [
 all = [
     "cobair[infer,qt,web]",
 ]
+
+[project.scripts]
+cobair-qt = "cobair.qt:main"
 
 [project.urls]
 Homepage = "https://github.com/dfki-ric/CoBaIR"
@@ -63,7 +65,7 @@ py-modules = ["CoBaIR"]
 include = ["cobair*"]
 
 [tool.setuptools.package-data]
-cobair = ["*.ui"]
+"cobair.qt" = ["*.ui", "*.png"]
 
 [tool.ruff]
 # Keep in sync with the ruff pin in .github/workflows/quality.yml: preview rules change between releases.

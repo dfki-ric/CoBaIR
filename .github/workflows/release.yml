@@ -7,7 +7,7 @@ on:
 jobs:
   upload_pypi:
     runs-on: ubuntu-latest
-    container: python:3.11-bullseye
+    container: python:3.11-bookworm
     steps:
       - uses: actions/checkout@v7
       - run: pip install build twine
