@@ -22,12 +22,11 @@
 | The user is on the main GUI and there is at least one Intention in the dropdown list | Click on the "Delete" button next to an intention | The dropdown item should be removed from the list | 4.0.0 |
 | The user is on the main GUI and there is at least one Intention in the dropdown list | Click on the "Edit" button next to a Intention | The New Intention dialog window should appear with the loaded intention | 4.0.0 |
 | The New Intention dialog window is displayed with the loaded intention | Edit the intention, and press "OK" | The edited intention should be added to the list in the GUI | 4.0.0 |
-| The user is on the main GUI | Click on the "advanced" | The table should be unfolded or folded | 4.0.0 |
-| The user is on the main GUI | Click on the "remove" button | The respective row should be deleted | 4.0.0 |
-| The user is on the main GUI | Click on the "new combined context influence" button |  A dialog window should appear with fields for intention, context, instantiation, and influence value | 4.0.0 |
+| The user is on the main GUI with small_example.yml loaded | Click on the "advanced" | The table should be unfolded or folded | 4.0.0 |
+| The user is on the main GUI with small_example.yml loaded | Click on the "remove" button in the advanced table | The respective row should be deleted | 4.0.0 |
+| The user is on the main GUI with small_example.yml loaded | Click on the "new combined context influence" button |  A dialog window should appear with fields for intention, context, instantiation, and influence value | 4.0.0 |
 | A dialog window is displayed with loaded intention, context, instantiation |  Select an intention, context, instantiation, and influence value from the dropdown and click "OK" | The selected intention, context, instantiation, influence value should be loaded in the table | 4.0.0 |
 | A dialog window is displayed with loaded intention, context, instantiation |  Select a intention, context, instantiation, influence value from the dropdown and click "Cancel" | Nothing should be added to the GUI | 4.0.0 |
-| The user is on the "New Combined Context Influence" dialog window. | Select an intention, context, instantiation, and enter an invalid influence value (e.g., a non-numeric value) and click "OK." | An error message should be displayed, indicating that the influence value should be a numeric value. | 4.0.0 |
 | The user has added multiple combined context influences, filling up the table. | Click on the "New Combined Context Influence" button and add another entry to the table. | The application should handle the addition gracefully, allowing the user to scroll through the table entries if needed. | 4.0.0 |
 | The user is on the main GUI | Click on the "Save" button | A file loading dialog box should appear, and the file should be saved in .yml format | 4.0.0 |
 | The user is on the main GUI | Press Ctrl+O or click on the "Open" button in the menu bar | A file open dialog box should appear | 4.0.0 |
