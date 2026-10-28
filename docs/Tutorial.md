@@ -120,4 +120,22 @@ In this scenario we only have the intentions `hand over tool` and `pick up tool`
 ### 4. Outcome:
 To test the inference on your config you can use the script `small_example_from_yml.py` in an interactive Jupyter Shell. Try to change the evidence to see if your configuration describes the scenario as expected.
 
+In your own code, load the config and create an inference for it:
+
+```python
+from cobair.model import Config
+from cobair.infer import Inference
+
+inference = Inference(Config.load('my_scenario.yml'))
+intention, decision_threshold, probabilities = inference.infer({
+    'speech commands': 'pickup',
+    'human holding object': True,
+})
+```
+
+Contexts you don't observe can be left out, their apriori probabilities are used instead.
+If a context is observed as a continuous value, bind a discretization function which maps the value
+to one of the instantiations, e.g.
+`inference.bind_discretization_function('human holding object', lambda distance: distance < 0.2)`.
+
 This example shows how the CoBaIR can assess different contextual factors and their influence on possible intentions, thereby interpreting and acting upon human intentions in a dynamic environment.

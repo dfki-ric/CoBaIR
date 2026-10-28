@@ -3,8 +3,8 @@
 [![CI](https://github.com/dfki-ric/CoBaIR/actions/workflows/ci.yml/badge.svg)](https://github.com/dfki-ric/CoBaIR/actions/workflows/ci.yml)
 [![Quality](https://github.com/dfki-ric/CoBaIR/actions/workflows/quality.yml/badge.svg)](https://github.com/dfki-ric/CoBaIR/actions/workflows/quality.yml)
 <!-- badges:start -->
-[![Ruff linting issues](https://img.shields.io/badge/Ruff%20linting%20issues-779%20issues-yellow)](https://github.com/dfki-ric/CoBaIR/actions/workflows/quality.yml)
-[![Docstring coverage](https://img.shields.io/badge/Docstring%20coverage-94.7%25-brightgreen)](https://github.com/dfki-ric/CoBaIR/actions/workflows/quality.yml)
+[![Ruff linting issues](https://img.shields.io/badge/Ruff%20linting%20issues-615%20issues-yellow)](https://github.com/dfki-ric/CoBaIR/actions/workflows/quality.yml)
+[![Docstring coverage](https://img.shields.io/badge/Docstring%20coverage-97.6%25-brightgreen)](https://github.com/dfki-ric/CoBaIR/actions/workflows/quality.yml)
 <!-- badges:end -->
 
 CoBaIR is a python library for **Co**ntext **Ba**sed **I**ntention **R**ecognition.
@@ -23,11 +23,37 @@ For a more in-depth explanation consult the following papers:
 
 
 ## Install
+CoBaIR needs Python >= 3.10. Install it with the extras you need:
 ```bash
-pip install CoBaIR
+pip install "cobair[all]"
 ```
-You can install the library from your local copy after cloning this repo with pip using `pip install .`
-or install the newest unreleased features from the `main` branch with `pip install git+https://github.com/dfki-ric/CoBaIR.git@main`
+
+| extra | contains |
+|---|---|
+| `cobair` | the config model only (pyyaml) |
+| `cobair[infer]` | inference with the Bayesian net (pgmpy, bnlearn), needed for `cobair.bayes_net` |
+| `cobair[qt]` | the Qt configurator (PyQt5, pyqtgraph) |
+| `cobair[web]` | the web GUI (Reflex, Python >= 3.11) |
+| `cobair[all]` | everything above |
+
+You can install the library from your local copy after cloning this repo with pip using `pip install ".[all]"`
+or install the newest unreleased features from the `main` branch with
+`pip install "cobair[all] @ git+https://github.com/dfki-ric/CoBaIR.git@main"`
+
+## Usage
+```python
+from cobair.model import Config
+from cobair.infer import Inference
+
+config = Config.load('small_example.yml')
+inference = Inference(config)
+intention, decision_threshold, probabilities = inference.infer({'speech commands': 'pickup'})
+```
+`cobair.model.Config` holds the scenario and has methods to edit, validate, load and save it.
+`cobair.infer.Inference` infers the intentions for given evidence. See the [API documentation](https://dfki-ric.github.io/CoBaIR/API/).
+
+The 4.x API (`from CoBaIR.bayes_net import BayesNet, load_config`) still works until 6.0.0, but raises a
+`DeprecationWarning`.
 
 ### Known Issues
 On some Linux Distros there seems to be a problem with a shared library. [This Solutions](https://stackoverflow.com/questions/71010343/cannot-load-swrast-and-iris-drivers-in-fedora-35/72200748#72200748) suggests to `export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6

@@ -8,7 +8,7 @@ import pytest
 import copy
 
 # local imports
-from CoBaIR.bayes_net import BayesNet
+from cobair.bayes_net import BayesNet
 
 # end file header
 __author__ = 'Arunima Gopikrishnan'

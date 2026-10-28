@@ -9,8 +9,8 @@ import yaml
 from pathlib import Path
 
 # local imports
-from CoBaIR.configurator import Configurator
-from CoBaIR.bayes_net import load_config
+from cobair.configurator import Configurator
+from cobair.bayes_net import load_config
 
 
 # end file header

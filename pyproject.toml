@@ -1,4 +1,72 @@
-# Tool configuration only, packaging metadata still lives in setup.py.
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cobair"
+# the version is set in setup.py from the release tag
+dynamic = ["version"]
+description = "CoBaIR is a Python library for Context Based Intention Recognition"
+readme = "README.md"
+license = "BSD-3-Clause"
+license-files = ["LICENSE"]
+authors = [{name = "Adrian Lubitz", email = "Adrian.Lubitz@dfki.de"}]
+keywords = ["intention recognition", "context", "human machine interaction", "robot", "bayesian"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: X11 Applications :: Qt",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Utilities",
+]
+requires-python = ">=3.10"
+# The core is the config model only. Until the split into cobair.model / cobair.infer (#191)
+# cobair.bayes_net needs the [infer] extra.
+dependencies = [
+    "pyyaml>=5.3.1",
+]
+
+[project.optional-dependencies]
+infer = [
+    "pgmpy==0.1.20",
+    "bnlearn==0.7.10",
+    "numpy<2.0.0",
+    # pgmpy 0.1.20 still needs pkg_resources
+    "setuptools<81",
+]
+qt = [
+    "cobair[infer]",
+    "PyQt5==5.15.9",
+    "pyqtgraph==0.13.3",
+]
+web = [
+    "cobair[infer]",
+    "reflex==0.10.0; python_version >= '3.11'",
+]
+all = [
+    "cobair[infer,qt,web]",
+]
+
+[project.urls]
+Homepage = "https://github.com/dfki-ric/CoBaIR"
+Documentation = "https://dfki-ric.github.io/CoBaIR/"
+Changelog = "https://github.com/dfki-ric/CoBaIR/blob/main/CHANGELOG.md"
+Issues = "https://github.com/dfki-ric/CoBaIR/issues"
+
+[tool.setuptools]
+# CoBaIR.py is the deprecated alias for the old import name, removed in 6.0.0 (#199)
+py-modules = ["CoBaIR"]
+
+[tool.setuptools.packages.find]
+include = ["cobair*"]
+
+[tool.setuptools.package-data]
+cobair = ["*.ui"]
 
 [tool.ruff]
 # Keep in sync with the ruff pin in .github/workflows/quality.yml: preview rules change between releases.

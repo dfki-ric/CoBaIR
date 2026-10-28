@@ -5,6 +5,18 @@ Versions follow [semantic versioning](https://semver.org/); see [CONTRIBUTING.md
 References like `GitLab MR !123` point to the former internal GitLab project.
 
 ## Unreleased
+- new API: `cobair.model.Config` (pure Python: editing, validation, files, CPT computation) and `cobair.infer.Inference` (pgmpy/bnlearn adapter); `cobair.bayes_net` (`BayesNet`, `load_config`, ...) is deprecated and will be removed in 6.0.0 (minor)
+- config files get a header comment and the keys `format_version` and `created_with`, keys keep their order instead of being sorted (minor)
+- editing or deleting a context no longer deletes all combined influences, renaming a context renames it in the combined influences (patch)
+- all combined influences of a context combination are used, not only the first one; `del_combined_influence` only removes the given combination (patch)
+- discretization functions are applied to every value that is not an instantiation, not only to unhashable values (patch)
+- renaming a context to an existing context raises a `ValueError` instead of overwriting it; apriori probabilities are checked to sum up to 1 with a tolerance (patch)
+- the package is imported as `cobair` (lowercase) instead of `CoBaIR`; `import CoBaIR` still works until 6.0.0 but raises a `DeprecationWarning` (breaking)
+- Python >= 3.10 is required, CI tests Python 3.10 - 3.13 (breaking)
+- dependencies are split into install extras `[infer]`, `[qt]`, `[web]` and `[all]`; `pip install cobair` only installs the config model dependencies (breaking)
+- packaging metadata moved to `pyproject.toml`, the package is built with `python -m build` (fixes the PyPI upload error with the normalized name, #196) (patch)
+- the `.ui` files of the Qt configurator are part of the installed package (patch)
+- docu is built with current mkdocstrings (patch)
 - moved completely from GitLab to GitHub (issues, CI pipelines, templates)
 - workflow with feature/fix branches into `main` only, releases are created from tags, docu is published on release tags
 - `@claude` can be mentioned in issues and Pull Requests
@@ -41,10 +53,10 @@ References like `GitLab MR !123` point to the former internal GitLab project.
 - draw connections (patch)
 - fixed layout warnings (patch) (GitLab MR !123)
 - removed save_invalid from the method signature (breaking) (GitLab MR !124)
-- added astrix on changes to the title (minor)
+- added astrix on changes to the title
 - moved TwoLayerGraph to visualization module (breaking) (GitLab MR !128)
 - adjustment of labels (patch)
-- create new config menu entry and shortcut (minor)
+- create new config menu entry and shortcut
 - fixed Bug with pop-up after clicking on graph (patch)
 - Added GIF to Readme (patch) (GitLab MR !138)
 - Match colors of graph and slider (minor) (GitLab MR !125)
@@ -64,7 +76,7 @@ References like `GitLab MR !123` point to the former internal GitLab project.
 
 ## 3.0.0 - 2023-05-09
 - QT Version bump(minor)
-- Layout moved completely to UI file (minor)
+- Layout moved completely to UI file
 - Slider colors (patch)
 - error handling for "new combined context" (patch)
 - changed the way layout elements are accessed (patch)
@@ -89,7 +101,7 @@ References like `GitLab MR !123` point to the former internal GitLab project.
 - supports removing instantiations and validation on that(minor)
 
 ## 1.0.1 - 2022-09-09
-- fixed bug with max_intention - now correctly using the normalized inference (minor)
+- fixed bug with max_intention - now correctly using the normalized inference
 
 ## 1.0.0 - 2022-09-09
 - visual bug with showing combined context(patch)
@@ -97,7 +109,7 @@ References like `GitLab MR !123` point to the former internal GitLab project.
 - using coverage and providing badges (patch)
 - providing test and coverage reports in GitLab (patch)
 - introduced decision threshold and provide results from infer as tuple of intention with the highest likelihood and distribution of all intentions(major)
-- support for decision_threshold in config file and GUI (minor)
+- support for decision_threshold in config file and GUI
 
 ## 0.2.2 - 2022-05-25
 - hotfix for Discretizer Functions returning None

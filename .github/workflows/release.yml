@@ -7,12 +7,12 @@ on:
 jobs:
   upload_pypi:
     runs-on: ubuntu-latest
-    container: python:3.8-bullseye
+    container: python:3.11-bullseye
     steps:
       - uses: actions/checkout@v7
-      - run: pip install setuptools wheel twine
+      - run: pip install build twine
       # setup.py takes the version from the tag (GITHUB_REF_NAME)
-      - run: python setup.py sdist bdist_wheel
+      - run: python -m build
       - run: twine upload --verbose dist/*
         env:
           TWINE_USERNAME: __token__
