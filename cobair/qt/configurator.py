@@ -19,7 +19,6 @@ from PyQt5.QtWidgets import QDialog, QLabel, QLineEdit, QComboBox, QPushButton,\
     QFrame, QGridLayout, QSizePolicy, QSlider, QFileDialog, QMessageBox
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QWidget
 from PyQt5.QtGui import QFont, QFontMetrics, QIcon
 
 import logging
@@ -183,9 +182,7 @@ class NewCombinedContextDialog(QDialog):
         self._update_context_options()
 
     def _update_context_options(self):
-        """
-        Every context dropdown only offers its own selection and the contexts not selected elsewhere.
-        """
+        """Every context dropdown only offers its own selection and the contexts not selected elsewhere."""
         selected = [menu.currentText() for menu in self.context_selections]
         for i, menu in enumerate(self.context_selections):
             taken = selected[:i] + selected[i + 1:]
@@ -896,8 +893,7 @@ class Configurator(QtWidgets.QMainWindow):
                            command or self.context_selected, 'Context')
 
     def _set_dropdown(self, dropdown, options, command, placeholder: str):
-        """
-        Fill a dropdown and connect the command as its only callback.
+        """Fill a dropdown and connect the command as its only callback.
 
         The callback used to be connected again on every call, so the number of
         callbacks (each rebuilding widgets) grew with every action until the GUI froze.
@@ -929,9 +925,7 @@ class Configurator(QtWidgets.QMainWindow):
 
     @staticmethod
     def _clear_layout(layout):
-        """
-        Remove and delete all widgets of a layout.
-        """
+        """Remove and delete all widgets of a layout."""
         while layout.count():
             widget = layout.takeAt(0).widget()
             if widget is not None:

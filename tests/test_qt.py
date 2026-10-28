@@ -205,7 +205,7 @@ def test_combined_dialog_many_changes(configurator):
     dialog.context_selections[0].setCurrentIndex(0)
     result = dialog.get_result()
     assert len(set(result['contexts'])) == len(result['contexts'])
-    assert len(result['instantiations']) == 2
+    assert len(result['contexts']) == len(result['instantiations']) == 3
 
 
 def test_new_context_dialog_new_row_has_no_error(configurator):
