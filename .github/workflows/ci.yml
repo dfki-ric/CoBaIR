@@ -41,22 +41,6 @@ jobs:
             htmlcov
             test_report
 
-  pylint:
-    runs-on: ubuntu-latest
-    container: python:3.8-bullseye
-    steps:
-      - uses: actions/checkout@v7
-      - run: pip install --upgrade pip
-      - run: pip install -r requirements/test_requirements.txt
-      - run: pip install .
-      - run: |
-          pylint --exit-zero --output-format=text $(find -type f -name "*.py" ! -path "**/.venv/**") | tee pylint.txt
-          echo "Pylint score: $(sed -n 's/^Your code has been rated at \([-0-9.]*\)\/.*/\1/p' pylint.txt)" >> "$GITHUB_STEP_SUMMARY"
-      - uses: actions/upload-artifact@v7
-        with:
-          name: pylint-report
-          path: pylint.txt
-
   build_docu:
     runs-on: ubuntu-latest
     container: python:3.8-bullseye

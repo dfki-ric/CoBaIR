@@ -1,0 +1,95 @@
+name: Quality
+
+on:
+  push:
+    branches: ['**']
+  # only to check PRs from forks, PRs from this repo are covered by the push run
+  pull_request:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: quality-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+
+      - name: Install tools
+        # Keep the ruff pin in sync with pyproject.toml: preview rules change between releases.
+        run: pip install ruff==0.17.3 interrogate==1.7.0
+
+      - name: Run ruff
+        id: ruff
+        run: |
+          ruff check . --output-format json > ruff.json || true
+          COUNT=$(jq length ruff.json)
+          echo "count=$COUNT" >> "$GITHUB_OUTPUT"
+          echo "Ruff issues: $COUNT"
+          ruff check . --output-format concise --statistics || true
+
+      - name: Run interrogate
+        id: docs
+        run: |
+          interrogate -c pyproject.toml -v . > docs.txt || true
+          cat docs.txt
+          PCT=$(grep -oE '[0-9]+(\.[0-9]+)?%' docs.txt | tail -1 | tr -d '%')
+          echo "pct=$PCT" >> "$GITHUB_OUTPUT"
+          echo "Docstring coverage: $PCT%"
+
+      - name: Enforce ratchet
+        env:
+          LINT: ${{ steps.ruff.outputs.count }}
+          DOCS: ${{ steps.docs.outputs.pct }}
+        run: |
+          BASE_LINT=$(jq -r .ruff_issues .github/quality-baseline.json)
+          BASE_DOCS=$(jq -r .doc_coverage .github/quality-baseline.json)
+          {
+            echo "| | baseline | now |"
+            echo "|---|---|---|"
+            echo "| Ruff issues | $BASE_LINT | $LINT |"
+            echo "| Docstring coverage | $BASE_DOCS % | $DOCS % |"
+          } >> "$GITHUB_STEP_SUMMARY"
+          FAIL=0
+          if [ "$LINT" -gt "$BASE_LINT" ]; then
+            echo "::error::Ruff issues went up: $LINT > $BASE_LINT"; FAIL=1
+          fi
+          if awk "BEGIN{exit !($DOCS < $BASE_DOCS)}"; then
+            echo "::error::Docstring coverage dropped: $DOCS% < $BASE_DOCS%"; FAIL=1
+          fi
+          if [ "$LINT" -lt "$BASE_LINT" ] || awk "BEGIN{exit !($DOCS > $BASE_DOCS)}"; then
+            echo "::notice::Numbers improved - update .github/quality-baseline.json to lock it in."
+          fi
+          exit $FAIL
+
+      - name: Update README badges
+        id: badges
+        if: ${{ !cancelled() && steps.ruff.outputs.count != '' && steps.docs.outputs.pct != '' }}
+        env:
+          LINT: ${{ steps.ruff.outputs.count }}
+          DOCS: ${{ steps.docs.outputs.pct }}
+          BADGE_LINK: ${{ github.server_url }}/${{ github.repository }}/actions/workflows/quality.yml
+        run: |
+          python .github/scripts/update_badges.py
+          git diff README.md
+
+      - name: Commit badges to the branch
+        # Fork PRs get a read-only token, so they only see the badges in the job log.
+        if: ${{ !cancelled() && steps.badges.outcome == 'success' && github.event_name == 'push' }}
+        run: |
+          if git diff --quiet README.md; then
+            echo "Badges unchanged"; exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898333+github-actions[bot]@users.noreply.github.com"
+          git commit README.md -m "Update README badges"
+          git push || echo "::warning::Branch moved during the run; the next run will refresh the badges."

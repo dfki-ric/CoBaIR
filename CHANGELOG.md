@@ -12,6 +12,7 @@ References like `GitLab MR !123` point to the former internal GitLab project.
 - refactoring of update config
 - fixed graph bug
 - require setuptools<81, pgmpy 0.1.20 still needs `pkg_resources` (fixes import errors on Python >= 3.10)
+- code quality badges and Quality workflow: ruff linting issues and docstring coverage may not get worse than `.github/quality-baseline.json`; ruff replaces pylint (patch)
 
 ## 4.0.5 - 2026-04-21
 - re-release of 4.0.4 to fix the PyPI upload (normalized package name `cobair`)
