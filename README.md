@@ -173,7 +173,7 @@ You can as well see the coverage for a specific run in the job summary of the [G
 To show results of the coverage analysis.
 
 ## Code quality
-The [Quality workflow](https://github.com/dfki-ric/CoBaIR/actions/workflows/quality.yml) runs on every push and counts
+The [Quality workflow](https://github.com/dfki-ric/CoBaIR/actions/workflows/quality.yml) runs on every push and every Pull Request and counts
 [ruff](https://docs.astral.sh/ruff/) linting issues and the docstring coverage measured by
 [interrogate](https://interrogate.readthedocs.io/). Both tools are configured in `pyproject.toml` and are part of the
 test dependencies. Run them locally with
@@ -183,8 +183,8 @@ interrogate -c pyproject.toml .
 ```
 The workflow works as a ratchet against `.github/quality-baseline.json`: it fails if the number of ruff issues goes up
 or the docstring coverage goes down. If the numbers improved, lower `ruff_issues` / raise `doc_coverage` in the
-baseline in the same Pull Request to lock the improvement in. The badges at the top of this README are updated and
-committed to the branch by the workflow.
+baseline in the same Pull Request to lock the improvement in. The badges at the top of this README are only
+committed by the workflow on `main`; on other branches and Pull Requests the numbers are shown in the job summary.
 
 ## Build docu
 Documentation is implemented with the [material theme](https://squidfunk.github.io/mkdocs-material/) for [mkdocs](https://www.mkdocs.org/).
