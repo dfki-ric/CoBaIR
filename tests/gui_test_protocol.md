@@ -5,7 +5,7 @@
 | --- | --- | --- | --- |
 | The application is open and the user is on the main GUI | Click on the "Load" button | A file open dialog box should appear | 5.0.0 |
 | The file open dialog box is displayed | Select a .yml file to open and click "Open" | The fields in the application should be filled with the contents from the .yml file | 5.0.0 |
-|  The file open dialog box should appear. | Select a file with an invalid format (e.g., .txt) and click "Open." | An error message should be displayed | 5.0.0 |
+|  The file open dialog box should appear. | Select a file with an invalid format (e.g., .txt) and click "Open." | An error message should be displayed | works only if I loaded a valid config before|
 | The user is on the main GUI | Click on the "New Context" button | A dialog window should appear | 5.0.0 |
 | The New Context dialog window is displayed | Enter a new context in the input field and press "OK" | The new context should be added to the list of available contexts in the GUI | 5.0.0 |
 | The New Context dialog window is displayed | Enter a new context in the input field and press "Cancel" | Nothing should be added to the GUI | 5.0.0 |
@@ -27,7 +27,7 @@
 | The user is on the main GUI with small_example.yml loaded | Click on the "new combined context influence" button |  A dialog window should appear with fields for intention, context, instantiation, and influence value | 5.0.0 |
 | A dialog window is displayed with loaded intention, context, instantiation |  Select an intention, context, instantiation, and influence value from the dropdown and click "OK" | The selected intention, context, instantiation, influence value should be loaded in the table | 5.0.0 |
 | A dialog window is displayed with loaded intention, context, instantiation |  Select a intention, context, instantiation, influence value from the dropdown and click "Cancel" | Nothing should be added to the GUI | 5.0.0 |
-| The user has added multiple combined context influences, filling up the table. | Click on the "New Combined Context Influence" button and add another entry to the table. | The application should handle the addition gracefully, allowing the user to scroll through the table entries if needed. | 5.0.0 |
+| The user has added multiple combined context influences, filling up the table. | Click on the "New Combined Context Influence" button and add another entry to the table. | The application should handle the addition gracefully, allowing the user to scroll through the table entries if needed. | I can add multiple entries but the graph shrinks more and more. It should only show max 4 entries and then scrolling should be activated. |
 | The user is on the main GUI | Click on the "Save" button | A file loading dialog box should appear, and the file should be saved in .yml format | 5.0.0 |
 | The user is on the main GUI | Press Ctrl+O or click on the "Open" button in the menu bar | A file open dialog box should appear | 5.0.0 |
 | The user is on the main GUI | Press Ctrl+N or click on the "New" button in the menu bar | A new, empty GUI should appear | 5.0.0 |
@@ -37,5 +37,5 @@
 | The user is on the main GUI with a graph containing multiple contexts | Click on a node representing a context in the graph | The GUI should update to display detailed information related to the selected context |  |
 |The user is on the main GUI with a graph containing intentions |  Click on a node representing an intention in the graph | The GUI should update to display detailed information related to the selected intention |  |
 | The application is open and the user is on the main GUI |  Perform various interactions with the application, such as clicking buttons, selecting options, and editing fields | The application should respond promptly to user actions, without noticeable lag or delays | 5.0.0 |
-| The user has made changes to the current file |  Close the application without saving changes or click on the "Discard Changes" button | The application should prompt the user to confirm discarding changes, preventing accidental data loss | 5.0.0 |
+| The user has made changes to the current file |  Close the application without saving changes or click on the "Discard Changes" button | The application should prompt the user to confirm discarding changes, preventing accidental data loss | does not apply to all entries - e.g. adding combined influences will does not trigger it |
 | The application is open and running | Intentionally trigger specific errors (e.g., network error, file not found, invalid data format) and observe the application's response | The application should display appropriate error messages and handle errors gracefully, without crashing or becoming unresponsive | 5.0.0 |
