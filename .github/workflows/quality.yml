@@ -25,8 +25,8 @@ jobs:
           python-version: "3.11"
 
       - name: Install tools
-        # Keep the ruff pin in sync with pyproject.toml: preview rules change between releases.
-        run: pip install ruff==0.17.3 interrogate==1.7.0
+        # the versions are pinned in the lint dependency group of pyproject.toml
+        run: pip install --upgrade pip && pip install --group lint
 
       - name: Run ruff
         id: ruff

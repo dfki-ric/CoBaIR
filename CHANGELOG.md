@@ -5,6 +5,7 @@ Versions follow [semantic versioning](https://semver.org/); see [CONTRIBUTING.md
 References like `GitLab MR !123` point to the former internal GitLab project.
 
 ## Unreleased
+- all dependencies are declared in `pyproject.toml`: the development tools are dependency groups (`pip install --group test|docs|lint|e2e`, pip >= 25.1), the `requirements/` folder is gone (#222) (patch)
 - docs: migration guide 4.x → 5.0, docu is built with `--strict`, the old Qt GIFs of the Tutorial are replaced by web GUI screenshots (#209) (patch)
 - the web GUI is deployed to a Hugging Face Docker Space on every release tag (`deploy/hf-space`, workflow `deploy_space`); CI builds and smoke-tests the Space image (#208) (patch)
 - web GUI live inference: evidence per context (or unknown), bar chart of the intention probabilities with the decision threshold and the recognized intention, graph highlights the evidence and colors the intentions (#207) (minor)

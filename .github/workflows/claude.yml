@@ -32,8 +32,8 @@ jobs:
         with:
           python-version: "3.11"
       - run: |
-          pip install -r requirements/test_requirements.txt
-          pip install -e .
+          pip install --upgrade pip
+          pip install --group test -e .
       - uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
