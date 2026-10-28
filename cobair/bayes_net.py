@@ -52,9 +52,8 @@ class BayesNet():
 
         Args:
             config: A dict with a config following the config format.
-            bn_verbosity: sets the verbose flag for bnlearn. See [bnlearn API](
-                https://erdogant.github.io/bnlearn/pages/html/bnlearn.bnlearn.html?highlight=verbose
-                #bnlearn.bnlearn.make_DAG) for more information
+            bn_verbosity: Ignored since bnlearn 1.x, which logs through the `logging` module
+                (logger `bnlearn`).
             validate: Flag if the given config should be validated or not. 
                 This is necessary to load invalid configs
         '''
@@ -97,8 +96,7 @@ class BayesNet():
         self._create_context_cpts()
         self._create_intention_cpts()
         if self.valid:
-            self.DAG = bn.make_DAG(self.edges, CPD=self.cpts,
-                                   verbose=self.bn_verbosity)
+            self.DAG = bn.make_DAG(self.edges, CPD=self.cpts)
 
     def _create_value_to_card(self):
         '''
@@ -407,7 +405,6 @@ class BayesNet():
                     self.DAG,
                     variables=[intention],
                     evidence=card_evidence,
-                    verbose=self.bn_verbosity
                 ).values[1]
 
             if normalized:
