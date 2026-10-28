@@ -18,7 +18,7 @@ from ..model import Config
 # end file header
 __author__ = 'Adrian Lubitz'
 
-REACT_FLOW = '@xyflow/react@12.11.6'
+REACT_FLOW = '@xyflow/react@12.12.0'
 
 CONTEXT_X = 0
 COMBINED_X = 330
