@@ -17,21 +17,17 @@ from cobair.web.state import EditorState, read_example  # noqa: E402
 __author__ = 'Adrian Lubitz'
 
 
-def run(generator):
-    """Run an async generator to the end in its own thread.
-
-    Sync Playwright may own the event loop of this thread.
+def run(coroutine):
+    """Run a coroutine in its own thread (sync Playwright may own this thread's event loop).
 
     Args:
-        generator: The async generator of an event handler.
+        coroutine: The coroutine of an event handler.
 
     Returns:
-        list: The yielded events.
+        The result of the coroutine.
     """
-    async def collect():
-        return [event async for event in generator]
     with ThreadPoolExecutor(1) as executor:
-        return executor.submit(asyncio.run, collect()).result()
+        return executor.submit(asyncio.run, coroutine).result()
 
 
 class FakeUpload:
@@ -338,8 +334,7 @@ def test_download_marks_saved(example):
     """Downloading counts as saving."""
     call(EditorState.set_threshold, example, '0.5')
     assert example.dirty
-    events = call(EditorState.download_config, example)
-    assert len(events) == 2
+    assert call(EditorState.download_config, example) is not None
     assert not example.dirty
 
 

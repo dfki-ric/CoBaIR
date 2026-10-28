@@ -20,12 +20,8 @@ import reflex as rx
 
 # local imports
 from ..model import INFLUENCE_TO_PROBABILITY, Config
+from ..infer import Inference
 from .graph import build_graph
-
-try:
-    from ..infer import Inference
-except ImportError:  # pragma: no cover - the [web] extra always installs [infer]
-    Inference = None
 
 # end file header
 __author__ = 'Adrian Lubitz'
@@ -66,18 +62,6 @@ def read_example() -> str:
     """
     return resources.files('cobair.web').joinpath('examples', EXAMPLE_FILE).read_text(
         encoding='utf-8')
-
-
-def label(value) -> str:
-    """Return the text shown for a context, instantiation or intention.
-
-    Args:
-        value: A key of the config (str, bool, int, ...).
-
-    Returns:
-        str: The label.
-    """
-    return str(value)
 
 
 def parse_probability(text: str) -> float:
@@ -201,7 +185,6 @@ class EditorState(rx.State):
     threshold_percent: float = 0.0
     #: Why no inference is shown (invalid config, missing dependencies).
     inference_error: str = ''
-    inference_available: bool = Inference is not None
 
     #: Draft of the config in the browser storage.
     draft: str = rx.LocalStorage('', name='cobair_draft', sync=False)
@@ -292,11 +275,11 @@ class EditorState(rx.State):
         """Derive the frontend vars from the config."""
         config = self._model()
         self.contexts = [
-            ContextView(label(context), [InstantiationView(label(instantiation), label(apriori))
+            ContextView(str(context), [InstantiationView(str(instantiation), str(apriori))
                                          for instantiation, apriori in instantiations.items()])
             for context, instantiations in config.contexts.items()]
-        self.intentions = [label(intention) for intention in config.intentions]
-        self.decision_threshold = label(config.decision_threshold)
+        self.intentions = [str(intention) for intention in config.intentions]
+        self.decision_threshold = str(config.decision_threshold)
         self.problems = config.validate()
         self.can_undo = bool(self._undo)
         self.can_redo = bool(self._redo)
@@ -340,10 +323,6 @@ class EditorState(rx.State):
         self.inference_error = ''
         if self.tab != 'inference':
             return
-        if Inference is None:
-            self.inference_error = ('The inference needs the [infer] extra: '
-                                    'pip install "cobair[infer]"')
-            return
         problems = config.validate()
         if problems:
             self.inference_error = 'Fix the problems of the config to test the inference.'
@@ -353,7 +332,7 @@ class EditorState(rx.State):
             result = Inference(config).infer(dict(self._evidence))
         for name, probability in result.probabilities.items():
             winner = name == result.intention
-            self.results.append({'name': label(name),
+            self.results.append({'name': str(name),
                                  'probability': round(float(probability) * 100, 1),
                                  'fill': 'var(--accent-9)' if winner else 'var(--gray-8)'})
         self.threshold_percent = round(config.decision_threshold * 100, 1)
@@ -362,7 +341,7 @@ class EditorState(rx.State):
             self.recognized = f'No intention above the decision threshold ({threshold})'
         else:
             probability = result.probabilities[result.intention]
-            self.recognized = f'Recognized: {label(result.intention)} ({probability:.0%})'
+            self.recognized = f'Recognized: {str(result.intention)} ({probability:.0%})'
 
     def _sync_influences(self) -> None:
         """Derive the influence table of the selected context."""
@@ -375,7 +354,7 @@ class EditorState(rx.State):
             self.influence_context = '0'
         context = self._context_key(self.influence_context)
         self.influence_rows = [
-            InfluenceRow(label(instantiation),
+            InfluenceRow(str(instantiation),
                          [str(influences.get(context, {}).get(instantiation, 0))
                           for influences in config.intentions.values()])
             for instantiation in config.contexts[context]]
@@ -390,9 +369,9 @@ class EditorState(rx.State):
                     continue
                 for combination, value in combinations.items():
                     self._combined_keys.append((intention, contexts, combination))
-                    text = ', '.join(f'{label(context)} = {label(instantiation)}'
+                    text = ', '.join(f'{str(context)} = {str(instantiation)}'
                                      for context, instantiation in zip(contexts, combination))
-                    self.combined.append(CombinedView(label(intention), text, str(value)))
+                    self.combined.append(CombinedView(str(intention), text, str(value)))
 
     def _edit(self, method: str, *args) -> bool:
         """Apply an editing method of `Config` with undo support.
@@ -419,24 +398,12 @@ class EditorState(rx.State):
         self._sync()
         return True
 
-    def _unload_guard(self):
-        """Return the script that tells the page if leaving it would lose changes.
-
-        Returns:
-            The event setting `window.cobairDirty`.
-        """
-        return rx.call_script(f'window.cobairDirty = {str(self.dirty).lower()}')
-
     # ------------------------------------------------------------------------------------------
     # page and files
 
     @rx.event
     def on_load(self):
-        """Open the file `cobair-web` was started with or restore the draft, once per session.
-
-        Yields:
-            The unload guard.
-        """
+        """Open the file `cobair-web` was started with or restore the draft, once per session."""
         if self._initialized:
             return
         self._initialized = True
@@ -456,7 +423,6 @@ class EditorState(rx.State):
                 self.info = 'Your unsaved draft was restored.'
             except ValueError:
                 self.draft = ''
-        yield self._unload_guard()
 
     def _load_text(self, text: str, file_name: str) -> None:
         """Load a config from YAML text, keeping the current config if it fails.
@@ -480,9 +446,6 @@ class EditorState(rx.State):
 
         Args:
             files: The uploaded files, only the first one is used.
-
-        Yields:
-            The unload guard.
         """
         if not files:
             return
@@ -494,50 +457,35 @@ class EditorState(rx.State):
             self.error = f'Could not load {upload.filename}: not a text file'
             return
         self._load_text(text, upload.filename or 'config.yml')
-        yield self._unload_guard()
 
     @rx.event
     def load_example(self):
-        """Load the example config.
-
-        Yields:
-            The unload guard.
-        """
+        """Load the example config."""
         self._load_text(read_example(), EXAMPLE_FILE)
-        yield self._unload_guard()
 
     @rx.event
     def new_config(self):
-        """Start with an empty config.
-
-        Yields:
-            The unload guard.
-        """
+        """Start with an empty config."""
         self.error = ''
         self.info = ''
         self._set_config(Config())
-        yield self._unload_guard()
 
     @rx.event
     def download_config(self):
         """Download the config as YAML file.
 
         Returns:
-            list: The download and the unload guard.
+            The download event.
         """
         text = self._model().dumps()
         file_name = self.file_name or 'cobair_config.yml'
         self._saved = self._model().copy()
         self._sync()
-        return [rx.download(data=text, filename=file_name), self._unload_guard()]
+        return rx.download(data=text, filename=file_name)
 
     @rx.event
     def save_config(self):
-        """Save the config to the file `cobair-web` was started with.
-
-        Yields:
-            The unload guard.
-        """
+        """Save the config to the file `cobair-web` was started with."""
         if not self.local_file:
             self.error = 'Saving to disk is only possible when cobair-web was started with a file'
             return
@@ -550,18 +498,13 @@ class EditorState(rx.State):
         self.error = ''
         self.info = f'Saved {self.local_file}'
         self._sync()
-        yield self._unload_guard()
 
     # ------------------------------------------------------------------------------------------
     # undo
 
     @rx.event
     def undo(self):
-        """Undo the last change.
-
-        Yields:
-            The unload guard.
-        """
+        """Undo the last change."""
         if not self._undo:
             return
         self._redo = [*self._redo, self._model().copy()]
@@ -569,15 +512,10 @@ class EditorState(rx.State):
         self._undo = self._undo[:-1]
         self.error = ''
         self._sync()
-        yield self._unload_guard()
 
     @rx.event
     def redo(self):
-        """Redo the last undone change.
-
-        Yields:
-            The unload guard.
-        """
+        """Redo the last undone change."""
         if not self._redo:
             return
         self._undo = [*self._undo, self._model().copy()]
@@ -585,7 +523,6 @@ class EditorState(rx.State):
         self._redo = self._redo[:-1]
         self.error = ''
         self._sync()
-        yield self._unload_guard()
 
     # ------------------------------------------------------------------------------------------
     # values
@@ -598,21 +535,17 @@ class EditorState(rx.State):
             context_index: Position of the context.
             instantiation_index: Position of the instantiation.
             text: The new value.
-
-        Yields:
-            The unload guard.
         """
         context = self._context_key(context_index)
         instantiation = self._instantiation_key(context, instantiation_index)
         try:
             value = parse_probability(text)
         except ValueError as error:
-            self.error = f'Apriori probability of {label(context)}.{label(instantiation)}: {error}'
+            self.error = f'Apriori probability of {str(context)}.{str(instantiation)}: {error}'
             self.revision += 1
             return
         if value != self._model().contexts[context][instantiation]:
             self._edit('change_context_apriori_value', context, instantiation, value)
-        yield self._unload_guard()
 
     @rx.event
     def set_threshold(self, text: str):
@@ -620,9 +553,6 @@ class EditorState(rx.State):
 
         Args:
             text: The new value.
-
-        Yields:
-            The unload guard.
         """
         try:
             value = parse_probability(text)
@@ -632,7 +562,6 @@ class EditorState(rx.State):
             return
         if value != self._model().decision_threshold:
             self._edit('change_decision_threshold', value)
-        yield self._unload_guard()
 
     @rx.event
     def select_influence_context(self, index: str):
@@ -652,15 +581,11 @@ class EditorState(rx.State):
             instantiation_index: Position of the instantiation.
             intention_index: Position of the intention.
             value: The new influence value as text.
-
-        Yields:
-            The unload guard.
         """
         context = self._context_key(self.influence_context)
         instantiation = self._instantiation_key(context, instantiation_index)
         intention = self._intention_key(intention_index)
         self._edit('change_influence_value', intention, context, instantiation, int(value))
-        yield self._unload_guard()
 
     # ------------------------------------------------------------------------------------------
     # live inference
@@ -844,7 +769,7 @@ class EditorState(rx.State):
             ValueError: If a name is empty or used twice or an apriori value is no number.
         """
         originals = {} if context is None else {
-            label(instantiation): instantiation
+            str(instantiation): instantiation
             for instantiation in self._model().contexts[context]}
         instantiations = {}
         for row in self.context_dialog_rows:
@@ -861,11 +786,7 @@ class EditorState(rx.State):
 
     @rx.event
     def save_context_dialog(self):
-        """Add or change the context of the dialog.
-
-        Yields:
-            The unload guard.
-        """
+        """Add or change the context of the dialog."""
         name = self.context_dialog_name.strip()
         if not name:
             self.context_dialog_error = 'The context needs a name'
@@ -878,7 +799,7 @@ class EditorState(rx.State):
             self.context_dialog_error = str(error)
             return
         if editing:
-            new_name = context if label(context) == name else name
+            new_name = context if str(context) == name else name
             applied = self._edit('edit_context', context, instantiations, new_name)
         else:
             applied = self._edit('add_context', name, instantiations)
@@ -887,7 +808,6 @@ class EditorState(rx.State):
             self.error = ''
             return
         self.context_dialog_open = False
-        yield self._unload_guard()
 
     @rx.event
     def delete_context(self, index: int):
@@ -895,12 +815,8 @@ class EditorState(rx.State):
 
         Args:
             index: Position of the context.
-
-        Yields:
-            The unload guard.
         """
         self._edit('del_context', self._context_key(index))
-        yield self._unload_guard()
 
     # ------------------------------------------------------------------------------------------
     # intention dialog
@@ -945,18 +861,14 @@ class EditorState(rx.State):
 
     @rx.event
     def save_intention_dialog(self):
-        """Add or rename the intention of the dialog.
-
-        Yields:
-            The unload guard.
-        """
+        """Add or rename the intention of the dialog."""
         name = self.intention_dialog_name.strip()
         if not name:
             self.intention_dialog_error = 'The intention needs a name'
             return
         if self.intention_dialog_index >= 0:
             intention = self._intention_key(self.intention_dialog_index)
-            applied = label(intention) == name or self._edit('edit_intention', intention, name)
+            applied = str(intention) == name or self._edit('edit_intention', intention, name)
         else:
             applied = self._edit('add_intention', name)
         if not applied:
@@ -964,7 +876,6 @@ class EditorState(rx.State):
             self.error = ''
             return
         self.intention_dialog_open = False
-        yield self._unload_guard()
 
     @rx.event
     def delete_intention(self, index: int):
@@ -972,12 +883,8 @@ class EditorState(rx.State):
 
         Args:
             index: Position of the intention.
-
-        Yields:
-            The unload guard.
         """
         self._edit('del_intention', self._intention_key(index))
-        yield self._unload_guard()
 
     # ------------------------------------------------------------------------------------------
     # combined influences
@@ -1066,11 +973,7 @@ class EditorState(rx.State):
 
     @rx.event
     def save_combined_dialog(self):
-        """Add the combined influence of the dialog.
-
-        Yields:
-            The unload guard.
-        """
+        """Add the combined influence of the dialog."""
         if len(self.combined_parts) < 2:
             self.combined_error = 'Combine at least two contexts'
             return
@@ -1086,7 +989,6 @@ class EditorState(rx.State):
             self.error = ''
             return
         self.combined_dialog_open = False
-        yield self._unload_guard()
 
     @rx.event
     def remove_combined(self, index: int):
@@ -1094,10 +996,6 @@ class EditorState(rx.State):
 
         Args:
             index: Position in the list of combined influences.
-
-        Yields:
-            The unload guard.
         """
         intention, contexts, combination = self._combined_keys[int(index)]
         self._edit('del_combined_influence', intention, contexts, combination)
-        yield self._unload_guard()

@@ -150,9 +150,8 @@ def build_graph(config: Config, expanded: list = (), evidence: dict = None,
         for c_index, context in enumerate(contexts):
             values = influences.get(context, {})
             if c_index in expanded:
-                for i_index, instantiation in enumerate(config.contexts[context]):
-                    source = sources[(context, instantiation)]
-                    edges.append(_edge(source, f't:{t_index}',
+                for instantiation in config.contexts[context]:
+                    edges.append(_edge(sources[(context, instantiation)], f't:{t_index}',
                                        values.get(instantiation, 0)))
             else:
                 instantiations = config.contexts[context]
@@ -170,10 +169,9 @@ def build_graph(config: Config, expanded: list = (), evidence: dict = None,
                                    fontSize=11, borderStyle='dashed', width=150))
                 combined_y += ROW_HEIGHT
                 for context, instantiation in zip(names, combination):
+                    # the parts are different contexts, so their sources never repeat
                     source = sources.get((context, instantiation))
-                    if source is not None and not any(edge['source'] == source and
-                                                      edge['target'] == node_id
-                                                      for edge in edges):
+                    if source is not None:
                         edges.append({'id': f'{source}->{node_id}', 'source': source,
                                       'target': node_id, 'style': {
                                           'stroke': _mix(0.2), 'strokeDasharray': '2 3'}})
