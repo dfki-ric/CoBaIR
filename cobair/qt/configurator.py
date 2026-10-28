@@ -171,40 +171,30 @@ class NewCombinedContextDialog(QDialog):
             context: A context name
             i: the position of the dropdown menu
         """
-        self.instantiation_menus[i].setVisible(False)
-        self.instantiation_menus[i].deleteLater()
-
         for inst in self.contexts[context]:
             self.original_instantiations[context][str(inst)] = inst
 
-        instantiations = list(self.original_instantiations[context].keys())
-        instantiations = list(map(str, instantiations))
+        # The widgets are reused: deleting and recreating them again and again
+        # left dangling references and crashed the GUI.
+        menu = self.instantiation_selections[i]
+        menu.clear()
+        menu.addItems([str(inst) for inst in self.contexts[context]])
+        menu.setCurrentIndex(0)
+        self._update_context_options()
 
-        self.instantiation_selections[i] = QComboBox(self.context_frame)
-        self.instantiation_selections[i].clear()
-        self.instantiation_selections[i].addItems(instantiations)
-        self.instantiation_selections[i].setCurrentText(
-            self.instantiation_selections[i].currentText())
-
-        self.grid_layout.addWidget(self.instantiation_selections[i], i+1, 1)
-
-        self.instantiation_selections[i].setCurrentText(
-            str(list(self.contexts[context].keys())[0]))
-
-        # available context -> every dropdown should only have available + selected
-        available_context = self._eval_available_context()
-        for i_m, menu in enumerate(self.context_menus):
-            menu.setVisible(False)
-            menu.deleteLater()
-            contexts = [self.context_selections[i_m].currentText()] + \
-                available_context
-            self.context_selections[i_m] = QComboBox(self.context_frame)
-            self.context_selections[i_m].addItems(contexts)
-            self.context_selections[i_m].setCurrentText(
-                self.context_selections[i_m].currentText())
-            self.context_selections[i_m].currentTextChanged.connect(
-                lambda text, i=i_m: self.context_selected(text, i))
-            self.grid_layout.addWidget(self.context_selections[i_m], i_m+1, 0)
+    def _update_context_options(self):
+        """
+        Every context dropdown only offers its own selection and the contexts not selected elsewhere.
+        """
+        selected = [menu.currentText() for menu in self.context_selections]
+        for i, menu in enumerate(self.context_selections):
+            taken = selected[:i] + selected[i + 1:]
+            menu.blockSignals(True)
+            menu.clear()
+            menu.addItems([context for context in self.contexts
+                           if context not in taken])
+            menu.setCurrentText(selected[i])
+            menu.blockSignals(False)
 
     def _eval_available_context(self):
         """
@@ -214,10 +204,9 @@ class NewCombinedContextDialog(QDialog):
             list:
                 A list of available contexts
         """
-        available_context = list(self.contexts.keys())
-        for selection in self.context_selections:
-            available_context.remove(selection.currentText())
-        return available_context
+        selected = [selection.currentText()
+                    for selection in self.context_selections]
+        return [context for context in self.contexts if context not in selected]
 
     def new_instantiation(self):
         """
@@ -236,11 +225,7 @@ class NewCombinedContextDialog(QDialog):
         self.context_menus.append(self.context_selections[-1])
         self.grid_layout.addWidget(self.context_menus[-1], i+1, 0)
 
-        instantiations = list(self.contexts[available_context[0]].keys())
-        instantiations = list(map(str, instantiations))
         self.instantiation_selections.append(QComboBox(self.context_frame))
-        self.instantiation_selections[-1].addItems(instantiations)
-        self.instantiation_selections[-1].setCurrentIndex(0)
         self.instantiation_menus.append(self.instantiation_selections[-1])
         self.grid_layout.addWidget(self.instantiation_menus[-1], i+1, 1)
 
@@ -394,14 +379,6 @@ class NewContextDialog(QDialog):
         self.grid_layout.addWidget(remove_button, row_count, 2)
         self.shown_instantiations += 1
         self.grid_layout.update()
-        # Raise ValueError if both name_entry and probability_entry are empty
-        if not name_entry.text() and not probability_entry.text():
-            self.error_label.setText(
-                "Both name and probability cannot be empty.")
-        elif not name_entry.text():
-            self.error_label.setText("Name cannot be empty.")
-        elif not probability_entry.text():
-            self.error_label.setText("Probability cannot be empty.")
 
     def get_result(self):
         """
@@ -915,22 +892,51 @@ class Configurator(QtWidgets.QMainWindow):
             options: A list containing the options in the context dropdown
             command: a function which will be triggered when clicked on the dropdown option
         '''
-        if not command:
-            command = self.context_selected
-        self.context_selection.clear()
+        self._set_dropdown(self.context_selection, options,
+                           command or self.context_selected, 'Context')
 
+    def _set_dropdown(self, dropdown, options, command, placeholder: str):
+        """
+        Fill a dropdown and connect the command as its only callback.
+
+        The callback used to be connected again on every call, so the number of
+        callbacks (each rebuilding widgets) grew with every action until the GUI froze.
+
+        Args:
+            dropdown: The QComboBox to fill.
+            options: The entries of the dropdown.
+            command: Called with the selected text on changes and once after filling.
+            placeholder: Shown if there are no options.
+        """
+        options = list(options)
+        try:
+            dropdown.currentTextChanged.disconnect()
+        except TypeError:
+            pass  # nothing connected yet
+        dropdown.blockSignals(True)
+        dropdown.clear()
         if options:
-            self.context_selection.addItems(list(options))
-            max_width = max(QFontMetrics(self.context_selection.font()).boundingRect(option).width()
+            dropdown.addItems(options)
+            max_width = max(QFontMetrics(dropdown.font()).boundingRect(option).width()
                             for option in options)
-            self.context_selection.setMinimumWidth(
-                max_width + 25)
-            self.context_selection.setCurrentIndex(0)
-            self.context_selection.currentTextChanged.connect(command)
+            dropdown.setMinimumWidth(max_width + 25)  # add some padding
+            dropdown.setCurrentIndex(0)
         else:
-            self.context_selection.addItem('Context')
-            self.context_selection.currentTextChanged.connect(command)
-        command(self.context_selection.currentText())
+            dropdown.addItem(placeholder)
+        dropdown.blockSignals(False)
+        dropdown.currentTextChanged.connect(command)
+        command(dropdown.currentText())
+
+    @staticmethod
+    def _clear_layout(layout):
+        """
+        Remove and delete all widgets of a layout.
+        """
+        while layout.count():
+            widget = layout.takeAt(0).widget()
+            if widget is not None:
+                widget.setParent(None)
+                widget.deleteLater()
 
     def draw_graph(self):
         '''
@@ -966,23 +972,8 @@ class Configurator(QtWidgets.QMainWindow):
             options: A list containing the options in the influencing context dropdown
             command: a function which will be triggered when clicked on the dropdown option
         '''
-        if not command:
-            command = self.influencing_context_selected
-        self.influencing_context_selection.clear()
-        if options:
-            self.influencing_context_selection.addItems(list(options))
-            max_width = max(QFontMetrics(self.influencing_context_selection.font()).boundingRect(option).width()
-                            for option in options)
-            self.influencing_context_selection.setMinimumWidth(
-                max_width + 25)  # add some padding
-            self.influencing_context_selection.setCurrentIndex(0)
-            self.influencing_context_selection.currentTextChanged.connect(
-                command)
-        else:
-            self.influencing_context_selection.addItem('Context')
-            self.influencing_context_selection.currentIndexChanged.connect(
-                command)
-        command(self.influencing_context_selection.currentText())
+        self._set_dropdown(self.influencing_context_selection, options,
+                           command or self.influencing_context_selected, 'Context')
 
     def set_intention_dropdown(self, options: list, command: function = None):
         '''
@@ -993,22 +984,8 @@ class Configurator(QtWidgets.QMainWindow):
             options: A list containing the options in the intention dropdown
             command: a function which will be triggered when clicked on the dropdown option
         '''
-        if not command:
-            command = self.influencing_context_selected
-        self.intention_dropdown.clear()
-        if options:
-            self.intention_dropdown.addItems(list(options))
-            max_width = max(QFontMetrics(self.influencing_context_selection.font()).boundingRect(option).width()
-                            for option in options)
-            self.intention_dropdown.setMinimumWidth(
-                max_width + 25)  # add some padding
-            self.intention_dropdown.setCurrentIndex(0)
-            self.intention_dropdown.currentTextChanged.connect(command)
-        else:
-            self.intention_dropdown.addItem('Intention')
-            self.intention_dropdown.currentIndexChanged.connect(command)
-
-        command(self.intention_dropdown.currentText())
+        self._set_dropdown(self.intention_dropdown, options,
+                           command or self.influencing_context_selected, 'Intention')
 
     def context_selected(self, context: str):
         """
@@ -1018,21 +995,13 @@ class Configurator(QtWidgets.QMainWindow):
             context: name of the clicked context
         """
 
-        for _, instantiations in self.context_instantiations.items():
-            for instantiation, widgets in instantiations.items():
-                for widget in widgets:
-                    try:
-                        widget.deleteLater()
-                    except Exception as e:
-                        self.log.error(
-                            f"Failed to destroy widget {widget}: {type(e).__name__}: {str(e)}")
-
+        layout = self.gridLayout_2
+        self._clear_layout(layout)
         self.context_instantiations = defaultdict(dict)
 
         if context not in self.config.contexts:
             return
-        layout = self.gridLayout_2
-        row_count = layout.rowCount()
+        row_count = 0
 
         for instantiation, value in self.config.contexts[context].items():
             instantiation_str = str(instantiation) if isinstance(
@@ -1076,20 +1045,16 @@ class Configurator(QtWidgets.QMainWindow):
         Args:
             context_or_intention: name of the clicked context
         """
-        for widget in self.influencing_context_frame.findChildren(QWidget):
-            try:
-                widget.deleteLater()
-            except Exception as e:
-                self.log.error(f"Couldn't destroy widget: {e}")
+        layout = self.gridLayout_3
+        self._clear_layout(layout)
+        self.intention_instantiations = defaultdict(lambda: defaultdict(dict))
 
         intention = self.intention_dropdown.currentText()
         context = self.influencing_context_selection.currentText()
         if context not in self.config.contexts or \
                 intention not in self.config.intentions:
             return
-        self.intention_instantiations = defaultdict(lambda: defaultdict(dict))
-        layout = self.gridLayout_3
-        row_count = layout.rowCount()
+        row_count = 0
         self.SCALE_MAPPING = {
             0: ('no'),        
             1: ('very low'),
