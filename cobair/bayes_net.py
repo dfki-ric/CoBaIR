@@ -50,7 +50,7 @@ class BayesNet:
 
         Args:
             config: A dict with a config following the config format.
-            bn_verbosity: sets the verbose flag for bnlearn.
+            bn_verbosity: Ignored since bnlearn 1.x, which logs through `logging`.
             validate: Flag if the given config should be validated or not.
                 This is necessary to load invalid configs
         """
@@ -97,7 +97,7 @@ class BayesNet:
         self.cpts = self.DAG = None
         if self.valid:
             self.valid_config = _config_to_default_dict(model.to_dict())
-            self.inference = Inference(model, verbosity=self.bn_verbosity)
+            self.inference = Inference(model)
             self.inference.discretization_functions = self.discretization_functions
             self.cpts = self.inference.tabular_cpds
             self.DAG = self.inference.dag

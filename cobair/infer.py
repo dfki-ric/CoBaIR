@@ -54,17 +54,13 @@ class Inference:
     The inference works on a copy of the config: create a new `Inference` after editing it.
     """
 
-    def __init__(self, config: Config, verbosity: int = 0) -> None:
+    def __init__(self, config: Config) -> None:
         """Build the Bayesian net for a config, which must be valid (else `ValueError`).
 
         Args:
             config: A valid config.
-            verbosity: The verbose flag for bnlearn. See [bnlearn API](
-                https://erdogant.github.io/bnlearn/pages/html/bnlearn.bnlearn.html?highlight=verbose
-                #bnlearn.bnlearn.make_DAG) for more information.
         """
         self.config = config.copy()
-        self.verbosity = verbosity
         self.cpts = self.config.cpts()
         self.discretization_functions = {}
         # bnlearn uses the index of an instantiation (card) instead of the instantiation
@@ -72,7 +68,7 @@ class Inference:
                               for context, states in self.cpts.states.items()}
         self.tabular_cpds = self._create_tabular_cpds()
         edges = list(itertools.product(self.cpts.contexts, self.cpts.intentions))
-        self.dag = bn.make_DAG(edges, CPD=self.tabular_cpds, verbose=verbosity)
+        self.dag = bn.make_DAG(edges, CPD=self.tabular_cpds)
 
     def _create_tabular_cpds(self) -> list:
         """Wrap the CPTs in pgmpy TabularCPDs.
@@ -186,8 +182,8 @@ class Inference:
         card_evidence = self._card_evidence(evidence)
         # only the probability of the True state of the binary intentions is kept
         probabilities = {
-            intention: bn.inference.fit(self.dag, variables=[intention], evidence=card_evidence,
-                                        verbose=self.verbosity).values[1]
+            intention: bn.inference.fit(self.dag, variables=[intention],
+                                        evidence=card_evidence).values[1]
             for intention in self.cpts.intentions}
         if normalized:
             probabilities = normalize(probabilities)
