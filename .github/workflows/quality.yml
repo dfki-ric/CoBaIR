@@ -2,9 +2,9 @@ name: Quality
 
 on:
   push:
-    branches: ['**']
-  # only to check PRs from forks, PRs from this repo are covered by the push run
+    branches: [main]
   pull_request:
+    branches: [main]
 
 permissions:
   contents: write
@@ -84,7 +84,7 @@ jobs:
 
       - name: Commit badges to the branch
         # Fork PRs get a read-only token, so they only see the badges in the job log.
-        if: ${{ !cancelled() && steps.badges.outcome == 'success' && github.event_name == 'push' }}
+        if: ${{ !cancelled() && steps.badges.outcome == 'success' && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         run: |
           if git diff --quiet README.md; then
             echo "Badges unchanged"; exit 0
