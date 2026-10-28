@@ -5,6 +5,7 @@ Versions follow [semantic versioning](https://semver.org/); see [CONTRIBUTING.md
 References like `GitLab MR !123` point to the former internal GitLab project.
 
 ## Unreleased
+- dependencies bumped to their current versions: pgmpy 1.1.2, bnlearn 1.1.0 (numpy 2 and current setuptools allowed again), pyyaml >= 6.0.3, PyQt5 5.15.11, pyqtgraph 0.14.0, reflex 0.10.1; `BayesNet(bn_verbosity=...)` is ignored and `Inference` has no `verbosity` any more, bnlearn 1.x logs through `logging` (#224) (patch)
 - new API: `cobair.model.Config` (pure Python: editing, validation, files, CPT computation) and `cobair.infer.Inference` (pgmpy/bnlearn adapter); `cobair.bayes_net` (`BayesNet`, `load_config`, ...) is deprecated and will be removed in 6.0.0 (minor)
 - config files get a header comment and the keys `format_version` and `created_with`, keys keep their order instead of being sorted (minor)
 - editing or deleting a context no longer deletes all combined influences, renaming a context renames it in the combined influences (patch)
