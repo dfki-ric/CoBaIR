@@ -29,10 +29,10 @@ HELP = {
                   'Below it, no intention is recognized.', 'decision-threshold'),
 }
 
-#: Reports unsaved changes to the browser when the page is closed or reloaded.
+#: Asks before the page is closed or reloaded while the "unsaved changes" badge is shown.
 UNLOAD_GUARD = """
 window.addEventListener('beforeunload', (event) => {
-  if (window.cobairDirty) { event.preventDefault(); event.returnValue = ''; }
+  if (document.getElementById('dirty')) { event.preventDefault(); event.returnValue = ''; }
 });
 """
 

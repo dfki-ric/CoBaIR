@@ -142,7 +142,7 @@ def test_apriori_undo_redo(page):
     apriori.blur()
     page.wait_for_selector('#problems')
     assert 'human activity' in page.text_content('#problems')
-    assert page.evaluate('window.cobairDirty') is True
+    page.wait_for_selector('#dirty')  # the unload guard asks while this badge is shown
     page.click('#undo')
     page.wait_for_selector('#valid')
     assert field(page, '.apriori-input').first.input_value() == '0.2'
@@ -199,7 +199,6 @@ def test_download(page):
     text = open(download.path(), encoding='utf-8').read()
     assert 'format_version: 1' in text and 'decision_threshold: 0.7' in text
     page.wait_for_selector('#dirty', state='detached')
-    assert page.evaluate('window.cobairDirty') is False
 
 
 def test_draft_restored(page):
@@ -264,3 +263,16 @@ def test_inference_needs_valid_config(page):
     page.click('#tab-inference')
     page.wait_for_selector('#inference-error')
     assert 'Fix the problems' in page.text_content('#inference-error')
+
+
+def test_unsaved_changes_guard(page):
+    """Closing the page with unsaved changes asks first (beforeunload)."""
+    load_example(page)
+    page.fill('#threshold', '0.5')
+    page.locator('#threshold').blur()
+    page.wait_for_selector('#dirty')
+    dialogs = []
+    page.on('dialog', lambda dialog: (dialogs.append(dialog.type), dialog.dismiss()))
+    page.close(run_before_unload=True)
+    page.wait_for_timeout(500)
+    assert dialogs == ['beforeunload']
