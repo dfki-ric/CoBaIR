@@ -111,7 +111,7 @@ jobs:
           python-version: "3.12"
           cache: pip
       - run: pip install --upgrade pip
-      - run: pip install -r requirements/test_requirements.txt -e .[web] playwright==1.63.0
+      - run: pip install -r requirements/test_requirements.txt -e .[web] playwright==1.64.1
       - run: python -m cobair.web.build
       - run: python -m playwright install --with-deps chromium
       - name: Run web tests (fail instead of skip)
@@ -132,7 +132,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
           name: dist
           path: space/dist
