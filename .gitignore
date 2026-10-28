@@ -142,3 +142,12 @@ dmypy.json
 # Pyre type checker
 .pyre/
 load_multi_context_add.yml
+
+# web GUI build output
+cobair/web/.web/
+cobair/web/frontend/
+cobair/web/.states/
+cobair/web/requirements.txt
+cobair/web/reflex.lock/
+cobair/web/uploaded_files/
+cobair/web/assets/
