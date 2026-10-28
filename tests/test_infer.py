@@ -1,136 +1,170 @@
-'''
-Tests for adding intention variables
-'''
+"""Tests for cobair.infer."""
 
 # System imports
+import itertools
+import math
+
+# 3rd party imports
 import pytest
 
 # local imports
-from tests import N
-from cobair.bayes_net import BayesNet, default_to_regular, load_config
+from cobair.infer import Inference, InferenceResult, normalize
+from cobair.model import Config
 
 # end file header
 __author__ = 'Adrian Lubitz'
-bn = BayesNet()
-bn.load('small_example.yml')
+
+SPEECH = 'speech commands'
+ACTIVITY = 'human activity'
+HOLDING = 'human holding object'
+PICK = 'pick up tool'
+HAND = 'hand over tool'
 
 
-def test_infer_no_evidence():
+@pytest.fixture(scope='module')
+def inference():
+    """Inference for the small example.
+
+    Returns:
+        Inference: The inference.
     """
-    Test inference without evidence
+    return Inference(Config.load('small_example.yml'))
+
+
+def brute_force(config: Config, evidence: dict) -> dict:
+    """Infer P(intention | evidence) by summing over all unobserved contexts, without pgmpy.
+
+    Args:
+        config: A valid config.
+        evidence: `{context: instantiation}` for some contexts of the config.
+
+    Returns:
+        dict: `{intention: unnormalized probability}`
     """
-    probabilities = {'pick up tool': 0.602803738317757,
-                     'hand over tool': 0.397196261682243}
-
-    max_intention, decision_threshold, inference = bn.infer({})
-    assert inference is not None, "No intention was inferred"
-    if max_intention is not None:
-        assert decision_threshold > 0
-        assert round(abs(inference - probabilities[max_intention]), 7) == 0
-
-
-def test_infer_unrelated_evidence():
-    """
-    Test inference with unrelated evidence of different types
-    """
-    probabilities = {'pick up tool': 0.602803738317757,
-                     'hand over tool': 0.397196261682243}
-
-    with pytest.warns(UserWarning):
-        max_intention, decision_threshold, inference = bn.infer({'some context': 'is not important',
-                                                                'another context': '',
-                                                                 'unhashable context': {},
-                                                                 'int context': 1,
-                                                                 'obj context': bn})
-
-    if max_intention is not None:
-        assert decision_threshold > 0
-        assert round(abs(inference - probabilities[max_intention]), 7) == 0
+    cpts = config.cpts()
+    probabilities = {}
+    for intention in cpts.intentions:
+        positive = cpts.intention_values[intention][1]
+        total = 0.0
+        for column, case in enumerate(itertools.product(
+                *(cpts.states[context] for context in cpts.contexts))):
+            weight = 1.0
+            for context, instantiation in zip(cpts.contexts, case):
+                if context in evidence:
+                    weight *= evidence[context] == instantiation
+                else:
+                    weight *= config.contexts[context][instantiation]
+            total += weight * positive[column]
+        probabilities[intention] = total
+    return probabilities
 
 
-def test_infer_single_evidence():
-    """
-    Test inference with single evidence context present
-    """
-    probabilities = {'hand over tool': 0.23157894736842097,
-                     'pick up tool': 0.768421052631579}
-
-    max_intention, decision_threshold, inference = bn.infer(
-        {'speech commands': 'pickup'})
-    for intention, probability in inference.items():
-        assert round(abs(probability-probabilities[intention]), 7) == 0
-
-
-def test_infer_multiple_evidence():
-    """
-    Test inference with multiple evidence context present
-    """
-    probabilities = {'hand over tool': 0.46153846153846145,
-                     'pick up tool': 0.5384615384615384}
-    with pytest.warns(UserWarning):
-        max_intention, decision_threshold, inference = bn.infer({
-            'speech commands': 'pickup',
-            'human holding object': False,
-            'human activity': 'idle',
-            'unhashable context': {}
-        })
-    for intention, probability in inference.items():
-        assert round(abs(probability-probabilities[intention]), 7) == 0
+@pytest.mark.parametrize('evidence, expected', [
+    # the 4.x test had 0.6028 / 0.3972 for no evidence, but never compared them
+    ({}, {PICK: 0.6222014925373134, HAND: 0.3777985074626865}),
+    ({SPEECH: 'pickup'}, {HAND: 0.23157894736842097, PICK: 0.768421052631579}),
+    ({SPEECH: 'pickup', HOLDING: False, ACTIVITY: 'idle'},
+     {HAND: 0.46153846153846145, PICK: 0.5384615384615384}),
+    ({SPEECH: 'pickup', HOLDING: True, ACTIVITY: 'working'},
+     {HAND: 0.04878048780487805, PICK: 0.9512195121951219}),
+])
+def test_known_values(inference, evidence, expected):
+    """The values known from the 4.x tests."""
+    result = inference.infer(evidence)
+    assert result.probabilities == pytest.approx(expected, abs=1e-7)
 
 
-def test_infer_combined_evidence():
-    """
-    Test inference for the combined case
-    """
-    probabilities = {'hand over tool': 0.04878048780487805,
-                     'pick up tool': 0.9512195121951219}
-
-    with pytest.warns(UserWarning):
-        max_intention, decision_threshold, inference = bn.infer({
-            'speech commands': 'pickup',
-            'human holding object': True,
-            'human activity': 'working',
-            'unhashable context': {}
-        })
-    for intention, probability in inference.items():
-        assert round(abs(probability-probabilities[intention]), 7) == 0
+@pytest.mark.parametrize('example', ['small_example.yml', 'small_example_altered.yml'])
+def test_matches_brute_force(example):
+    """Pgmpy agrees with the brute-force inference for every combination of evidence."""
+    config = Config.load(example)
+    config.add_combined_influence(HAND, (HOLDING, SPEECH), (True, 'other'), 2)
+    config.add_combined_influence(HAND, (HOLDING, SPEECH), (False, 'other'), 5)
+    inference = Inference(config)
+    options = {context: [None, *instantiations]
+               for context, instantiations in config.contexts.items()}
+    for case in itertools.product(*options.values()):
+        evidence = {context: value for context, value in zip(options, case) if value is not None}
+        raw = inference.infer(evidence, normalized=False).probabilities
+        assert raw == pytest.approx(brute_force(config, evidence), abs=1e-9), evidence
 
 
-def test_infer_overlapping_combined_evidence():
-    """
-    Test inference for combined case if two combinations are overlapping - not implemented yet!
-    """
-    # probabilities = {'hand over tool': 0.26229508196721313,
-    #                  'pick up tool': 0.7377049180327869}
-
-    # inference = self.bn.infer(
-    #     {'speech commands': 'pickup',
-    # 'human holding object': True, 'human activity': 'idle', 'unhashable context': {}})
-    # print(inference)
-    # for intention, probability in inference.items():
-    #     self.assertAlmostEqual(probability, probabilities[intention])
-    pass
+def test_result_unpacks_like_old_tuple(inference):
+    """The result is a NamedTuple and unpacks like the tuple of BayesNet.infer."""
+    result = inference.infer({SPEECH: 'pickup'})
+    assert isinstance(result, InferenceResult)
+    intention, threshold, probabilities = result
+    assert intention is None  # 0.768 does not exceed the threshold 0.8
+    assert threshold == 0.8
+    assert probabilities is result.probabilities
 
 
-def test_infer_invalid_evidence():
-    """
-    Test inference with unhashable context instantiation
-    """
-    probabilities = {'pick up tool': 0.7821782178217822,
-                     'hand over tool': 0.21782178217821785}
+def test_decision_threshold(inference):
+    """The most likely intention is returned if it exceeds the threshold."""
+    result = inference.infer({SPEECH: 'pickup'}, decision_threshold=0.7)
+    assert result.intention == PICK
+    assert result.decision_threshold == 0.7
 
+
+def test_normalized(inference):
+    """Normalized probabilities sum up to 1, raw ones don't."""
+    assert math.isclose(sum(inference.infer({}).probabilities.values()), 1)
+    assert not math.isclose(sum(inference.infer({}, normalized=False).probabilities.values()), 1)
+    assert normalize({'a': 1, 'b': 3}) == {'a': 0.25, 'b': 0.75}
+
+
+def test_warnings_for_ignored_evidence(inference):
+    """Unknown contexts, unknown instantiations and None are ignored with a warning."""
+    expected = inference.infer({}).probabilities
+    for evidence in [{'unknown context': 'x'}, {SPEECH: 'unknown'}, {SPEECH: None}]:
+        with pytest.warns(UserWarning):
+            result = inference.infer(evidence)
+        assert result.probabilities == pytest.approx(expected)
+
+
+def test_unhashable_evidence(inference):
+    """Unhashable instantiations of known contexts are errors."""
+    with pytest.raises(ValueError, match='hashable'):
+        inference.infer({SPEECH: {}})
+
+
+def test_discretization_function():
+    """Discretization functions are applied to evidence which is no instantiation."""
+    inference = Inference(Config.load('small_example.yml'))
+    inference.bind_discretization_function(HOLDING, lambda value: value > 0.5)
     with pytest.raises(ValueError):
-        bn.infer(
-            {'speech commands': {}, })
+        inference.bind_discretization_function('unknown', bool)
+    assert inference.infer({HOLDING: 0.9}).probabilities == pytest.approx(
+        inference.infer({HOLDING: True}).probabilities)
+    assert inference.infer({HOLDING: 0.1}).probabilities == pytest.approx(
+        inference.infer({HOLDING: False}).probabilities)
+    # instantiations are used as they are
+    assert inference.infer({HOLDING: False}).probabilities != pytest.approx(
+        inference.infer({HOLDING: True}).probabilities)
 
 
-def test_infer_warning_evidence():
-    """
-    Test inference with context instantiation that cause warnings 'this context': 'will be ignored anyways'
-    """
-    probabilities = {'pick up tool': 0.7821782178217822,
-                     'hand over tool': 0.21782178217821785}
+def test_discretization_to_invalid_value():
+    """A discretization function returning no instantiation ignores the evidence with a warning."""
+    inference = Inference(Config.load('small_example.yml'))
+    inference.bind_discretization_function(SPEECH, lambda value: 'crap')
+    with pytest.warns(UserWarning, match='not a valid instantiation'):
+        result = inference.infer({SPEECH: 'louder'})
+    assert result.probabilities == pytest.approx(inference.infer({}).probabilities)
+    # valid instantiations don't go through the function
+    assert inference.infer({SPEECH: 'pickup'}).probabilities[PICK] > 0.7
 
-    with pytest.warns(UserWarning):
-        bn.infer(
-            {'speech commands': 'something not related', 'this context': 'will be ignored anyways'})
+
+def test_snapshot_of_config():
+    """Editing the config after creating the inference does not change the inference."""
+    config = Config.load('small_example.yml')
+    inference = Inference(config)
+    before = inference.infer({}).probabilities
+    config.change_influence_value(PICK, SPEECH, 'other', 5)
+    assert inference.infer({}).probabilities == before
+    assert Inference(config).infer({}).probabilities != before
+
+
+def test_invalid_config():
+    """An inference needs a valid config."""
+    with pytest.raises(ValueError, match='Invalid configuration'):
+        Inference(Config())
