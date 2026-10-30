@@ -8,6 +8,9 @@ jobs:
   upload_pypi:
     # on the runner (not in a container): Reflex needs curl/unzip to fetch bun for the frontend build
     runs-on: ubuntu-latest
+    env:
+      # CPU-only torch (pulled in by pgmpy/bnlearn), the CUDA wheels fill the runner's disk
+      PIP_EXTRA_INDEX_URL: https://download.pytorch.org/whl/cpu
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7

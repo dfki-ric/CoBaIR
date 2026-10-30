@@ -56,6 +56,9 @@ jobs:
 
   web_e2e:
     runs-on: ubuntu-latest
+    env:
+      # CPU-only torch (pulled in by pgmpy/bnlearn), the CUDA wheels fill the runner's disk
+      PIP_EXTRA_INDEX_URL: https://download.pytorch.org/whl/cpu
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7
@@ -66,8 +69,13 @@ jobs:
       - run: pip install -r requirements/test_requirements.txt -e .[web] playwright==1.64.1
       - run: python -m cobair.web.build
       - run: python -m playwright install --with-deps chromium
-      # coverage follows `cobair-web` into its server processes (see [tool.coverage.run])
-      - run: coverage run -m pytest tests/web --html=test_report/report.html
+      - name: Run web tests (fail instead of skip)
+        env:
+          COBAIR_REQUIRE_E2E: "1"
+        # coverage follows `cobair-web` into its server processes (see [tool.coverage.run])
+        run: |
+          coverage run -m pytest tests/web -rs --html=test_report/report.html | tee pytest.txt
+          echo "::notice title=web tests::$(tail -1 pytest.txt)"
       - run: coverage combine
         if: always()
       - uses: actions/upload-artifact@v7

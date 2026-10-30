@@ -24,6 +24,6 @@ config = rx.Config(
     frontend_port=3000,
     telemetry_enabled=False,
     show_built_with_reflex=False,
-    plugins=[rx.plugins.RadixThemesPlugin()],
-    disable_plugins=['reflex_base.plugins.sitemap.SitemapPlugin'],
+    plugins=[rx.plugins.RadixThemesPlugin(theme=rx.theme(accent_color='orange'))],
+    disable_plugins=[rx.plugins.SitemapPlugin],
 )

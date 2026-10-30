@@ -16,56 +16,91 @@ If context values are continuous, discretizer functions can be used to create di
 
 
 ## Configuring a CoBaIR Scenario with the GUI
+The screenshots show the [web GUI](WebGUI.md) (`cobair-web`). The Qt configurator (`cobair-qt`) has the same
+settings in a different layout.
+
+![The web GUI](images/web_gui.png "The web GUI with the example config")
 
 ### Apriori Probabilities
+Apriori probabilities describe how likely each instantiation of a context is **before anything is observed**.
+They are used during inference whenever a context is not observed: CoBaIR then assumes that the instantiations
+occur with these probabilities. Once a context is observed, its apriori probabilities don't matter any more.
 
-Apriori probabilities are initial probabilities based on prior knowledge or assumptions, indicating the likelihood of context states. These apriori probabilities will be used during inference if a specific context cannot be observed. In this case it assumed that the instantiations of the context occur with the given probabilities.  
+The apriori probabilities of a context must sum up to 1. If you don't know how often the instantiations occur,
+distribute the probability equally, e.g. `0.5 / 0.5` for two instantiations.
 
 #### Setting Apriori Probabilities
-In the `Apriori Probability of Context`` section:
-1. Select a context or create a new one.
-2. Assign probabilities ensuring they sum to 1.
+- Add a context with **Add** next to *Contexts*, or edit one with its pencil icon. The dialog sets the name of the
+  context and its instantiations with their apriori probabilities.
+- The apriori probabilities can also be changed directly in the context cards.
+- If the probabilities of a context don't sum up to 1, the problems box above says so.
 
-![GUI](images/apriori_probability.gif "Setting Apriori Probabilities")
+![Context dialog](images/web_context_dialog.png "Editing a context")
 
 ### Influence Values
+An influence value describes how strongly an instantiation of a context indicates an intention. The scale goes
+from 0 to 5, each value stands for the probability of the intention given only this instantiation:
 
-These values indicate how much a context influences a particular intention.
+| value | meaning | probability |
+|---|---|---|
+| 0 | not probable | 0 % |
+| 1 | not very probable | 5 % |
+| 2 | somewhat probable | 25 % |
+| 3 | even probability | 50 % |
+| 4 | very probable | 75 % |
+| 5 | definitely probable | 95 % |
+
+For a combination of instantiations, CoBaIR averages these probabilities over all contexts. So every context
+contributes equally, and a single context can't decide an intention on its own. For this, use a
+[combined context influence](#combined-context-influence).
+
+Ask yourself for every instantiation and intention: *"If I only knew this, how probable would the intention
+be?"*
 
 #### Setting Influence Values
-In the `Influence of Context on Intention` area:
-1. Choose a context and an intention.
-2. Use a slider to assign an influence value on a 0-5 scale.
+In the *Influences* section, choose a context. The table shows its instantiations as rows and the
+intentions as columns; choose a value of the scale in every cell. New contexts and intentions start with 0.
 
-![GUI](images/influence.gif "Setting Influence Values")
+![Influences](images/web_influences.png "Influence values of a context on all intentions")
 
 ### Decision Threshold
-
-A pre-set level that an intention must meet or exceed to be selected.
+The decision threshold is the probability the most likely intention must **exceed** to be recognized. The inference
+always computes a probability for every intention (normalized, so they sum up to 1). If even the most likely
+intention doesn't exceed the threshold, no intention is recognized, which means *"I am not sure"*.
 
 #### Importance of Setting It
-It ensures the system acts on intentions with a certain confidence level, reducing the chance of incorrect actions based on low-probability guesses.
+A robot that acts on an intention should be confident enough: a wrong action is often worse than waiting for more
+context. A high threshold (e.g. 0.8) makes the system cautious, a low one (e.g. 0.3) makes it react to weak
+evidence. With many intentions the probabilities are spread over more options, so the threshold usually needs to be
+lower than with two intentions.
 
 #### How to Set
-In the `Decision threshold` setting:
-1. Enter a numeric value.
-2. Adjust to balance responsiveness and accuracy. 
+Enter a number between 0 and 1 in *Decision threshold*. Try the [example](#example-scenario) with different
+evidence to find a value that fits your scenario.
 
-![GUI](images/decision_threshold.gif "Decision Threshold")
+![Decision threshold](images/web_threshold.png "Decision threshold")
 
 ### Combined Context Influence
+Influence values describe each context on its own, and their probabilities are averaged. Sometimes only the
+**combination** of instantiations says something, e.g. the speech command `pickup` *while the human is working*
+is strong evidence for `pick up tool`, much stronger than the average of both.
 
-In complex decision-making circumstances, the end result is shaped by the interaction of numerous contexts rather than by a single context in isolation. To effectively simulate the complexity in the real world, the Combined Context Influence is required. 
+A combined context influence sets one influence value for a combination of instantiations of two or more contexts.
+If all of them are observed (or assumed during inference), the combined value replaces the single influence
+values of these contexts. If several combinations match, the first one counts.
 
 #### Configuring Combined Context Influence
+In *Combined influences*, **Add** opens a dialog:
+1. Choose the intention.
+2. Choose two or more contexts and one instantiation for each (**+ Context** adds another one).
+3. Choose the influence value of the combination.
 
-In the `new combined context influence` setting.
-1. Input pairs of contexts that interact with each other.
-2. Assign a numerical value (influence value) to these pairs to indicate their combined effect on an intention.
+The list shows all combined influences, the trash icon removes one.
 
-![GUI](images/combined_context.gif "Combined Context Influence")
+![Combined influence dialog](images/web_combined_dialog.png "Adding a combined influence")
 
 ### Graphical Representation
+The graph is part of the Qt configurator; the web GUI gets its graph with #182.
 
 - **Visual Overview**: 
   - The graph provides a visual representation of how different contexts and intentions are interconnected.

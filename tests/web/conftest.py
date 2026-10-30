@@ -15,6 +15,17 @@ import pytest
 __author__ = 'Adrian Lubitz'
 
 
+def skip_or_fail(reason: str):
+    """Skip the test, or fail it in CI where the end-to-end tests must run.
+
+    Args:
+        reason: Why the test can't run.
+    """
+    if os.environ.get('COBAIR_REQUIRE_E2E'):
+        pytest.fail(reason)
+    pytest.skip(reason)
+
+
 def free_port() -> int:
     """Return a free TCP port.
 
@@ -33,10 +44,13 @@ def web_url(tmp_path_factory):
     Yields:
         str: The URL of the web GUI.
     """
-    pytest.importorskip('reflex')
-    from cobair.web import FRONTEND_DIR  # pylint: disable=import-outside-toplevel
+    try:
+        from cobair.web import FRONTEND_DIR  # pylint: disable=import-outside-toplevel
+        import reflex  # noqa: F401  # pylint: disable=import-outside-toplevel,unused-import
+    except ImportError:
+        skip_or_fail('reflex is not installed')
     if not (FRONTEND_DIR / 'index.html').exists():
-        pytest.skip('frontend not built, run `python -m cobair.web.build`')
+        skip_or_fail('frontend not built, run `python -m cobair.web.build`')
     port = free_port()
     log = tmp_path_factory.mktemp('web') / 'cobair-web.log'
     with open(log, 'w', encoding='utf-8') as log_file:
@@ -68,7 +82,10 @@ def browser():
     Yields:
         playwright.sync_api.Browser: The browser.
     """
-    sync_api = pytest.importorskip('playwright.sync_api')
+    try:
+        from playwright import sync_api  # pylint: disable=import-outside-toplevel
+    except ImportError:
+        skip_or_fail('playwright is not installed')
     with sync_api.sync_playwright() as playwright:
         chromium = playwright.chromium.launch()
         yield chromium
