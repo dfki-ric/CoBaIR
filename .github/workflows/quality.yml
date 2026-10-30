@@ -91,7 +91,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898333+github-actions[bot]@users.noreply.github.com"
-          # CI commits the coverage badge: if it pushed first, rewrite only our block on top of it
+          # Tests commits the coverage badge: if it pushed first, rewrite only our block on top of it
           for attempt in 1 2 3; do
             python .github/scripts/update_badges.py quality
             if git diff --quiet README.md; then echo "Badges unchanged"; exit 0; fi
