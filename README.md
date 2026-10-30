@@ -1,11 +1,16 @@
 # ![CoBaIR](docs/images/logo.svg)
 
-[![CI](https://github.com/dfki-ric/CoBaIR/actions/workflows/ci.yml/badge.svg)](https://github.com/dfki-ric/CoBaIR/actions/workflows/ci.yml)
+[![Tests](https://github.com/dfki-ric/CoBaIR/actions/workflows/tests.yml/badge.svg)](https://github.com/dfki-ric/CoBaIR/actions/workflows/tests.yml)
+[![Build](https://github.com/dfki-ric/CoBaIR/actions/workflows/build.yml/badge.svg)](https://github.com/dfki-ric/CoBaIR/actions/workflows/build.yml)
+[![Docs](https://github.com/dfki-ric/CoBaIR/actions/workflows/docs.yml/badge.svg)](https://github.com/dfki-ric/CoBaIR/actions/workflows/docs.yml)
 [![Quality](https://github.com/dfki-ric/CoBaIR/actions/workflows/quality.yml/badge.svg)](https://github.com/dfki-ric/CoBaIR/actions/workflows/quality.yml)
 <!-- badges:start -->
-[![Ruff linting issues](https://img.shields.io/badge/Ruff%20linting%20issues-597%20issues-yellow)](https://github.com/dfki-ric/CoBaIR/actions/workflows/quality.yml)
-[![Docstring coverage](https://img.shields.io/badge/Docstring%20coverage-98.6%25-brightgreen)](https://github.com/dfki-ric/CoBaIR/actions/workflows/quality.yml)
+[![Ruff linting issues](https://img.shields.io/badge/Ruff%20linting%20issues-594%20issues-yellow)](https://github.com/dfki-ric/CoBaIR/actions/workflows/quality.yml)
+[![Docstring coverage](https://img.shields.io/badge/Docstring%20coverage-98.7%25-brightgreen)](https://github.com/dfki-ric/CoBaIR/actions/workflows/quality.yml)
 <!-- badges:end -->
+<!-- coverage-badge:start -->
+[![Test coverage](https://img.shields.io/badge/Test%20coverage-83.8%25-green)](https://github.com/dfki-ric/CoBaIR/actions/workflows/tests.yml)
+<!-- coverage-badge:end -->
 
 CoBaIR is a python library for **Co**ntext **Ba**sed **I**ntention **R**ecognition.
 It provides the means to infer an intention from given context.
@@ -23,7 +28,7 @@ For a more in-depth explanation consult the following papers:
 
 
 ## Install
-CoBaIR needs Python >= 3.10. Install it with the extras you need:
+CoBaIR needs Python >= 3.10, the web GUI needs Python >= 3.11. Install it with the extras you need:
 ```bash
 pip install "cobair[all]"
 ```
@@ -34,7 +39,7 @@ pip install "cobair[all]"
 | `cobair[infer]` | inference with the Bayesian net (pgmpy, bnlearn), needed for `cobair.bayes_net` |
 | `cobair[qt]` | the Qt configurator (PyQt5, pyqtgraph) |
 | `cobair[web]` | the web GUI (Reflex, Python >= 3.11) |
-| `cobair[all]` | everything above |
+| `cobair[all]` | everything above (Python >= 3.11, use `cobair[infer,qt]` on Python 3.10) |
 
 You can install the library from your local copy after cloning this repo with pip using `pip install ".[all]"`
 or install the newest unreleased features from the `main` branch with
@@ -160,7 +165,7 @@ Then you can run
 ```bash
 python -m pytest tests/
 ```
-You can as well see the test report for a specific commit in the [GitHub Actions runs](https://github.com/dfki-ric/CoBaIR/actions/workflows/ci.yml) (artifact `test-reports-py<version>`)
+You can as well see the test report for a specific commit in the [Tests workflow runs](https://github.com/dfki-ric/CoBaIR/actions/workflows/tests.yml) (artifact `test-reports-py<version>`)
 
 ### Coverage
 If you want to see coverage for the tests you can run
@@ -181,12 +186,12 @@ or
 coverage html
 ```
 
-You can as well see the coverage for a specific run in the job summary of the [GitHub Actions runs](https://github.com/dfki-ric/CoBaIR/actions/workflows/ci.yml)
+You can as well see the coverage for a specific run in the job summary of the [Tests workflow runs](https://github.com/dfki-ric/CoBaIR/actions/workflows/tests.yml)
 
 To show results of the coverage analysis.
 
 ## Code quality
-The [Quality workflow](https://github.com/dfki-ric/CoBaIR/actions/workflows/quality.yml) runs on every push and counts
+The [Quality workflow](https://github.com/dfki-ric/CoBaIR/actions/workflows/quality.yml) runs on every Pull Request into `main` and on pushes to `main` and counts
 [ruff](https://docs.astral.sh/ruff/) linting issues and the docstring coverage measured by
 [interrogate](https://interrogate.readthedocs.io/). Both tools are configured in `pyproject.toml` and are part of the
 test dependencies. Run them locally with
@@ -196,8 +201,17 @@ interrogate -c pyproject.toml .
 ```
 The workflow works as a ratchet against `.github/quality-baseline.json`: it fails if the number of ruff issues goes up
 or the docstring coverage goes down. If the numbers improved, lower `ruff_issues` / raise `doc_coverage` in the
-baseline in the same Pull Request to lock the improvement in. The badges at the top of this README are updated and
-committed to the branch by the workflow.
+baseline in the same Pull Request to lock the improvement in. The badges at the top of this README are only
+committed by the workflow on `main`; on other branches and Pull Requests the numbers are shown in the job summary.
+
+The test coverage badge comes from the `coverage` job of the [Tests workflow](https://github.com/dfki-ric/CoBaIR/actions/workflows/tests.yml).
+It combines the coverage of the `cobair` package from the Python 3.12 tests with all extras and from the end-to-end tests,
+including the `cobair-web` server they start (configured in `[tool.coverage.*]` of `pyproject.toml`). It is only
+shown, not enforced. Measure it locally with
+```bash
+pip install -e ".[all]"
+coverage run -m pytest tests/ && coverage combine && coverage report
+```
 
 ## Build docu
 Documentation is implemented with the [material theme](https://squidfunk.github.io/mkdocs-material/) for [mkdocs](https://www.mkdocs.org/).

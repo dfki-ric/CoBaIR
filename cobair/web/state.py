@@ -10,6 +10,7 @@ not unique (e.g. the instantiations `True` and `"True"`).
 from __future__ import annotations
 
 import dataclasses
+import json
 import os
 import warnings
 from importlib import resources
@@ -62,6 +63,23 @@ def read_example() -> str:
     """
     return resources.files('cobair.web').joinpath('examples', EXAMPLE_FILE).read_text(
         encoding='utf-8')
+
+
+def show_value(element_id: str, value: str):
+    """Put a value into an input again, e.g. after rejected text.
+
+    The inputs are uncontrolled and only recreated when their value changes. `rx.set_value` needs a
+    ref, which inputs with a dynamic id in `rx.foreach` don't get.
+
+    Args:
+        element_id: The id of the input.
+        value: The value to show.
+
+    Returns:
+        The event.
+    """
+    return rx.call_script(f'(document.getElementById({json.dumps(element_id)}) || {{}}).value = '
+                          f'{json.dumps(value)}')
 
 
 def parse_probability(text: str) -> float:
@@ -151,12 +169,11 @@ class EditorState(rx.State):
     error: str = ''
     #: Information about the last action (e.g. a restored draft).
     info: str = ''
-    #: Changes since the last load / save / download.
+    #: Changes not saved to `local_file` yet. Without a file it stays False: nothing is written to
+    #: disk and the draft in the browser storage keeps the changes.
     dirty: bool = False
     can_undo: bool = False
     can_redo: bool = False
-    #: Increased on every change, used as key to refresh uncontrolled inputs.
-    revision: int = 0
 
     #: Index of the context shown in the influence table.
     influence_context: str = '0'
@@ -283,8 +300,7 @@ class EditorState(rx.State):
         self.problems = config.validate()
         self.can_undo = bool(self._undo)
         self.can_redo = bool(self._redo)
-        self.dirty = self._saved is None or config != self._saved
-        self.revision += 1
+        self.dirty = bool(self.local_file) and (self._saved is None or config != self._saved)
         self.draft = config.dumps() if config != Config() else ''
         self._sync_influences()
         self._sync_combined()
@@ -474,13 +490,13 @@ class EditorState(rx.State):
     def download_config(self):
         """Download the config as YAML file.
 
+        This doesn't count as saving: the file `cobair-web` was started with is not changed.
+
         Returns:
             The download event.
         """
         text = self._model().dumps()
         file_name = self.file_name or 'cobair_config.yml'
-        self._saved = self._model().copy()
-        self._sync()
         return rx.download(data=text, filename=file_name)
 
     @rx.event
@@ -535,6 +551,9 @@ class EditorState(rx.State):
             context_index: Position of the context.
             instantiation_index: Position of the instantiation.
             text: The new value.
+
+        Returns:
+            The old value for the input if the text is no probability.
         """
         context = self._context_key(context_index)
         instantiation = self._instantiation_key(context, instantiation_index)
@@ -542,8 +561,8 @@ class EditorState(rx.State):
             value = parse_probability(text)
         except ValueError as error:
             self.error = f'Apriori probability of {str(context)}.{str(instantiation)}: {error}'
-            self.revision += 1
-            return
+            return show_value(f'apriori-{context_index}-{instantiation_index}',
+                              str(self._model().contexts[context][instantiation]))
         if value != self._model().contexts[context][instantiation]:
             self._edit('change_context_apriori_value', context, instantiation, value)
 
@@ -553,13 +572,15 @@ class EditorState(rx.State):
 
         Args:
             text: The new value.
+
+        Returns:
+            The old value for the input if the text is no probability.
         """
         try:
             value = parse_probability(text)
         except ValueError as error:
             self.error = f'Decision threshold: {error}'
-            self.revision += 1
-            return
+            return show_value('threshold', str(self._model().decision_threshold))
         if value != self._model().decision_threshold:
             self._edit('change_decision_threshold', value)
 
