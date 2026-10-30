@@ -6,11 +6,17 @@ on:
 
 jobs:
   upload_pypi:
+    # on the runner (not in a container): Reflex needs curl/unzip to fetch bun for the frontend build
     runs-on: ubuntu-latest
-    container: python:3.11-bookworm
     steps:
       - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
       - run: pip install build twine
+      # the wheel ships the pre-built web GUI frontend
+      - run: pip install -e .[web]
+      - run: python -m cobair.web.build
       # setup.py takes the version from the tag (GITHUB_REF_NAME)
       - run: python -m build
       - run: twine upload --verbose dist/*

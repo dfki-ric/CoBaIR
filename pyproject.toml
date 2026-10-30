@@ -42,7 +42,8 @@ qt = [
 ]
 web = [
     "cobair[infer]",
-    "reflex==0.10.1; python_version >= '3.11'",
+    # no python_version marker: on Python 3.10 installing [web] must fail, not skip reflex silently
+    "reflex==0.10.1",
 ]
 all = [
     "cobair[infer,qt,web]",
@@ -50,6 +51,7 @@ all = [
 
 [project.scripts]
 cobair-qt = "cobair.qt:main"
+cobair-web = "cobair.web.launcher:main"
 
 [project.urls]
 Homepage = "https://github.com/dfki-ric/CoBaIR"
@@ -66,6 +68,7 @@ include = ["cobair*"]
 
 [tool.setuptools.package-data]
 "cobair.qt" = ["*.ui", "*.png"]
+"cobair.web" = ["rxconfig.py", "examples/*.yml", "frontend/**/*"]
 
 [tool.ruff]
 # Keep in sync with the ruff pin in .github/workflows/quality.yml: preview rules change between releases.

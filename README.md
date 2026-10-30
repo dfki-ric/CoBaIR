@@ -4,7 +4,7 @@
 [![Quality](https://github.com/dfki-ric/CoBaIR/actions/workflows/quality.yml/badge.svg)](https://github.com/dfki-ric/CoBaIR/actions/workflows/quality.yml)
 <!-- badges:start -->
 [![Ruff linting issues](https://img.shields.io/badge/Ruff%20linting%20issues-594%20issues-yellow)](https://github.com/dfki-ric/CoBaIR/actions/workflows/quality.yml)
-[![Docstring coverage](https://img.shields.io/badge/Docstring%20coverage-97.8%25-brightgreen)](https://github.com/dfki-ric/CoBaIR/actions/workflows/quality.yml)
+[![Docstring coverage](https://img.shields.io/badge/Docstring%20coverage-98.1%25-brightgreen)](https://github.com/dfki-ric/CoBaIR/actions/workflows/quality.yml)
 <!-- badges:end -->
 
 CoBaIR is a python library for **Co**ntext **Ba**sed **I**ntention **R**ecognition.
@@ -23,7 +23,7 @@ For a more in-depth explanation consult the following papers:
 
 
 ## Install
-CoBaIR needs Python >= 3.10. Install it with the extras you need:
+CoBaIR needs Python >= 3.10, the web GUI needs Python >= 3.11. Install it with the extras you need:
 ```bash
 pip install "cobair[all]"
 ```
@@ -34,7 +34,7 @@ pip install "cobair[all]"
 | `cobair[infer]` | inference with the Bayesian net (pgmpy, bnlearn), needed for `cobair.bayes_net` |
 | `cobair[qt]` | the Qt configurator (PyQt5, pyqtgraph) |
 | `cobair[web]` | the web GUI (Reflex, Python >= 3.11) |
-| `cobair[all]` | everything above |
+| `cobair[all]` | everything above (Python >= 3.11, use `cobair[infer,qt]` on Python 3.10) |
 
 You can install the library from your local copy after cloning this repo with pip using `pip install ".[all]"`
 or install the newest unreleased features from the `main` branch with
@@ -59,10 +59,20 @@ The 4.x API (`from CoBaIR.bayes_net import BayesNet, load_config`) still works u
 On some Linux Distros there seems to be a problem with a shared library. [This Solutions](https://stackoverflow.com/questions/71010343/cannot-load-swrast-and-iris-drivers-in-fedora-35/72200748#72200748) suggests to `export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6
 ` which works on Ubuntu 22.04.
 
-## Graphical User Interface
-![GUI](docs/images/simpleConfig.gif "A simple configuration in the GUI")
+## Web GUI
+The web GUI is the easiest way to create and test a configuration:
+```bash
+pip install "cobair[web]"
+cobair-web
+```
+It opens <http://localhost:8000> in your browser, see the [Web GUI documentation](https://dfki-ric.github.io/CoBaIR/WebGUI/).
 
-To make the configuration of a scenario easier we provide a Graphical User Interface(GUI).
+![Web GUI](docs/images/web_gui.png "The CoBaIR web GUI")
+
+## Qt Graphical User Interface
+![GUI](docs/images/simpleConfig.gif "A simple configuration in the Qt GUI")
+
+The Qt configurator is kept in maintenance mode (no new features).
 Install it with `pip install "cobair[qt]"` and start it with
 ```bash
 cobair-qt
