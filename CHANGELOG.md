@@ -5,7 +5,7 @@ Versions follow [semantic versioning](https://semver.org/); see [CONTRIBUTING.md
 References like `GitLab MR !123` point to the former internal GitLab project.
 
 ## Unreleased
-- new web GUI `cobair-web` (Reflex, `[web]` extra): pre-built frontend shipped in the package and served with the backend on one port, no Node.js needed; load YAML files or the example and see contexts, intentions and validation problems (minor)
+- new web GUI `cobair-web` (Reflex, `[web]` extra): pre-built frontend shipped in the package and served with the backend on one port, no Node.js needed; needs Python >= 3.11, installing `[web]` or `[all]` on Python 3.10 fails instead of silently leaving out Reflex; load YAML files or the example and see contexts, intentions and validation problems (minor)
 - CI builds the web GUI frontend into the wheel, checks the installed wheel serves it and runs Playwright end-to-end tests (patch)
 - CI containers use Debian bookworm (bullseye is EOL) (patch)
 - the Qt configurator moved to `cobair.qt` and works on `cobair.model.Config`; start it with the new command `cobair-qt [-f config.yml]`; `cobair.configurator` / `cobair.visualization` are deprecated aliases (minor)

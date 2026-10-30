@@ -23,7 +23,7 @@ For a more in-depth explanation consult the following papers:
 
 
 ## Install
-CoBaIR needs Python >= 3.10. Install it with the extras you need:
+CoBaIR needs Python >= 3.10, the web GUI needs Python >= 3.11. Install it with the extras you need:
 ```bash
 pip install "cobair[all]"
 ```
@@ -34,7 +34,7 @@ pip install "cobair[all]"
 | `cobair[infer]` | inference with the Bayesian net (pgmpy, bnlearn), needed for `cobair.bayes_net` |
 | `cobair[qt]` | the Qt configurator (PyQt5, pyqtgraph) |
 | `cobair[web]` | the web GUI (Reflex, Python >= 3.11) |
-| `cobair[all]` | everything above |
+| `cobair[all]` | everything above (Python >= 3.11, use `cobair[infer,qt]` on Python 3.10) |
 
 You can install the library from your local copy after cloning this repo with pip using `pip install ".[all]"`
 or install the newest unreleased features from the `main` branch with
