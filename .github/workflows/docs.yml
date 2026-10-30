@@ -12,8 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - run: pip install --upgrade pip
-      - run: pip install -r requirements/doc_requirements.txt
-      - run: pip install .[infer,qt]
+      - run: pip install --group docs .[infer,qt]
       - run: mkdocs build --strict
       - uses: actions/upload-artifact@v7
         with:

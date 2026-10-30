@@ -77,4 +77,4 @@ The web GUI is a [Reflex](https://reflex.dev) app in `cobair/web` (Reflex is pin
   after switching branches; otherwise the browser would keep reloading because the frontend doesn't
   match the backend state.
 - Tests: `pytest tests/web`. The end-to-end tests start `cobair-web` and need the built frontend and
-  Playwright (`pip install playwright && playwright install chromium`).
+  Playwright (`pip install --group e2e && playwright install chromium`).

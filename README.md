@@ -156,10 +156,12 @@ See [CONTRIBUTING.md](https://github.com/dfki-ric/CoBaIR/blob/main/CONTRIBUTING.
 
 ## Run tests
 Tests are implemented with [pytest](https://docs.pytest.org/en/7.1.x/).
-To install test dependencies you need to run
+All dependencies are declared in `pyproject.toml`; the development tools are
+[dependency groups](https://packaging.python.org/en/latest/specifications/dependency-groups/)
+(`test`, `docs`, `lint`, `e2e`), which need pip >= 25.1. Install the test dependencies with
 
 ```bash
-pip install -r requirements/test_requirements.txt
+pip install --group test -e ".[all]"
 ```
 Then you can run
 ```bash
@@ -193,9 +195,10 @@ To show results of the coverage analysis.
 ## Code quality
 The [Quality workflow](https://github.com/dfki-ric/CoBaIR/actions/workflows/quality.yml) runs on every Pull Request into `main` and on pushes to `main` and counts
 [ruff](https://docs.astral.sh/ruff/) linting issues and the docstring coverage measured by
-[interrogate](https://interrogate.readthedocs.io/). Both tools are configured in `pyproject.toml` and are part of the
-test dependencies. Run them locally with
+[interrogate](https://interrogate.readthedocs.io/). Both tools are configured in `pyproject.toml` and pinned in its
+`lint` dependency group. Run them locally with
 ```bash
+pip install --group lint
 ruff check .
 interrogate -c pyproject.toml .
 ```
@@ -219,7 +222,7 @@ Documentation is implemented with the [material theme](https://squidfunk.github.
 ### Dependencies
 Install all dependencies for building the docu with
 ```bash
-pip install -r requirements/doc_requirements.txt
+pip install --group docs -e ".[infer,qt]"
 ```
 ### Build
 Build the docu with
