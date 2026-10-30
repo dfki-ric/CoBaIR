@@ -181,11 +181,10 @@ def test_set_apriori_and_undo_redo(example):
 
 def test_set_apriori_invalid(example):
     """Text that is no number shows an error and changes nothing."""
-    revision = example.revision
-    call(EditorState.set_apriori, example, 0, 0, 'abc')
+    events = call(EditorState.set_apriori, example, 0, 0, 'abc')
     assert 'is not a number' in example.error
     assert model(example) == Config.loads(read_example())
-    assert example.revision > revision  # the input shows the old value again
+    assert len(events) == 1  # the input shows the old value again
     assert not example.can_undo
 
 

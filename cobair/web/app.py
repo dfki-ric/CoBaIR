@@ -229,7 +229,10 @@ def context_card(context: ContextView, index: rx.Var) -> rx.Component:
                 rx.text(instantiation.name, width='50%'),
                 rx.input(
                     default_value=instantiation.apriori,
-                    key=f'{EditorState.revision}-{index}-{instantiation_index}',
+                    # recreated only if its own value changes (load, undo): a key that changes with
+                    # every edit would recreate the input the user just tabbed into, losing focus
+                    key=f'{index}-{instantiation_index}-{instantiation.apriori}',
+                    id=f'apriori-{index}-{instantiation_index}',
                     on_blur=lambda text: EditorState.set_apriori(index, instantiation_index,
                                                                  text),
                     size='1',
@@ -414,7 +417,7 @@ def threshold() -> rx.Component:
         'Decision threshold',
         rx.input(
             default_value=EditorState.decision_threshold,
-            key=f'{EditorState.revision}-threshold',
+            key=EditorState.decision_threshold,
             on_blur=EditorState.set_threshold,
             id='threshold',
             width='10em',

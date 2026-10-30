@@ -6,6 +6,7 @@ References like `GitLab MR !123` point to the former internal GitLab project.
 
 ## Unreleased
 - web GUI editor: edit contexts, intentions, apriori probabilities, influences (human readable scale, #144), combined influences and the decision threshold; undo/redo; download YAML; `cobair-web config.yml` opens a file and saves to it; drafts are autosaved in the browser; warning before leaving with unsaved changes; info tooltips link to the Tutorial (minor)
+- web GUI editor: editing an apriori probability or the decision threshold no longer takes the focus from the next input, also while the config is invalid in between (patch)
 - web GUI editor: logo in the header and as favicon; sections and contexts can be folded; Ctrl+Z / Ctrl+Shift+Z / Ctrl+Y undo and redo; "unsaved changes" and the warning before leaving are only shown when `cobair-web` was started with a file, because without one the draft in the browser keeps all changes (patch)
 - `cobair-web` rebuilds the frontend in a source checkout when the web GUI sources changed since the last build, instead of serving a stale frontend that keeps reloading (#228) (patch)
 - Tutorial describes apriori probabilities, influence values, decision threshold and combined influences in more detail, with web GUI screenshots (#178 - #181) (patch)

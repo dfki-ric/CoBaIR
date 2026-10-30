@@ -267,3 +267,29 @@ def test_logo(page):
     """The logo is shown and served."""
     page.wait_for_selector('#logo')
     assert page.evaluate("document.querySelector('#logo').naturalWidth") > 0
+
+
+def test_apriori_keeps_focus_while_invalid(page):
+    """Tabbing to the next apriori value keeps the focus, although the config is invalid then."""
+    load_example(page)
+    first, second = field(page, '.apriori-input').nth(0), field(page, '.apriori-input').nth(1)
+    first.fill('0.5')
+    page.keyboard.press('Tab')
+    page.wait_for_selector('#problems')
+    assert second.evaluate('element => element === document.activeElement')
+    page.keyboard.type('0.5')
+    page.keyboard.press('Tab')
+    page.wait_for_selector('#valid')
+    assert first.input_value() == '0.5' and second.input_value() == '0.5'
+
+
+def test_invalid_apriori_shows_old_value(page):
+    """Text that is no number is reported and the input shows the old value again."""
+    load_example(page)
+    first = field(page, '.apriori-input').first
+    first.fill('abc')
+    first.blur()
+    page.wait_for_selector('#error')
+    assert 'is not a number' in page.text_content('#error')
+    page.wait_for_function(
+        "document.querySelector('.apriori-input input, input.apriori-input').value === '0.2'")
