@@ -9,7 +9,7 @@
 [![Docstring coverage](https://img.shields.io/badge/Docstring%20coverage-98.4%25-brightgreen)](https://github.com/dfki-ric/CoBaIR/actions/workflows/quality.yml)
 <!-- badges:end -->
 <!-- coverage-badge:start -->
-[![Test coverage](https://img.shields.io/badge/Test%20coverage-77.7%25-green)](https://github.com/dfki-ric/CoBaIR/actions/workflows/tests.yml)
+[![Test coverage](https://img.shields.io/badge/Test%20coverage-82.5%25-green)](https://github.com/dfki-ric/CoBaIR/actions/workflows/tests.yml)
 <!-- coverage-badge:end -->
 
 CoBaIR is a python library for **Co**ntext **Ba**sed **I**ntention **R**ecognition.
