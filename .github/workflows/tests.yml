@@ -1,4 +1,5 @@
-name: CI
+name: Tests
+# unit tests on all supported Python versions, web GUI end-to-end tests and their combined coverage (README badge)
 on:
   push:
     branches: [main]
@@ -52,47 +53,6 @@ jobs:
           name: coverage-data-tests
           path: .coverage
           include-hidden-files: true
-
-  build_docu:
-    runs-on: ubuntu-latest
-    container: python:3.11-bookworm
-    steps:
-      - uses: actions/checkout@v7
-      - run: pip install --upgrade pip
-      - run: pip install -r requirements/doc_requirements.txt
-      - run: pip install .[infer,qt]
-      - run: mkdocs build
-      - uses: actions/upload-artifact@v7
-        with:
-          name: site
-          path: site
-
-  build_installable_package:
-    # on the runner (not in a container): Reflex needs curl/unzip to fetch bun for the frontend build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-python@v7
-        with:
-          python-version: "3.11"
-      - run: pip install --upgrade pip build
-      - run: pip install -e .[web]
-      # the wheel ships the pre-built web GUI frontend
-      - run: python -m cobair.web.build
-      - run: python -m build
-      - name: Check the wheel contains the frontend
-        run: unzip -l dist/*.whl | grep -q 'cobair/web/frontend/index.html'
-      - name: Serve the web GUI from the installed wheel (no Node.js)
-        run: |
-          python -m venv /tmp/wheel-venv
-          /tmp/wheel-venv/bin/pip install "$(ls dist/*.whl)[web]"
-          cd /tmp && PATH=/tmp/wheel-venv/bin:/usr/bin:/bin timeout 120 cobair-web --port 8123 --no-browser &
-          for i in $(seq 1 60); do curl -sf http://localhost:8123/ping && break; sleep 2; done
-          curl -sf -o /dev/null http://localhost:8123/
-      - uses: actions/upload-artifact@v7
-        with:
-          name: dist
-          path: dist
 
   web_e2e:
     runs-on: ubuntu-latest
@@ -157,7 +117,7 @@ jobs:
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         env:
           COVERAGE: ${{ steps.coverage.outputs.pct }}
-          BADGE_LINK: ${{ github.server_url }}/${{ github.repository }}/actions/workflows/ci.yml
+          BADGE_LINK: ${{ github.server_url }}/${{ github.repository }}/actions/workflows/tests.yml
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898333+github-actions[bot]@users.noreply.github.com"

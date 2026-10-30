@@ -2,7 +2,7 @@
 
 `update_badges.py quality` writes the ruff and docstring badges (LINT, DOCS, BADGE_LINK) between
 `<!-- badges:start/end -->`, `update_badges.py coverage` the test coverage badge (COVERAGE,
-BADGE_LINK) between `<!-- coverage-badge:start/end -->`. The Quality and the CI workflow each
+BADGE_LINK) between `<!-- coverage-badge:start/end -->`. The Quality and the Tests workflow each
 rewrite only their own block, so they don't overwrite each other's numbers.
 """
 

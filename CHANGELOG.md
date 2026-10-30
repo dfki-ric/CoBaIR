@@ -5,6 +5,7 @@ Versions follow [semantic versioning](https://semver.org/); see [CONTRIBUTING.md
 References like `GitLab MR !123` point to the former internal GitLab project.
 
 ## Unreleased
+- the CI workflow is split into the workflows Tests (with the coverage badge), Build and Docs (#233) (patch)
 - README badge for the test coverage of the `cobair` package: the CI workflow combines the coverage of the Python 3.12 tests (now with all extras on Python >= 3.11) and the end-to-end tests including the `cobair-web` server process (#231) (patch)
 - new web GUI `cobair-web` (Reflex, `[web]` extra): pre-built frontend shipped in the package and served with the backend on one port, no Node.js needed; needs Python >= 3.11, installing `[web]` or `[all]` on Python 3.10 fails instead of silently leaving out Reflex; load YAML files or the example and see contexts, intentions and validation problems (minor)
 - CI builds the web GUI frontend into the wheel, checks the installed wheel serves it and runs Playwright end-to-end tests (patch)

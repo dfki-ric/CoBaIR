@@ -8,8 +8,9 @@ Thanks for your interest in CoBaIR! Bugs, feature requests and questions are wel
 - `main` is the only long-lived branch. It always has to be in a working state.
 - Every change starts with an issue. Create a short-lived branch from `main` named after the type of change
   and the issue, e.g. `feature/153-live-inference` or `fix/171-graph-bug`, and open a Pull Request into `main`.
-- The [CI pipeline](https://github.com/dfki-ric/CoBaIR/actions/workflows/ci.yml) runs tests for all supported
-  Python versions, the docu build and the package build on every Pull Request.
+- On every Pull Request the [Tests](https://github.com/dfki-ric/CoBaIR/actions/workflows/tests.yml) workflow runs the tests for all supported
+  Python versions and the web GUI end-to-end tests, [Build](https://github.com/dfki-ric/CoBaIR/actions/workflows/build.yml) builds the package and
+  [Docs](https://github.com/dfki-ric/CoBaIR/actions/workflows/docs.yml) the documentation.
   The [Quality workflow](https://github.com/dfki-ric/CoBaIR/actions/workflows/quality.yml) counts ruff linting issues
   and the docstring coverage and fails if one of them got worse than `.github/quality-baseline.json`
   (see [Code quality](README.md#code-quality)). All checks must pass before merging.
