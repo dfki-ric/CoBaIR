@@ -14,7 +14,8 @@ pytest.importorskip('pyqtgraph')
 # local imports
 from cobair.model import Config  # noqa: E402
 from cobair.qt import Configurator, main  # noqa: E402
-from cobair.qt.configurator import NewIntentionDialog  # noqa: E402
+from cobair.qt.configurator import (NewCombinedContextDialog, NewContextDialog,  # noqa: E402
+                                     NewIntentionDialog)
 
 # end file header
 __author__ = 'Adrian Lubitz'
@@ -168,3 +169,47 @@ def test_deprecated_module_alias():
     with pytest.warns(DeprecationWarning, match='cobair.qt.configurator'):
         module = importlib.import_module('cobair.configurator')
     assert module.Configurator is Configurator
+
+
+def test_callbacks_are_not_connected_repeatedly(configurator):
+    """Refilling a dropdown must not stack up callbacks (froze the GUI)."""
+    calls = []
+    for _ in range(5):
+        configurator.set_intention_dropdown(
+            configurator.config.intentions.keys(), calls.append)
+    calls.clear()
+    configurator.intention_dropdown.setCurrentIndex(1)
+    assert len(calls) == 1
+    configurator.create_fields()
+
+
+def test_selection_does_not_grow_layouts(configurator):
+    """Selecting again and again keeps the number of widgets constant."""
+    configurator.influencing_context_selection.setCurrentText(SPEECH)
+    count = configurator.gridLayout_3.count()
+    for _ in range(20):
+        configurator.intention_dropdown.setCurrentIndex(0)
+        configurator.intention_dropdown.setCurrentIndex(1)
+        configurator.intention_dropdown.setCurrentIndex(0)
+        configurator.influencing_context_selection.setCurrentText(SPEECH)
+    assert configurator.gridLayout_3.count() == count
+
+
+def test_combined_dialog_many_changes(configurator):
+    """Changing the rows of the combined influence dialog must not crash."""
+    dialog = NewCombinedContextDialog(configurator, intentions=configurator.config.intentions)
+    assert len(dialog.context_selections) == 2
+    dialog.new_instantiation()
+    dialog.context_selections[0].setCurrentIndex(1)
+    dialog.context_selections[1].setCurrentIndex(1)
+    dialog.context_selections[0].setCurrentIndex(0)
+    result = dialog.get_result()
+    assert len(set(result['contexts'])) == len(result['contexts'])
+    assert len(result['contexts']) == len(result['instantiations']) == 3
+
+
+def test_new_context_dialog_new_row_has_no_error(configurator):
+    """A new empty row is not an error before OK was pressed."""
+    dialog = NewContextDialog(configurator)
+    dialog.new_instantiation()
+    assert dialog.error_label.text() == ''

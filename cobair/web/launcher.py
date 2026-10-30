@@ -1,7 +1,8 @@
 """`cobair-web`: serve the pre-built frontend and the Reflex backend on one port.
 
 No Node.js is needed: the frontend is built in CI (`python -m cobair.web.build`) and shipped in the
-wheel, the backend mounts it like `reflex run --env prod --single-port` does.
+wheel, the backend mounts it like `reflex run --env prod --single-port` does. In a source checkout
+(editable install) a missing or stale frontend is rebuilt before the start.
 """
 
 # System imports
@@ -9,6 +10,7 @@ import argparse
 import atexit
 import os
 import shutil
+import subprocess
 import sys
 import tempfile
 import threading
@@ -19,6 +21,7 @@ from pathlib import Path
 
 # local imports
 from . import FRONTEND_DIR, PROJECT_DIR
+from .build import build, is_up_to_date
 
 #: Same as `cobair.web.state.FILE_ENV`, not imported to keep the start fast.
 FILE_ENV = 'COBAIR_WEB_FILE'
@@ -27,6 +30,32 @@ FILE_ENV = 'COBAIR_WEB_FILE'
 __author__ = 'Adrian Lubitz'
 
 DEFAULT_PORT = 8000
+
+
+def is_source_checkout() -> bool:
+    """Check whether cobair runs from a source checkout instead of an installed wheel.
+
+    Returns:
+        bool: True if the repository's pyproject.toml is next to the package.
+    """
+    return (PROJECT_DIR.parents[1] / 'pyproject.toml').is_file()
+
+
+def ensure_frontend() -> None:
+    """Rebuild the frontend in a source checkout if the web GUI sources changed since its build.
+
+    A stale frontend has another state schema than the backend and keeps reloading. If the rebuild
+    fails (e.g. offline), the old frontend is used.
+    """
+    if not is_source_checkout() or is_up_to_date():
+        return
+    print('The web GUI sources changed since the last frontend build, rebuilding the frontend...')
+    try:
+        build()
+    except (subprocess.CalledProcessError, OSError) as error:
+        print(f'Rebuilding the frontend failed: {error}', file=sys.stderr)
+        if (FRONTEND_DIR / 'index.html').exists():
+            print('Using the old frontend, it may not match the backend.', file=sys.stderr)
 
 
 def prepare_runtime_dir(runtime_dir: Path, port: int) -> None:
@@ -103,6 +132,7 @@ def main(argv: list = None) -> int:
 
     runtime_dir = Path(tempfile.mkdtemp(prefix='cobair-web-'))
     atexit.register(shutil.rmtree, runtime_dir, ignore_errors=True)
+    ensure_frontend()
     try:
         prepare_runtime_dir(runtime_dir, args.port)
     except FileNotFoundError as error:

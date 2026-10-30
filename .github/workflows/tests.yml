@@ -1,0 +1,139 @@
+name: Tests
+# unit tests on all supported Python versions, web GUI end-to-end tests and their combined coverage (README badge)
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  run_tests:
+    runs-on: ubuntu-latest
+    # Debian bookworm images, bullseye is EOL and its apt repositories are gone
+    container: python:${{ matrix.python-version }}-bookworm
+    env:
+      QT_QPA_PLATFORM: offscreen
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/cache@v6
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ matrix.python-version }}-${{ hashFiles('pyproject.toml') }}
+      # system libraries for the Qt configurator tests (offscreen platform)
+      - run: apt-get update && apt-get install -y --no-install-recommends libgl1 libegl1 libxkbcommon0 libdbus-1-3 libfontconfig1 libglib2.0-0
+      - run: pip install --upgrade pip
+      # Reflex needs Python >= 3.11; with [all] the web GUI state tests run too
+      - run: pip install --group test ".[${{ matrix.python-version == '3.10' && 'infer,qt' || 'all' }}]"
+      - run: coverage run -m pytest tests/ --html=test_report/report.html --junitxml=report.xml
+      - run: |
+          coverage combine
+          coverage report | tee coverage.txt
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          cat coverage.txt >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+        if: always()
+      - run: coverage xml && coverage html
+        if: always()
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: test-reports-py${{ matrix.python-version }}
+          path: |
+            report.xml
+            coverage.xml
+            htmlcov
+            test_report
+      - uses: actions/upload-artifact@v7
+        if: always() && matrix.python-version == '3.12'
+        with:
+          name: coverage-data-tests
+          path: .coverage
+          include-hidden-files: true
+
+  web_e2e:
+    runs-on: ubuntu-latest
+    env:
+      # CPU-only torch (pulled in by pgmpy/bnlearn), the CUDA wheels fill the runner's disk
+      PIP_EXTRA_INDEX_URL: https://download.pytorch.org/whl/cpu
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install --upgrade pip
+      - run: pip install --group test --group e2e -e .[web]
+      - run: python -m cobair.web.build
+      - run: python -m playwright install --with-deps chromium
+      - name: Run web tests (fail instead of skip)
+        env:
+          COBAIR_REQUIRE_E2E: "1"
+        # coverage follows `cobair-web` into its server processes (see [tool.coverage.run])
+        run: |
+          coverage run -m pytest tests/web -rs --html=test_report/report.html | tee pytest.txt
+          echo "::notice title=web tests::$(tail -1 pytest.txt)"
+      - run: coverage combine
+        if: always()
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: web-e2e-report
+          path: test_report
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: coverage-data-e2e
+          path: .coverage
+          include-hidden-files: true
+
+  coverage:
+    # coverage of the cobair package by all tests (Python 3.12 with all extras and the end-to-end
+    # tests with the cobair-web server), shown as README badge
+    needs: [run_tests, web_e2e]
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - run: pip install --upgrade pip && pip install --group test
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: coverage-data-*
+          path: coverage-data
+      - name: Combine and report
+        id: coverage
+        run: |
+          coverage combine $(find coverage-data -name .coverage)
+          coverage report | tee coverage.txt
+          PCT=$(coverage json -q -o - | python -c "import json, sys; print(round(json.load(sys.stdin)['totals']['percent_covered'], 1))")
+          echo "pct=$PCT" >> "$GITHUB_OUTPUT"
+          {
+            echo "### Test coverage of cobair: $PCT %"
+            echo '```'
+            cat coverage.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Commit the coverage badge
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          COVERAGE: ${{ steps.coverage.outputs.pct }}
+          BADGE_LINK: ${{ github.server_url }}/${{ github.repository }}/actions/workflows/tests.yml
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898333+github-actions[bot]@users.noreply.github.com"
+          # Quality commits the other badges: if it pushed first, rewrite only our block on top of it
+          for attempt in 1 2 3; do
+            python .github/scripts/update_badges.py coverage
+            if git diff --quiet README.md; then echo "Badge unchanged"; exit 0; fi
+            git commit -q README.md -m "Update README coverage badge"
+            git push && exit 0
+            git fetch -q --depth=1 origin main && git reset -q --hard FETCH_HEAD
+          done
+          echo "::warning::Could not push the coverage badge; the next run will refresh it."

@@ -10,14 +10,19 @@ References like `GitLab MR !123` point to the former internal GitLab project.
 - the web GUI is deployed to a Hugging Face Docker Space on every release tag (`deploy/hf-space`, workflow `deploy_space`); CI builds and smoke-tests the Space image (#208) (patch)
 - web GUI live inference: evidence per context (or unknown), bar chart of the intention probabilities with the decision threshold and the recognized intention, graph highlights the evidence and colors the intentions (#207) (minor)
 - web GUI graph (React Flow): contexts, intentions and combined influences, edge thickness/color show the influence, clicking unfolds contexts and selects them in the editor (#182) (minor)
+- the CI workflow is split into the workflows Tests (with the coverage badge), Build and Docs (#233) (patch)
+- README badge for the test coverage of the `cobair` package: the CI workflow combines the coverage of the Python 3.12 tests (now with all extras on Python >= 3.11) and the end-to-end tests including the `cobair-web` server process (#231) (patch)
 - web GUI editor: edit contexts, intentions, apriori probabilities, influences (human readable scale, #144), combined influences and the decision threshold; undo/redo; download YAML; `cobair-web config.yml` opens a file and saves to it; drafts are autosaved in the browser; warning before leaving with unsaved changes; info tooltips link to the Tutorial (minor)
+- web GUI editor: editing an apriori probability or the decision threshold no longer takes the focus from the next input, also while the config is invalid in between (patch)
+- web GUI editor: logo in the header and as favicon; sections and contexts can be folded; Ctrl+Z / Ctrl+Shift+Z / Ctrl+Y undo and redo; "unsaved changes" and the warning before leaving are only shown when `cobair-web` was started with a file, because without one the draft in the browser keeps all changes (patch)
+- `cobair-web` rebuilds the frontend in a source checkout when the web GUI sources changed since the last build, instead of serving a stale frontend that keeps reloading (#228) (patch)
 - Tutorial describes apriori probabilities, influence values, decision threshold and combined influences in more detail, with web GUI screenshots (#178 - #181) (patch)
-- new web GUI `cobair-web` (Reflex, `[web]` extra): pre-built frontend shipped in the package and served with the backend on one port, no Node.js needed; load YAML files or the example and see contexts, intentions and validation problems (minor)
+- new web GUI `cobair-web` (Reflex, `[web]` extra): pre-built frontend shipped in the package and served with the backend on one port, no Node.js needed; needs Python >= 3.11, installing `[web]` or `[all]` on Python 3.10 fails instead of silently leaving out Reflex; load YAML files or the example and see contexts, intentions and validation problems (minor)
 - CI builds the web GUI frontend into the wheel, checks the installed wheel serves it and runs Playwright end-to-end tests (patch)
 - CI containers use Debian bookworm (bullseye is EOL) (patch)
 - the Qt configurator moved to `cobair.qt` and works on `cobair.model.Config`; start it with the new command `cobair-qt [-f config.yml]`; `cobair.configurator` / `cobair.visualization` are deprecated aliases (minor)
 - `[qt]` extra uses PyQt5 5.15.11 (5.15.9 segfaults with Python >= 3.12) and no longer needs `[infer]` (patch)
-- Qt configurator: File > New no longer crashes, the window icon is found in pip installs, every combined influence has its own row in the advanced table, influence 1 is labelled "very low" (patch)
+- Qt configurator: repeated actions no longer freeze or crash the GUI (callbacks were connected again on every update, the combined influence dialog deleted widgets twice), File > New no longer crashes, the window icon is found in pip installs, every combined influence has its own row in the advanced table, influence 1 is labelled "very low" (patch)
 - dependencies bumped to their current versions: pgmpy 1.1.2, bnlearn 1.1.0 (numpy 2 and current setuptools allowed again), pyyaml >= 6.0.3, PyQt5 5.15.11, pyqtgraph 0.14.0, reflex 0.10.1; `BayesNet(bn_verbosity=...)` is ignored and `Inference` has no `verbosity` any more, bnlearn 1.x logs through `logging` (#224) (patch)
 - new API: `cobair.model.Config` (pure Python: editing, validation, files, CPT computation) and `cobair.infer.Inference` (pgmpy/bnlearn adapter); `cobair.bayes_net` (`BayesNet`, `load_config`, ...) is deprecated and will be removed in 6.0.0 (minor)
 - config files get a header comment and the keys `format_version` and `created_with`, keys keep their order instead of being sorted (minor)
@@ -38,7 +43,7 @@ References like `GitLab MR !123` point to the former internal GitLab project.
 - refactoring of update config
 - fixed graph bug
 - require setuptools<81, pgmpy 0.1.20 still needs `pkg_resources` (fixes import errors on Python >= 3.10)
-- code quality badges and Quality workflow: ruff linting issues and docstring coverage may not get worse than `.github/quality-baseline.json`; ruff replaces pylint (patch)
+- code quality badges and Quality workflow: ruff linting issues and docstring coverage may not get worse than `.github/quality-baseline.json`; ruff replaces pylint; the Quality workflow also runs on Pull Requests, README badges are only committed on `main` (patch)
 
 ## 4.0.5 - 2026-04-21
 - re-release of 4.0.4 to fix the PyPI upload (normalized package name `cobair`)

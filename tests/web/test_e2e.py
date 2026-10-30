@@ -142,7 +142,8 @@ def test_apriori_undo_redo(page):
     apriori.blur()
     page.wait_for_selector('#problems')
     assert 'human activity' in page.text_content('#problems')
-    page.wait_for_selector('#dirty')  # the unload guard asks while this badge is shown
+    # without a file there is nothing unsaved: the draft is kept in the browser
+    assert page.locator('#dirty').count() == 0
     page.click('#undo')
     page.wait_for_selector('#valid')
     assert field(page, '.apriori-input').first.input_value() == '0.2'
@@ -191,14 +192,13 @@ def test_download(page):
     load_example(page)
     page.fill('#threshold', '0.7')
     page.locator('#threshold').blur()
-    page.wait_for_selector('#dirty')
+    page.wait_for_selector('#undo:not([disabled])')
     with page.expect_download() as download_info:
         page.click('#download')
     download = download_info.value
     assert download.suggested_filename == 'small_example.yml'
     text = open(download.path(), encoding='utf-8').read()
     assert 'format_version: 1' in text and 'decision_threshold: 0.7' in text
-    page.wait_for_selector('#dirty', state='detached')
 
 
 def test_draft_restored(page):
@@ -206,7 +206,7 @@ def test_draft_restored(page):
     load_example(page)
     page.fill('#threshold', '0.65')
     page.locator('#threshold').blur()
-    page.wait_for_selector('#dirty')
+    page.wait_for_selector('#undo:not([disabled])')
     second = page.context.new_page()
     second.goto(page.url)
     second.wait_for_selector('#info')
@@ -265,14 +265,86 @@ def test_inference_needs_valid_config(page):
     assert 'Fix the problems' in page.text_content('#inference-error')
 
 
-def test_unsaved_changes_guard(page):
-    """Closing the page with unsaved changes asks first (beforeunload)."""
+def test_leaving_without_file_does_not_ask(page):
+    """Without a file the browser draft keeps the changes, so leaving doesn't ask (beforeunload)."""
     load_example(page)
     page.fill('#threshold', '0.5')
     page.locator('#threshold').blur()
-    page.wait_for_selector('#dirty')
+    page.wait_for_selector('#undo:not([disabled])')
     dialogs = []
     page.on('dialog', lambda dialog: (dialogs.append(dialog.type), dialog.dismiss()))
     page.close(run_before_unload=True)
-    page.wait_for_timeout(500)
-    assert dialogs == ['beforeunload']
+    if not page.is_closed():
+        page.wait_for_event('close', timeout=5000)
+    assert page.is_closed() and not dialogs  # a dismissed beforeunload dialog keeps the page open
+
+
+def test_undo_redo_keys(page):
+    """Ctrl+Z undoes and Ctrl+Shift+Z / Ctrl+Y redo, but not while typing in a field."""
+    load_example(page)
+    threshold = page.locator('#threshold')
+    threshold.fill('0.7')
+    threshold.blur()
+    page.wait_for_selector('#undo:not([disabled])')
+    threshold.focus()
+    page.keyboard.press('Control+z')  # the field's own undo, the config is not changed
+    page.locator('body').click(position={'x': 1, 'y': 1})
+    assert page.is_enabled('#undo')
+    page.keyboard.press('Control+z')
+    page.wait_for_selector('#undo[disabled]')
+    assert page.input_value('#threshold') != '0.7'
+    page.keyboard.press('Control+Shift+z')
+    page.wait_for_function("document.querySelector('#threshold').value === '0.7'")
+    page.keyboard.press('Control+z')
+    page.wait_for_selector('#undo[disabled]')
+    page.keyboard.press('Control+y')
+    page.wait_for_function("document.querySelector('#threshold').value === '0.7'")
+
+
+def test_fold_sections_and_contexts(page):
+    """Sections and context cards fold on a click on their header, buttons in it don't fold."""
+    load_example(page)
+    contexts = page.locator('#contexts')
+    card = page.locator('.context-card').first
+    assert card.locator('.apriori-input').first.is_visible()
+    card.locator('summary').click(position={'x': 5, 'y': 5})
+    page.wait_for_selector('.context-card >> nth=0 >> .apriori-input', state='hidden')
+    assert page.locator('.context-card').nth(1).locator('.apriori-input').first.is_visible()
+    assert 'instantiations' in card.locator('summary').text_content()
+    contexts.locator('summary').first.click(position={'x': 5, 'y': 5})
+    page.wait_for_selector('.context-card', state='hidden')
+    page.click('#add-context')  # a button in the folded header still works, it doesn't unfold
+    page.wait_for_selector('#context-name')
+    assert contexts.evaluate('element => element.open') is False
+
+
+def test_logo(page):
+    """The logo is shown and served."""
+    page.wait_for_selector('#logo')
+    assert page.evaluate("document.querySelector('#logo').naturalWidth") > 0
+
+
+def test_apriori_keeps_focus_while_invalid(page):
+    """Tabbing to the next apriori value keeps the focus, although the config is invalid then."""
+    load_example(page)
+    first, second = field(page, '.apriori-input').nth(0), field(page, '.apriori-input').nth(1)
+    first.fill('0.5')
+    page.keyboard.press('Tab')
+    page.wait_for_selector('#problems')
+    assert second.evaluate('element => element === document.activeElement')
+    page.keyboard.type('0.5')
+    page.keyboard.press('Tab')
+    page.wait_for_selector('#valid')
+    assert first.input_value() == '0.5' and second.input_value() == '0.5'
+
+
+def test_invalid_apriori_shows_old_value(page):
+    """Text that is no number is reported and the input shows the old value again."""
+    load_example(page)
+    first = field(page, '.apriori-input').first
+    first.fill('abc')
+    first.blur()
+    page.wait_for_selector('#error')
+    assert 'is not a number' in page.text_content('#error')
+    page.wait_for_function(
+        "document.querySelector('.apriori-input input, input.apriori-input').value === '0.2'")
