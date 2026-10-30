@@ -3,8 +3,8 @@
 [![CI](https://github.com/dfki-ric/CoBaIR/actions/workflows/ci.yml/badge.svg)](https://github.com/dfki-ric/CoBaIR/actions/workflows/ci.yml)
 [![Quality](https://github.com/dfki-ric/CoBaIR/actions/workflows/quality.yml/badge.svg)](https://github.com/dfki-ric/CoBaIR/actions/workflows/quality.yml)
 <!-- badges:start -->
-[![Ruff linting issues](https://img.shields.io/badge/Ruff%20linting%20issues-597%20issues-yellow)](https://github.com/dfki-ric/CoBaIR/actions/workflows/quality.yml)
-[![Docstring coverage](https://img.shields.io/badge/Docstring%20coverage-98.2%25-brightgreen)](https://github.com/dfki-ric/CoBaIR/actions/workflows/quality.yml)
+[![Ruff linting issues](https://img.shields.io/badge/Ruff%20linting%20issues-594%20issues-yellow)](https://github.com/dfki-ric/CoBaIR/actions/workflows/quality.yml)
+[![Docstring coverage](https://img.shields.io/badge/Docstring%20coverage-98.3%25-brightgreen)](https://github.com/dfki-ric/CoBaIR/actions/workflows/quality.yml)
 <!-- badges:end -->
 
 CoBaIR is a python library for **Co**ntext **Ba**sed **I**ntention **R**ecognition.
@@ -23,7 +23,7 @@ For a more in-depth explanation consult the following papers:
 
 
 ## Install
-CoBaIR needs Python >= 3.10. Install it with the extras you need:
+CoBaIR needs Python >= 3.10, the web GUI needs Python >= 3.11. Install it with the extras you need:
 ```bash
 pip install "cobair[all]"
 ```
@@ -34,7 +34,7 @@ pip install "cobair[all]"
 | `cobair[infer]` | inference with the Bayesian net (pgmpy, bnlearn), needed for `cobair.bayes_net` |
 | `cobair[qt]` | the Qt configurator (PyQt5, pyqtgraph) |
 | `cobair[web]` | the web GUI (Reflex, Python >= 3.11) |
-| `cobair[all]` | everything above |
+| `cobair[all]` | everything above (Python >= 3.11, use `cobair[infer,qt]` on Python 3.10) |
 
 You can install the library from your local copy after cloning this repo with pip using `pip install ".[all]"`
 or install the newest unreleased features from the `main` branch with
@@ -185,7 +185,7 @@ You can as well see the coverage for a specific run in the job summary of the [G
 To show results of the coverage analysis.
 
 ## Code quality
-The [Quality workflow](https://github.com/dfki-ric/CoBaIR/actions/workflows/quality.yml) runs on every push and counts
+The [Quality workflow](https://github.com/dfki-ric/CoBaIR/actions/workflows/quality.yml) runs on every push and every Pull Request and counts
 [ruff](https://docs.astral.sh/ruff/) linting issues and the docstring coverage measured by
 [interrogate](https://interrogate.readthedocs.io/). Both tools are configured in `pyproject.toml` and are part of the
 test dependencies. Run them locally with
@@ -195,8 +195,8 @@ interrogate -c pyproject.toml .
 ```
 The workflow works as a ratchet against `.github/quality-baseline.json`: it fails if the number of ruff issues goes up
 or the docstring coverage goes down. If the numbers improved, lower `ruff_issues` / raise `doc_coverage` in the
-baseline in the same Pull Request to lock the improvement in. The badges at the top of this README are updated and
-committed to the branch by the workflow.
+baseline in the same Pull Request to lock the improvement in. The badges at the top of this README are only
+committed by the workflow on `main`; on other branches and Pull Requests the numbers are shown in the job summary.
 
 ## Build docu
 Documentation is implemented with the [material theme](https://squidfunk.github.io/mkdocs-material/) for [mkdocs](https://www.mkdocs.org/).

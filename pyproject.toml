@@ -42,7 +42,8 @@ qt = [
 ]
 web = [
     "cobair[infer]",
-    "reflex==0.10.1; python_version >= '3.11'",
+    # no python_version marker: on Python 3.10 installing [web] must fail, not skip reflex silently
+    "reflex==0.10.1",
 ]
 all = [
     "cobair[infer,qt,web]",
