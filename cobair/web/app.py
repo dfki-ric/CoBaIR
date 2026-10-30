@@ -6,6 +6,7 @@
 import reflex as rx
 
 # local imports
+from .graph import background, controls, react_flow
 from .state import SCALE, CombinedPart, ContextView, EditorState, InfluenceRow, scale_label
 
 # end file header
@@ -351,7 +352,14 @@ def influences() -> rx.Component:
                 rx.table.root(
                     rx.table.header(rx.table.row(
                         rx.table.column_header_cell('Instantiation'),
-                        rx.foreach(EditorState.intentions, rx.table.column_header_cell),
+                        rx.foreach(
+                            EditorState.intentions,
+                            lambda intention, index: rx.table.column_header_cell(
+                                intention,
+                                color=rx.cond(index == EditorState.selected_intention,
+                                              rx.color('accent', 11), 'inherit'),
+                                class_name='intention-column'),
+                        ),
                     )),
                     rx.table.body(rx.foreach(EditorState.influence_rows, influence_row)),
                     id='influence-table',
@@ -363,6 +371,49 @@ def influences() -> rx.Component:
         ),
         topic='influence',
         id='influences-section',
+    )
+
+
+def graph() -> rx.Component:
+    """The interactive graph of the config.
+
+    Returns:
+        rx.Component: The section.
+    """
+    return section(
+        'Graph',
+        rx.cond(
+            EditorState.graph_nodes.length() > 0,
+            rx.box(
+                react_flow(
+                    background(),
+                    controls(show_interactive=False),
+                    nodes=EditorState.graph_nodes,
+                    edges=EditorState.graph_edges,
+                    fit_view=True,
+                    nodes_draggable=False,
+                    nodes_connectable=False,
+                    elements_selectable=False,
+                    zoom_on_scroll=False,
+                    prevent_scrolling=False,
+                    min_zoom=0.2,
+                    max_zoom=2.0,
+                    on_node_click=EditorState.graph_node_click,
+                    on_edge_click=EditorState.graph_edge_click,
+                    key=EditorState.graph_key,
+                ),
+                height='460px',
+                width='100%',
+                border=f'1px solid {rx.color("gray", 5)}',
+                border_radius='8px',
+                id='graph',
+            ),
+            rx.text('Add contexts and intentions to see the graph.', color_scheme='gray'),
+        ),
+        rx.text('Click a context to show its instantiations and its influences, thicker and '
+                'more orange edges mean more influence.', size='1', color_scheme='gray'),
+        topic='influence',
+        id='graph-section',
     )
 
 
@@ -661,6 +712,7 @@ def index() -> rx.Component:
                 spacing='4',
                 width='100%',
             ),
+            graph(),
             influences(),
             combined_influences(),
             threshold(),

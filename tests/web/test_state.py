@@ -386,3 +386,29 @@ def test_save_without_file(example):
     """Without a file only download is possible."""
     call(EditorState.save_config, example)
     assert 'only possible' in example.error
+
+
+def test_graph_clicks(example):
+    """Clicking graph nodes and edges selects them in the editor."""
+    assert len(example.graph_nodes) == 6
+    call(EditorState.graph_node_click, example, 'c:2')
+    assert example.expanded_contexts == [2]
+    assert example.influence_context == '2'
+    assert len(example.graph_nodes) == 9
+    call(EditorState.graph_node_click, example, 'i:1:0')
+    assert example.influence_context == '1'
+    call(EditorState.graph_node_click, example, 't:1')
+    assert example.selected_intention == 1
+    call(EditorState.graph_edge_click, example, 'c:0->t:0')
+    assert example.influence_context == '0' and example.selected_intention == 0
+    assert example.expanded_contexts == [2]  # edges don't fold
+    call(EditorState.graph_node_click, example, 'c:2')
+    assert example.expanded_contexts == []
+
+
+def test_graph_follows_edits(example):
+    """Deleted contexts are removed from the expanded ones."""
+    call(EditorState.graph_node_click, example, 'c:2')
+    call(EditorState.delete_context, example, 2)
+    assert example.expanded_contexts == []
+    assert len(example.graph_nodes) == 4  # 2 contexts, 2 intentions, no combination
