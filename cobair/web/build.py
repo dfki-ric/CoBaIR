@@ -3,8 +3,8 @@
 Run `python -m cobair.web.build` before building the wheel. Reflex downloads the JavaScript tools it
 needs; users of the wheel don't need them.
 
-The build writes a hash of the web GUI sources to `STAMP_FILE`. In a source checkout `cobair-web`
-compares it with the current sources and rebuilds a stale frontend.
+The build writes a hash of the web GUI sources (Python modules and `assets`) to `STAMP_FILE`. In a
+source checkout `cobair-web` compares it with the current sources and rebuilds a stale frontend.
 """
 
 # System imports
@@ -31,7 +31,7 @@ NOT_IN_FRONTEND = {'build.py', 'launcher.py'}
 
 
 def source_hash(project_dir: Path = PROJECT_DIR) -> str:
-    """Hash everything the frontend is compiled from: the Python sources and the Reflex version.
+    """Hash everything the frontend is compiled from: Python sources, assets and the Reflex version.
 
     Args:
         project_dir: The Reflex project directory.
@@ -40,12 +40,13 @@ def source_hash(project_dir: Path = PROJECT_DIR) -> str:
         str: The hex digest.
     """
     digest = hashlib.sha256(metadata.version('reflex').encode())
-    for path in sorted(project_dir.rglob('*.py')):
+    for path in sorted(project_dir.rglob('*')):
         relative = path.relative_to(project_dir)
-        # build output (.web, frontend) and caches
-        generated = any(part.startswith('.') or part in ('frontend', '__pycache__')
-                        for part in relative.parts)
-        if generated or path.name in NOT_IN_FRONTEND:
+        source = path.suffix == '.py' or relative.parts[0] == 'assets'
+        # build output (.web, frontend, assets/external) and caches
+        generated = relative.parts[:2] == ('assets', 'external') or any(
+            part.startswith('.') or part in ('frontend', '__pycache__') for part in relative.parts)
+        if not source or generated or not path.is_file() or path.name in NOT_IN_FRONTEND:
             continue
         digest.update(relative.as_posix().encode())
         digest.update(path.read_bytes())

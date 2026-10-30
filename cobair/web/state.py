@@ -159,7 +159,8 @@ class EditorState(rx.State):
     error: str = ''
     #: Information about the last action (e.g. a restored draft).
     info: str = ''
-    #: Changes since the last load / save / download.
+    #: Changes not saved to `local_file` yet. Without a file it stays False: nothing is written to
+    #: disk and the draft in the browser storage keeps the changes.
     dirty: bool = False
     can_undo: bool = False
     can_redo: bool = False
@@ -268,7 +269,7 @@ class EditorState(rx.State):
         self.problems = config.validate()
         self.can_undo = bool(self._undo)
         self.can_redo = bool(self._redo)
-        self.dirty = self._saved is None or config != self._saved
+        self.dirty = bool(self.local_file) and (self._saved is None or config != self._saved)
         self.revision += 1
         self.draft = config.dumps() if config != Config() else ''
         self._sync_influences()
@@ -432,14 +433,14 @@ class EditorState(rx.State):
     def download_config(self):
         """Download the config as YAML file.
 
+        This doesn't count as saving: the file `cobair-web` was started with is not changed.
+
         Returns:
-            list: The download and the unload guard.
+            The download event.
         """
         text = self._model().dumps()
         file_name = self.file_name or 'cobair_config.yml'
-        self._saved = self._model().copy()
-        self._sync()
-        return [rx.download(data=text, filename=file_name), self._unload_guard()]
+        return rx.download(data=text, filename=file_name)
 
     @rx.event
     def save_config(self):

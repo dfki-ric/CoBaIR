@@ -1,0 +1,15 @@
+/* Foldable sections and context cards: <details> with a chevron instead of the browser marker. */
+summary.fold {
+  list-style: none;
+  cursor: pointer;
+}
+summary.fold::-webkit-details-marker {
+  display: none;
+}
+summary.fold .fold-chevron {
+  flex-shrink: 0;
+  transition: transform 0.15s;
+}
+details:not([open]) > summary.fold .fold-chevron {
+  transform: rotate(-90deg);
+}

@@ -35,6 +35,25 @@ window.addEventListener('beforeunload', (event) => {
 });
 """
 
+#: Ctrl/Cmd+Z undoes, Ctrl/Cmd+Shift+Z and Ctrl/Cmd+Y redo. Text fields keep their own undo and
+#: dialogs are left alone.
+UNDO_KEYS = """
+if (!window.cobairUndoKeys) {
+  window.cobairUndoKeys = true;
+  document.addEventListener('keydown', (event) => {
+    if (!(event.ctrlKey || event.metaKey) || event.altKey) return;
+    const key = event.key.toLowerCase();
+    if (key !== 'z' && key !== 'y') return;
+    const editing = event.target.closest &&
+      event.target.closest('input, textarea, select, [contenteditable="true"]');
+    if (editing || document.querySelector('[role="dialog"]')) return;
+    const button = document.getElementById(key === 'y' || event.shiftKey ? 'redo' : 'undo');
+    event.preventDefault();
+    if (button && !button.disabled) button.click();
+  });
+}
+"""
+
 
 def info(topic: str) -> rx.Component:
     """Return an info icon with a help text that links to the Tutorial.
@@ -53,25 +72,51 @@ def info(topic: str) -> rx.Component:
     )
 
 
+def foldable(header: rx.Component, *children, gap: str = '0.75em', **props) -> rx.Component:
+    """Return content that is folded by clicking its header (folding happens in the browser).
+
+    Buttons and links in the header keep working, they don't fold.
+
+    Args:
+        header: The always visible header row.
+        *children: The foldable content.
+        gap: Space between header and content.
+        **props: Props of the surrounding `details` element.
+
+    Returns:
+        rx.Component: The open `details` element.
+    """
+    return rx.el.details(
+        rx.el.summary(
+            rx.hstack(rx.icon('chevron-down', size=18, class_name='fold-chevron'), header,
+                      align='center', width='100%'),
+            class_name='fold',
+        ),
+        rx.vstack(*children, width='100%', padding_top=gap),
+        open=True,
+        width='100%',
+        **props,
+    )
+
+
 def section(title: str, *children, topic: str = None, actions: rx.Component = None,
             **props) -> rx.Component:
-    """Return a titled section.
+    """Return a titled section that can be folded.
 
     Args:
         title: The heading.
         *children: The content.
         topic: Optional help topic shown next to the heading.
         actions: Optional buttons on the right of the heading.
-        **props: Props of the surrounding stack.
+        **props: Props of the surrounding element.
 
     Returns:
         rx.Component: The section.
     """
-    return rx.vstack(
+    return foldable(
         rx.hstack(rx.heading(title, size='5'), info(topic) if topic else rx.fragment(),
                   rx.spacer(), actions or rx.fragment(), align='center', width='100%'),
         *children,
-        width='100%',
         **props,
     )
 
@@ -100,17 +145,20 @@ def toolbar() -> rx.Component:
         rx.cond(EditorState.local_file != '',
                 rx.button(rx.icon('save', size=16), 'Save', on_click=EditorState.save_config,
                           id='save')),
-        rx.icon_button(rx.icon('undo-2', size=16), on_click=EditorState.undo,
-                       disabled=~EditorState.can_undo, variant='soft', id='undo',
-                       aria_label='Undo'),
-        rx.icon_button(rx.icon('redo-2', size=16), on_click=EditorState.redo,
-                       disabled=~EditorState.can_redo, variant='soft', id='redo',
-                       aria_label='Redo'),
+        rx.tooltip(rx.icon_button(rx.icon('undo-2', size=16), on_click=EditorState.undo,
+                                   disabled=~EditorState.can_undo, variant='soft', id='undo',
+                                   aria_label='Undo'),
+                   content='Undo (Ctrl+Z)'),
+        rx.tooltip(rx.icon_button(rx.icon('redo-2', size=16), on_click=EditorState.redo,
+                                  disabled=~EditorState.can_redo, variant='soft', id='redo',
+                                  aria_label='Redo'),
+                   content='Redo (Ctrl+Shift+Z)'),
         rx.spacer(),
         rx.cond(EditorState.file_name != '',
                 rx.badge(EditorState.file_name, id='file-name', size='2')),
         rx.cond(EditorState.dirty,
-                rx.badge('unsaved changes', color_scheme='gray', id='dirty', size='2')),
+                rx.tooltip(rx.badge('unsaved changes', color_scheme='gray', id='dirty', size='2'),
+                           content=f'Not saved to {EditorState.local_file} yet')),
         width='100%',
         align='center',
         wrap='wrap',
@@ -160,9 +208,11 @@ def context_card(context: ContextView, index: rx.Var) -> rx.Component:
     Returns:
         rx.Component: The card.
     """
-    return rx.card(
+    return rx.card(foldable(
         rx.hstack(
             rx.heading(context.name, size='3', class_name='context-name'),
+            rx.text(f'{context.instantiations.length()} instantiations', size='1',
+                    color_scheme='gray'),
             rx.spacer(),
             rx.icon_button(rx.icon('pencil', size=14), size='1', variant='ghost',
                            on_click=EditorState.open_edit_context(index),
@@ -170,6 +220,7 @@ def context_card(context: ContextView, index: rx.Var) -> rx.Component:
             rx.icon_button(rx.icon('trash-2', size=14), size='1', variant='ghost',
                            color_scheme='red', on_click=EditorState.delete_context(index),
                            class_name='delete-context', aria_label='Delete context'),
+            align='center',
             width='100%',
         ),
         rx.foreach(
@@ -190,9 +241,8 @@ def context_card(context: ContextView, index: rx.Var) -> rx.Component:
                 align='center',
             ),
         ),
-        class_name='context-card',
-        width='100%',
-    )
+        gap='0.5em',
+    ), class_name='context-card', width='100%')
 
 
 def intention_card(intention: rx.Var, index: rx.Var) -> rx.Component:
@@ -573,8 +623,11 @@ def index() -> rx.Component:
     """
     return rx.container(
         rx.script(UNLOAD_GUARD),
+        rx.script(UNDO_KEYS),
         rx.vstack(
             rx.hstack(
+                rx.image(src='/logo.png', alt='CoBaIR logo', height='2.2em', width='auto',
+                         align_self='center', id='logo'),
                 rx.heading('CoBaIR', size='7'),
                 rx.text('Context Based Intention Recognition', color_scheme='gray'),
                 rx.spacer(),
@@ -619,5 +672,6 @@ def index() -> rx.Component:
     )
 
 
-app = rx.App()
+app = rx.App(stylesheets=['/editor.css'],
+             head_components=[rx.el.link(rel='icon', type='image/png', href='/logo.png')])
 app.add_page(index, title='CoBaIR', on_load=EditorState.on_load)

@@ -24,9 +24,13 @@ No Node.js is needed: the frontend is pre-built and part of the package.
   example of the [Tutorial](Tutorial.md#example-scenario).
 - **Download YAML** saves the config as a file. **Save** is shown when `cobair-web` was started with a file and
   writes to that file.
-- Every change is kept as a **draft in your browser**. If you close the tab without saving, the draft is restored
-  the next time you open the GUI. The browser asks before you leave the page with unsaved changes.
-- **Undo** / **Redo** step through your changes.
+- Without a file, every change is kept as a **draft in your browser** and restored the next time you open the
+  GUI, nothing gets lost when you close the tab.
+- With a file, the badge **unsaved changes** shows that the config differs from the file, and the browser asks
+  before you leave the page. *Download YAML* doesn't change that file.
+- **Undo** / **Redo** (<kbd>Ctrl</kbd>+<kbd>Z</kbd> / <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Z</kbd> or
+  <kbd>Ctrl</kbd>+<kbd>Y</kbd>) step through your changes. While you type in a field, the shortcuts undo the text.
+- Click the heading of a section or a context to fold it.
 
 The config is only sent to the `cobair-web` process that serves the page, nothing is stored on a server.
 

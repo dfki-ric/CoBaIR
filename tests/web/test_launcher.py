@@ -24,16 +24,22 @@ def project(tmp_path):
     """
     (tmp_path / 'app.py').write_text('APP = 1\n')
     (tmp_path / 'launcher.py').write_text('LAUNCHER = 1\n')
+    (tmp_path / 'assets' / 'external').mkdir(parents=True)
+    (tmp_path / 'assets' / 'logo.png').write_bytes(b'logo')
+    (tmp_path / 'assets' / 'external' / 'generated.js').write_text('x = 1')
+    (tmp_path / 'examples').mkdir()
+    (tmp_path / 'examples' / 'example.yml').write_text('contexts: {}\n')
     for generated in ('frontend', '.web', '__pycache__'):
         (tmp_path / generated).mkdir()
         (tmp_path / generated / 'generated.py').write_text('X = 1\n')
     return tmp_path
 
 
-def test_source_hash_changes_with_the_sources(project):
-    """Editing a module of the frontend changes the hash."""
+@pytest.mark.parametrize('source', ['app.py', 'assets/logo.png'])
+def test_source_hash_changes_with_the_sources(project, source):
+    """Editing a module or an asset of the frontend changes the hash."""
     before = build.source_hash(project)
-    (project / 'app.py').write_text('APP = 2\n')
+    (project / source).write_text('changed\n')
     assert build.source_hash(project) != before
 
 
@@ -41,6 +47,8 @@ def test_source_hash_ignores_build_output_and_launcher(project):
     """Build output, caches and modules that are not compiled into the frontend don't count."""
     before = build.source_hash(project)
     (project / 'launcher.py').write_text('LAUNCHER = 2\n')
+    (project / 'assets' / 'external' / 'generated.js').write_text('x = 2')
+    (project / 'examples' / 'example.yml').write_text('contexts: {a: {b: 1}}\n')
     for generated in ('frontend', '.web', '__pycache__'):
         (project / generated / 'generated.py').write_text('X = 2\n')
     assert build.source_hash(project) == before
