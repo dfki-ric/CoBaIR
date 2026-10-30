@@ -2,7 +2,14 @@ site_name: CoBaIR - Documentation
 plugins:
   - include-markdown
   - search
-  - mkdocstrings
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            docstring_style: google
+            docstring_options:
+              # the docstrings don't repeat the types of the signatures
+              warn_missing_types: false
 
 theme:
   logo: images/logo_no_text_monochrome.png
@@ -18,5 +25,6 @@ markdown_extensions:
 nav:
   - Getting started: index.md
   - Web GUI: WebGUI.md
+  - Migrating from 4.x: Migration.md
   - API Documentation: API.md
   - Tutorial: Tutorial.md

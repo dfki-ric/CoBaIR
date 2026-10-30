@@ -1,5 +1,9 @@
 # Test Protocol
 
+Manual tests of the **Qt configurator** (`cobair-qt`), performed before every release.
+The web GUI (`cobair-web`) is tested automatically by the end-to-end tests in `tests/web/test_e2e.py`, which cover
+the corresponding rows of this protocol.
+
 
 | Starting Condition | Actions | Expected Outcome | Tested for Version|
 | --- | --- | --- | --- |
