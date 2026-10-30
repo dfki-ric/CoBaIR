@@ -5,6 +5,7 @@
 <!-- badges:start -->
 [![Ruff linting issues](https://img.shields.io/badge/Ruff%20linting%20issues-594%20issues-yellow)](https://github.com/dfki-ric/CoBaIR/actions/workflows/quality.yml)
 [![Docstring coverage](https://img.shields.io/badge/Docstring%20coverage-98.1%25-brightgreen)](https://github.com/dfki-ric/CoBaIR/actions/workflows/quality.yml)
+[![Test coverage](https://img.shields.io/badge/Test%20coverage-72.8%25-yellow)](https://github.com/dfki-ric/CoBaIR/actions/workflows/quality.yml)
 <!-- badges:end -->
 
 CoBaIR is a python library for **Co**ntext **Ba**sed **I**ntention **R**ecognition.
@@ -188,13 +189,16 @@ To show results of the coverage analysis.
 The [Quality workflow](https://github.com/dfki-ric/CoBaIR/actions/workflows/quality.yml) runs on every Pull Request into `main` and on pushes to `main` and counts
 [ruff](https://docs.astral.sh/ruff/) linting issues and the docstring coverage measured by
 [interrogate](https://interrogate.readthedocs.io/). Both tools are configured in `pyproject.toml` and are part of the
-test dependencies. Run them locally with
+test dependencies. It also measures the test coverage of the `cobair` package with all extras installed (the tests
+themselves don't count, unlike in the CI job summary). Run them locally with
 ```bash
 ruff check .
 interrogate -c pyproject.toml .
+pip install -e ".[all]"
+coverage run --source=cobair -m pytest tests/ && coverage report
 ```
 The workflow works as a ratchet against `.github/quality-baseline.json`: it fails if the number of ruff issues goes up
-or the docstring coverage goes down. If the numbers improved, lower `ruff_issues` / raise `doc_coverage` in the
+or the docstring coverage goes down (the test coverage is only shown). If the numbers improved, lower `ruff_issues` / raise `doc_coverage` in the
 baseline in the same Pull Request to lock the improvement in. The badges at the top of this README are only
 committed by the workflow on `main`; on other branches and Pull Requests the numbers are shown in the job summary.
 

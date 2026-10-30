@@ -23,18 +23,19 @@ def test_shield_escapes_label_and_message():
     (100, "brightgreen"), (90, "brightgreen"), (89.9, "green"), (75, "green"),
     (60, "yellow"), (50, "orange"), (49.9, "red"), (0, "red"),
 ])
-def test_docs_color(pct, color):
-    """Docstring coverage maps to the expected color."""
-    assert update_badges.docs_color(pct) == color
+def test_percent_color(pct, color):
+    """A coverage maps to the expected color."""
+    assert update_badges.percent_color(pct) == color
 
 
 def test_badges_lint_passing_and_issues():
     """Zero ruff issues show as passing, others as a count."""
-    assert "passing-brightgreen" in update_badges.badges(0, 100.0, LINK)
-    block = update_badges.badges(779, 94.5, LINK)
+    assert "passing-brightgreen" in update_badges.badges(0, 100.0, 100.0, LINK)
+    block = update_badges.badges(779, 94.5, 72.3, LINK)
     assert "779%20issues-yellow" in block
     assert "94.5%25-brightgreen" in block
-    assert len(block.splitlines()) == 2
+    assert "Test%20coverage-72.3%25-yellow" in block
+    assert len(block.splitlines()) == 3
 
 
 def test_replace_block_keeps_surrounding_text():
@@ -57,8 +58,10 @@ def test_main_rewrites_readme(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     monkeypatch.setenv("LINT", "3")
     monkeypatch.setenv("DOCS", "80")
+    monkeypatch.setenv("COVERAGE", "91.2")
     monkeypatch.setenv("BADGE_LINK", LINK)
     update_badges.main()
     text = readme.read_text(encoding="utf-8")
     assert "3%20issues-yellow" in text
     assert "80%25-green" in text
+    assert "Test%20coverage-91.2%25-brightgreen" in text

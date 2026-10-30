@@ -16,6 +16,9 @@ concurrency:
 jobs:
   quality:
     runs-on: ubuntu-latest
+    env:
+      # CPU-only torch (pulled in by pgmpy/bnlearn), the CUDA wheels fill the runner's disk
+      PIP_EXTRA_INDEX_URL: https://download.pytorch.org/whl/cpu
     steps:
       - uses: actions/checkout@v7
 
@@ -45,10 +48,32 @@ jobs:
           echo "pct=$PCT" >> "$GITHUB_OUTPUT"
           echo "Docstring coverage: $PCT%"
 
+      - name: Install CoBaIR with all extras
+        run: |
+          # system libraries for the Qt configurator tests (offscreen platform)
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libgl1 libegl1 libxkbcommon0 libdbus-1-3 libfontconfig1 libglib2.0-0
+          pip install --upgrade pip
+          pip install -r requirements/test_requirements.txt -e .[all]
+
+      - name: Measure test coverage
+        id: coverage
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: |
+          # only the package, with all extras so the web GUI counts too; failing tests are reported by CI
+          coverage run --source=cobair -m pytest tests/ -q -p no:cacheprovider || true
+          coverage report | tee coverage.txt
+          coverage json -q -o coverage.json
+          PCT=$(python -c "import json; print(round(json.load(open('coverage.json'))['totals']['percent_covered'], 1))")
+          echo "pct=$PCT" >> "$GITHUB_OUTPUT"
+          echo "Test coverage: $PCT%"
+
       - name: Enforce ratchet
         env:
           LINT: ${{ steps.ruff.outputs.count }}
           DOCS: ${{ steps.docs.outputs.pct }}
+          COVERAGE: ${{ steps.coverage.outputs.pct }}
         run: |
           BASE_LINT=$(jq -r .ruff_issues .github/quality-baseline.json)
           BASE_DOCS=$(jq -r .doc_coverage .github/quality-baseline.json)
@@ -57,6 +82,7 @@ jobs:
             echo "|---|---|---|"
             echo "| Ruff issues | $BASE_LINT | $LINT |"
             echo "| Docstring coverage | $BASE_DOCS % | $DOCS % |"
+            echo "| Test coverage (cobair) | - | $COVERAGE % |"
           } >> "$GITHUB_STEP_SUMMARY"
           FAIL=0
           if [ "$LINT" -gt "$BASE_LINT" ]; then
@@ -72,10 +98,11 @@ jobs:
 
       - name: Update README badges
         id: badges
-        if: ${{ !cancelled() && steps.ruff.outputs.count != '' && steps.docs.outputs.pct != '' }}
+        if: ${{ !cancelled() && steps.ruff.outputs.count != '' && steps.docs.outputs.pct != '' && steps.coverage.outputs.pct != '' }}
         env:
           LINT: ${{ steps.ruff.outputs.count }}
           DOCS: ${{ steps.docs.outputs.pct }}
+          COVERAGE: ${{ steps.coverage.outputs.pct }}
           BADGE_LINK: ${{ github.server_url }}/${{ github.repository }}/actions/workflows/quality.yml
         run: |
           python .github/scripts/update_badges.py
