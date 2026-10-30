@@ -185,7 +185,7 @@ You can as well see the coverage for a specific run in the job summary of the [G
 To show results of the coverage analysis.
 
 ## Code quality
-The [Quality workflow](https://github.com/dfki-ric/CoBaIR/actions/workflows/quality.yml) runs on every push and every Pull Request and counts
+The [Quality workflow](https://github.com/dfki-ric/CoBaIR/actions/workflows/quality.yml) runs on every Pull Request into `main` and on pushes to `main` and counts
 [ruff](https://docs.astral.sh/ruff/) linting issues and the docstring coverage measured by
 [interrogate](https://interrogate.readthedocs.io/). Both tools are configured in `pyproject.toml` and are part of the
 test dependencies. Run them locally with
