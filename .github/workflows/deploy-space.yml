@@ -1,0 +1,44 @@
+name: deploy_space
+# Deploys the web GUI to the Hugging Face Docker Space on every release tag (#208).
+# Needs the secret HF_TOKEN and the variable HF_SPACE (e.g. dfki-ric/cobair-editor), see #200.
+on:
+  push:
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      HF_TOKEN: ${{ secrets.HF_TOKEN }}
+      HF_SPACE: ${{ vars.HF_SPACE }}
+      # CPU-only torch (pulled in by pgmpy/bnlearn), the CUDA wheels fill the runner's disk
+      PIP_EXTRA_INDEX_URL: https://download.pytorch.org/whl/cpu
+    steps:
+      - name: Check the Hugging Face settings
+        id: settings
+        run: |
+          if [ -z "$HF_TOKEN" ] || [ -z "$HF_SPACE" ]; then
+            echo "::notice::HF_TOKEN or HF_SPACE is not set, the Space is not deployed (see issue #200)"
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/checkout@v7
+        if: steps.settings.outputs.ready == 'true'
+      - uses: actions/setup-python@v7
+        if: steps.settings.outputs.ready == 'true'
+        with:
+          python-version: "3.11"
+      - name: Build the wheel with the web GUI frontend
+        if: steps.settings.outputs.ready == 'true'
+        run: |
+          pip install build huggingface_hub
+          pip install -e .[web]
+          python -m cobair.web.build
+          # setup.py takes the version from the tag (GITHUB_REF_NAME)
+          python -m build --wheel
+      - name: Upload to the Space
+        if: steps.settings.outputs.ready == 'true'
+        run: python deploy/hf-space/deploy.py "$HF_SPACE" "$GITHUB_REF_NAME"

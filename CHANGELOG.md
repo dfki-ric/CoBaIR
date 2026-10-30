@@ -5,6 +5,7 @@ Versions follow [semantic versioning](https://semver.org/); see [CONTRIBUTING.md
 References like `GitLab MR !123` point to the former internal GitLab project.
 
 ## Unreleased
+- the web GUI is deployed to a Hugging Face Docker Space on every release tag (`deploy/hf-space`, workflow `deploy_space`); CI builds and smoke-tests the Space image (#208) (patch)
 - web GUI live inference: evidence per context (or unknown), bar chart of the intention probabilities with the decision threshold and the recognized intention, graph highlights the evidence and colors the intentions (#207) (minor)
 - web GUI graph (React Flow): contexts, intentions and combined influences, edge thickness/color show the influence, clicking unfolds contexts and selects them in the editor (#182) (minor)
 - the CI workflow is split into the workflows Tests (with the coverage badge), Build and Docs (#233) (patch)
