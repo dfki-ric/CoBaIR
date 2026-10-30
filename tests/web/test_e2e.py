@@ -144,7 +144,6 @@ def test_apriori_undo_redo(page):
     assert 'human activity' in page.text_content('#problems')
     # without a file there is nothing unsaved: the draft is kept in the browser
     assert page.locator('#dirty').count() == 0
-    assert not page.evaluate('window.cobairDirty')
     page.click('#undo')
     page.wait_for_selector('#valid')
     assert field(page, '.apriori-input').first.input_value() == '0.2'
@@ -237,6 +236,47 @@ def test_graph(page):
     page.wait_for_function(
         "getComputedStyle(document.querySelectorAll('.intention-column')[1]).color "
         "!== getComputedStyle(document.querySelectorAll('.intention-column')[0]).color")
+
+
+def test_live_inference(page):
+    """Evidence selects change the chart and the recognized intention (#207)."""
+    load_example(page)
+    page.click('#tab-inference')
+    page.wait_for_selector('#recognized')
+    assert page.text_content('#recognized') == \
+        'No intention above the decision threshold (80%)'
+    selects = page.locator('.evidence-select')
+    choose(page, selects.nth(2), 'pickup')
+    choose(page, selects.nth(0), 'working')
+    choose(page, selects.nth(1), 'True')
+    page.wait_for_function(
+        "document.querySelector('#recognized').textContent === 'Recognized: pick up tool (95%)'")
+    assert page.locator('#inference-chart .recharts-bar-rectangle').count() == 2
+    page.wait_for_selector('#graph .react-flow__node:has-text("pick up tool 95%")')
+    page.click('#reset-evidence')
+    page.wait_for_function(
+        "document.querySelector('#recognized').textContent.startsWith('No intention')")
+
+
+def test_inference_needs_valid_config(page):
+    """An invalid config shows a hint instead of the inference."""
+    page.click('#tab-inference')
+    page.wait_for_selector('#inference-error')
+    assert 'Fix the problems' in page.text_content('#inference-error')
+
+
+def test_leaving_without_file_does_not_ask(page):
+    """Without a file the browser draft keeps the changes, so leaving doesn't ask (beforeunload)."""
+    load_example(page)
+    page.fill('#threshold', '0.5')
+    page.locator('#threshold').blur()
+    page.wait_for_selector('#undo:not([disabled])')
+    dialogs = []
+    page.on('dialog', lambda dialog: (dialogs.append(dialog.type), dialog.dismiss()))
+    page.close(run_before_unload=True)
+    if not page.is_closed():
+        page.wait_for_event('close', timeout=5000)
+    assert page.is_closed() and not dialogs  # a dismissed beforeunload dialog keeps the page open
 
 
 def test_undo_redo_keys(page):
