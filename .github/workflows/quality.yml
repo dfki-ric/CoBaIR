@@ -78,17 +78,25 @@ jobs:
           DOCS: ${{ steps.docs.outputs.pct }}
           BADGE_LINK: ${{ github.server_url }}/${{ github.repository }}/actions/workflows/quality.yml
         run: |
-          python .github/scripts/update_badges.py
+          python .github/scripts/update_badges.py quality
           git diff README.md
 
       - name: Commit badges to the branch
         # Fork PRs get a read-only token, so they only see the badges in the job log.
         if: ${{ !cancelled() && steps.badges.outcome == 'success' && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        env:
+          LINT: ${{ steps.ruff.outputs.count }}
+          DOCS: ${{ steps.docs.outputs.pct }}
+          BADGE_LINK: ${{ github.server_url }}/${{ github.repository }}/actions/workflows/quality.yml
         run: |
-          if git diff --quiet README.md; then
-            echo "Badges unchanged"; exit 0
-          fi
           git config user.name "github-actions[bot]"
           git config user.email "41898333+github-actions[bot]@users.noreply.github.com"
-          git commit README.md -m "Update README badges"
-          git push || echo "::warning::Branch moved during the run; the next run will refresh the badges."
+          # Tests commits the coverage badge: if it pushed first, rewrite only our block on top of it
+          for attempt in 1 2 3; do
+            python .github/scripts/update_badges.py quality
+            if git diff --quiet README.md; then echo "Badges unchanged"; exit 0; fi
+            git commit -q README.md -m "Update README badges"
+            git push && exit 0
+            git fetch -q --depth=1 origin main && git reset -q --hard FETCH_HEAD
+          done
+          echo "::warning::Could not push the badges; the next run will refresh them."

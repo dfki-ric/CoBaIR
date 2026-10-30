@@ -1,0 +1,47 @@
+name: Build
+# the wheel with the pre-built web GUI frontend, served from a clean install
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build_installable_package:
+    # on the runner (not in a container): Reflex needs curl/unzip to fetch bun for the frontend build
+    runs-on: ubuntu-latest
+    env:
+      # CPU-only torch (pulled in by pgmpy/bnlearn), the CUDA wheels fill the runner's disk
+      PIP_EXTRA_INDEX_URL: https://download.pytorch.org/whl/cpu
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+      - run: pip install --upgrade pip build
+      - run: pip install -e .[web]
+      # the wheel ships the pre-built web GUI frontend
+      - run: python -m cobair.web.build
+      - run: python -m build
+      - name: Check the wheel contains the frontend
+        run: unzip -l dist/*.whl | grep -q 'cobair/web/frontend/index.html'
+      - name: Install the wheel in a clean venv
+        run: |
+          python -m venv /tmp/wheel-venv
+          /tmp/wheel-venv/bin/pip install --upgrade pip
+          if ! /tmp/wheel-venv/bin/pip install "$(ls dist/*.whl)[web]" > pip.log 2>&1; then
+            cat pip.log
+            python -c "t = open('pip.log', errors='replace').read()[-3000:]; print('::error title=pip install of the wheel::' + t.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A'))"
+            exit 1
+          fi
+      - name: Serve the web GUI from the installed wheel (no Node.js)
+        run: |
+          (cd /tmp && PATH=/tmp/wheel-venv/bin:/usr/bin:/bin timeout 300 cobair-web --port 8123 --no-browser > /tmp/cobair-web.log 2>&1 &)
+          for i in $(seq 1 90); do curl -sf -o /dev/null http://localhost:8123/ping && curl -sf -o /dev/null http://localhost:8123/ && exit 0; sleep 2; done
+          cat /tmp/cobair-web.log
+          # annotations are readable without the log; %, CR and LF must be escaped
+          python -c "import sys; t = open('/tmp/cobair-web.log', errors='replace').read()[-3000:]; print('::error title=cobair-web from the wheel::' + t.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A'))"
+          exit 1
+      - uses: actions/upload-artifact@v7
+        with:
+          name: dist
+          path: dist

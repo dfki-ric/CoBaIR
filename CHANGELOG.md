@@ -5,6 +5,8 @@ Versions follow [semantic versioning](https://semver.org/); see [CONTRIBUTING.md
 References like `GitLab MR !123` point to the former internal GitLab project.
 
 ## Unreleased
+- the CI workflow is split into the workflows Tests (with the coverage badge), Build and Docs (#233) (patch)
+- README badge for the test coverage of the `cobair` package: the CI workflow combines the coverage of the Python 3.12 tests (now with all extras on Python >= 3.11) and the end-to-end tests including the `cobair-web` server process (#231) (patch)
 - web GUI editor: edit contexts, intentions, apriori probabilities, influences (human readable scale, #144), combined influences and the decision threshold; undo/redo; download YAML; `cobair-web config.yml` opens a file and saves to it; drafts are autosaved in the browser; warning before leaving with unsaved changes; info tooltips link to the Tutorial (minor)
 - web GUI editor: editing an apriori probability or the decision threshold no longer takes the focus from the next input, also while the config is invalid in between (patch)
 - web GUI editor: logo in the header and as favicon; sections and contexts can be folded; Ctrl+Z / Ctrl+Shift+Z / Ctrl+Y undo and redo; "unsaved changes" and the warning before leaving are only shown when `cobair-web` was started with a file, because without one the draft in the browser keeps all changes (patch)
