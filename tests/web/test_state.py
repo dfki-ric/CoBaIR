@@ -166,22 +166,21 @@ def test_set_apriori_and_undo_redo(example):
     """Apriori values change the config, undo/redo restore it."""
     call(EditorState.set_apriori, example, 2, 0, '0,3')  # speech commands.handover
     assert model(example).contexts['speech commands']['handover'] == 0.3
-    assert example.dirty and example.can_undo and not example.can_redo
+    assert example.can_undo and not example.can_redo
     assert any('speech commands' in problem for problem in example.problems)
     call(EditorState.undo, example)
     assert model(example) == Config.loads(read_example())
-    assert not example.dirty and example.can_redo
+    assert not example.can_undo and example.can_redo
     call(EditorState.redo, example)
     assert model(example).contexts['speech commands']['handover'] == 0.3
 
 
 def test_set_apriori_invalid(example):
     """Text that is no number shows an error and changes nothing."""
-    revision = example.revision
-    call(EditorState.set_apriori, example, 0, 0, 'abc')
+    events = call(EditorState.set_apriori, example, 0, 0, 'abc')
     assert 'is not a number' in example.error
     assert model(example) == Config.loads(read_example())
-    assert example.revision > revision  # the input shows the old value again
+    assert events is not None  # the input shows the old value again
     assert not example.can_undo
 
 
@@ -330,12 +329,11 @@ def test_combined_dialog_errors(example):
     assert 'at least two contexts' in example.error
 
 
-def test_download_marks_saved(example):
-    """Downloading counts as saving."""
+def test_no_unsaved_changes_without_file(example):
+    """Without a file nothing is saved to disk, so there are no unsaved changes to warn about."""
     call(EditorState.set_threshold, example, '0.5')
-    assert example.dirty
-    assert call(EditorState.download_config, example) is not None
     assert not example.dirty
+    assert call(EditorState.download_config, example)
 
 
 def test_draft_is_autosaved_and_restored(state):
@@ -347,7 +345,6 @@ def test_draft_is_autosaved_and_restored(state):
     restored.draft = state.draft
     call(EditorState.on_load, restored)
     assert model(restored).decision_threshold == 0.6
-    assert restored.dirty
     assert 'draft was restored' in restored.info
     call(EditorState.on_load, restored)  # only once per session
     assert restored.info
@@ -361,7 +358,11 @@ def test_local_file(state, tmp_path, monkeypatch):
     call(EditorState.on_load, state)
     assert state.local_file == str(path)
     assert state.file_name == 'mine.yml'
+    assert not state.dirty
     call(EditorState.set_threshold, state, '0.3')
+    assert state.dirty
+    call(EditorState.download_config, state)
+    assert state.dirty  # the file is not changed by a download
     call(EditorState.save_config, state)
     assert not state.dirty
     assert Config.load(path).decision_threshold == 0.3

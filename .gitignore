@@ -150,4 +150,4 @@ cobair/web/.states/
 cobair/web/requirements.txt
 cobair/web/reflex.lock/
 cobair/web/uploaded_files/
-cobair/web/assets/
+cobair/web/assets/external/
