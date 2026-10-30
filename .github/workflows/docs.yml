@@ -1,0 +1,21 @@
+name: Docs
+# the documentation builds; publishDocu.yml deploys it on release
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build_docu:
+    runs-on: ubuntu-latest
+    container: python:3.11-bookworm
+    steps:
+      - uses: actions/checkout@v7
+      - run: pip install --upgrade pip
+      - run: pip install -r requirements/doc_requirements.txt
+      - run: pip install .[infer,qt]
+      - run: mkdocs build --strict
+      - uses: actions/upload-artifact@v7
+        with:
+          name: site
+          path: site
