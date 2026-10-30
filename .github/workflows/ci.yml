@@ -25,9 +25,11 @@ jobs:
       - run: apt-get update && apt-get install -y --no-install-recommends libgl1 libegl1 libxkbcommon0 libdbus-1-3 libfontconfig1 libglib2.0-0
       - run: pip install --upgrade pip
       - run: pip install -r requirements/test_requirements.txt
-      - run: pip install .[infer,qt]
+      # Reflex needs Python >= 3.11; with [all] the web GUI state tests run too
+      - run: pip install ".[${{ matrix.python-version == '3.10' && 'infer,qt' || 'all' }}]"
       - run: coverage run -m pytest tests/ --html=test_report/report.html --junitxml=report.xml
       - run: |
+          coverage combine
           coverage report | tee coverage.txt
           echo '```' >> "$GITHUB_STEP_SUMMARY"
           cat coverage.txt >> "$GITHUB_STEP_SUMMARY"
@@ -44,6 +46,12 @@ jobs:
             coverage.xml
             htmlcov
             test_report
+      - uses: actions/upload-artifact@v7
+        if: always() && matrix.python-version == '3.12'
+        with:
+          name: coverage-data-tests
+          path: .coverage
+          include-hidden-files: true
 
   build_docu:
     runs-on: ubuntu-latest
@@ -98,9 +106,67 @@ jobs:
       - run: pip install -r requirements/test_requirements.txt -e .[web] playwright==1.64.1
       - run: python -m cobair.web.build
       - run: python -m playwright install --with-deps chromium
-      - run: pytest tests/web --html=test_report/report.html
+      # coverage follows `cobair-web` into its server processes (see [tool.coverage.run])
+      - run: coverage run -m pytest tests/web --html=test_report/report.html
+      - run: coverage combine
+        if: always()
       - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: web-e2e-report
           path: test_report
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: coverage-data-e2e
+          path: .coverage
+          include-hidden-files: true
+
+  coverage:
+    # coverage of the cobair package by all tests (Python 3.12 with all extras and the end-to-end
+    # tests with the cobair-web server), shown as README badge
+    needs: [run_tests, web_e2e]
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - run: pip install coverage
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: coverage-data-*
+          path: coverage-data
+      - name: Combine and report
+        id: coverage
+        run: |
+          coverage combine $(find coverage-data -name .coverage)
+          coverage report | tee coverage.txt
+          PCT=$(coverage json -q -o - | python -c "import json, sys; print(round(json.load(sys.stdin)['totals']['percent_covered'], 1))")
+          echo "pct=$PCT" >> "$GITHUB_OUTPUT"
+          {
+            echo "### Test coverage of cobair: $PCT %"
+            echo '```'
+            cat coverage.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Commit the coverage badge
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          COVERAGE: ${{ steps.coverage.outputs.pct }}
+          BADGE_LINK: ${{ github.server_url }}/${{ github.repository }}/actions/workflows/ci.yml
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898333+github-actions[bot]@users.noreply.github.com"
+          # Quality commits the other badges: if it pushed first, rewrite only our block on top of it
+          for attempt in 1 2 3; do
+            python .github/scripts/update_badges.py coverage
+            if git diff --quiet README.md; then echo "Badge unchanged"; exit 0; fi
+            git commit -q README.md -m "Update README coverage badge"
+            git push && exit 0
+            git fetch -q --depth=1 origin main && git reset -q --hard FETCH_HEAD
+          done
+          echo "::warning::Could not push the coverage badge; the next run will refresh it."

@@ -1,12 +1,18 @@
-"""Rewrite the README badge block from the LINT, DOCS, COVERAGE and BADGE_LINK environment vars."""
+"""Rewrite a README badge block from environment variables.
+
+`update_badges.py quality` writes the ruff and docstring badges (LINT, DOCS, BADGE_LINK) between
+`<!-- badges:start/end -->`, `update_badges.py coverage` the test coverage badge (COVERAGE,
+BADGE_LINK) between `<!-- coverage-badge:start/end -->`. The Quality and the CI workflow each
+rewrite only their own block, so they don't overwrite each other's numbers.
+"""
 
 import os
 import re
+import sys
 from pathlib import Path
 from urllib.parse import quote
 
 README = Path("README.md")
-BLOCK = re.compile(r"(<!-- badges:start -->\n).*?(<!-- badges:end -->)", re.DOTALL)
 
 
 def shield(label: str, message: str, color: str, link: str) -> str:
@@ -42,13 +48,12 @@ def percent_color(pct: float) -> str:
     return "red"
 
 
-def badges(lint: int, docs: float, coverage: float, link: str) -> str:
-    """Return the markdown of all quality badges.
+def badges(lint: int, docs: float, link: str) -> str:
+    """Return the markdown of the quality badges.
 
     Args:
         lint: Number of ruff issues.
         docs: Docstring coverage in percent.
-        coverage: Test coverage of the cobair package in percent.
         link: URL the badges link to.
 
     Returns:
@@ -58,33 +63,61 @@ def badges(lint: int, docs: float, coverage: float, link: str) -> str:
         shield("Ruff linting issues", "passing" if lint == 0 else f"{lint} issues",
                "brightgreen" if lint == 0 else "yellow", link),
         shield("Docstring coverage", f"{docs:g}%", percent_color(docs), link),
-        shield("Test coverage", f"{coverage:g}%", percent_color(coverage), link),
     ])
 
 
-def replace_block(text: str, block: str) -> str:
-    """Replace the content between the badge markers.
+def coverage_badge(coverage: float, link: str) -> str:
+    """Return the markdown of the test coverage badge.
+
+    Args:
+        coverage: Test coverage of the cobair package in percent.
+        link: URL the badge links to.
+
+    Returns:
+        The badge.
+    """
+    return shield("Test coverage", f"{coverage:g}%", percent_color(coverage), link)
+
+
+def replace_block(text: str, block: str, name: str = "badges") -> str:
+    """Replace the content between the markers `<!-- name:start -->` and `<!-- name:end -->`.
 
     Args:
         text: The README content.
         block: The new content between the markers.
+        name: The name of the markers.
 
     Returns:
-        The README content with the new badge block.
+        The README content with the new block.
 
     Raises:
-        SystemExit: If the README has no badge markers.
+        SystemExit: If the README has no such markers.
     """
-    if not BLOCK.search(text):
-        raise SystemExit("README.md is missing the <!-- badges:start/end --> markers")
-    return BLOCK.sub(lambda m: f"{m[1]}{block}\n{m[2]}", text, count=1)
+    pattern = re.compile(rf"(<!-- {name}:start -->\n).*?(<!-- {name}:end -->)", re.DOTALL)
+    if not pattern.search(text):
+        raise SystemExit(f"README.md is missing the <!-- {name}:start/end --> markers")
+    return pattern.sub(lambda m: f"{m[1]}{block}\n{m[2]}", text, count=1)
 
 
-def main() -> None:
-    """Replace the content between the badge markers in README.md."""
+def main(argv: list = None) -> None:
+    """Replace the content of one badge block in README.md.
+
+    Args:
+        argv: `["quality"]` or `["coverage"]`, defaults to the command line arguments.
+
+    Raises:
+        SystemExit: If the argument is neither quality nor coverage.
+    """
+    argv = sys.argv[1:] if argv is None else argv
     env = os.environ
-    block = badges(int(env["LINT"]), float(env["DOCS"]), float(env["COVERAGE"]), env["BADGE_LINK"])
-    README.write_text(replace_block(README.read_text(encoding="utf-8"), block), encoding="utf-8")
+    if argv == ["quality"]:
+        name, block = "badges", badges(int(env["LINT"]), float(env["DOCS"]), env["BADGE_LINK"])
+    elif argv == ["coverage"]:
+        name, block = "coverage-badge", coverage_badge(float(env["COVERAGE"]), env["BADGE_LINK"])
+    else:
+        raise SystemExit("usage: update_badges.py quality|coverage")
+    README.write_text(replace_block(README.read_text(encoding="utf-8"), block, name),
+                      encoding="utf-8")
 
 
 if __name__ == "__main__":

@@ -91,3 +91,20 @@ ignore-module = false
 fail-under = 0
 exclude = ["build", "site", "docs", "scripts"]
 verbose = 1
+
+[tool.coverage.run]
+# only the package, not the tests
+source = ["cobair"]
+# Reflex reads a copy of it in the runtime directory of `cobair-web`
+omit = ["*/cobair/web/rxconfig.py"]
+# data of the CI jobs is combined, their checkouts are in different directories
+relative_files = true
+# the end-to-end tests start `cobair-web`, which starts gunicorn, which forks the worker
+parallel = true
+patch = ["subprocess", "fork", "_exit"]
+# the tests stop `cobair-web` with SIGTERM
+sigterm = true
+
+[tool.coverage.paths]
+# the gunicorn processes of `cobair-web` run in a temporary directory and record absolute paths
+source = ["cobair/", "*/cobair/"]
