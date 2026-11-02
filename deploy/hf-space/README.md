@@ -23,5 +23,5 @@ pip install "cobair[web]"
 cobair-web
 ```
 
-This Space is deployed automatically from the release tags of the GitHub repository, see the
+This Space is deployed automatically from the GitHub Releases of the GitHub repository, see the
 [documentation](https://dfki-ric.github.io/CoBaIR/).

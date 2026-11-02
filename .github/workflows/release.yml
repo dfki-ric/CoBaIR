@@ -1,11 +1,11 @@
 name: release
+# Publishing a GitHub Release (tag 5.0.0 or v5.0.0) uploads the package to PyPI and attaches it to the release.
 on:
-  push:
-    tags:
-      - '[0-9]+.[0-9]+.[0-9]+'
+  release:
+    types: [published]
 
 jobs:
-  upload_pypi:
+  build:
     # on the runner (not in a container): Reflex needs curl/unzip to fetch bun for the frontend build
     runs-on: ubuntu-latest
     env:
@@ -20,9 +20,43 @@ jobs:
       # the wheel ships the pre-built web GUI frontend
       - run: pip install -e .[web]
       - run: python -m cobair.web.build
-      # setup.py takes the version from the tag (GITHUB_REF_NAME)
+      # setup.py takes the version from the tag (GITHUB_REF_NAME, without a leading v)
       - run: python -m build
-      - run: twine upload --verbose dist/*
+      - run: twine check --strict dist/*
+      - uses: actions/upload-artifact@v7
+        with:
+          name: dist
+          path: dist/
+
+  upload_pypi:
+    needs: build
+    runs-on: ubuntu-latest
+    # PyPI Trusted Publishing: the project cobair on pypi.org trusts this workflow in the environment pypi
+    environment:
+      name: pypi
+      url: https://pypi.org/project/cobair/
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: dist/
+      # without the secret PYPI_API_TOKEN the action uses Trusted Publishing
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.PYPI_API_TOKEN }}
+
+  attach_to_release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: dist/
+      - run: gh release upload "$GITHUB_REF_NAME" dist/* --repo "$GITHUB_REPOSITORY"
         env:
-          TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
