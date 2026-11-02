@@ -11,7 +11,7 @@ from setuptools import setup
 __author__ = 'Adrian Lubitz'
 
 
-# use the release tag (5.0.0 or v5.0.0) as version when building in a GitHub Actions release pipeline
+# use the release tag (5.0.0 or v5.0.0) as version when building in a GitHub Actions release
 if os.environ.get('GITHUB_REF_TYPE') == 'tag':
     VERSION = os.environ['GITHUB_REF_NAME'].removeprefix('v')
 else:
