@@ -7,12 +7,16 @@ permissions:
   contents: write
 jobs:
   deploy:
+    # on the runner, not in a container: in a container the checkout belongs to another user
+    # than root, and git refuses to work there ("not in a git directory")
     runs-on: ubuntu-latest
-    container: python:3.11-bookworm
     steps:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0  # gh-deploy needs the gh-pages branch
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
       - run: pip install --upgrade pip
       - run: pip install --group docs .[infer,qt]
       - run: |

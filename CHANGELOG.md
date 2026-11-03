@@ -5,6 +5,7 @@ Versions follow [semantic versioning](https://semver.org/); see [CONTRIBUTING.md
 References like `GitLab MR !123` point to the former internal GitLab project.
 
 ## Unreleased
+- publishing the docu works again: the job runs on the runner instead of a container, where git refused the checkout (#239) (patch)
 
 ## 5.0.0 - 2026-11-03
 - releases are created by publishing a GitHub Release (tag `vX.Y.Z` or `X.Y.Z`): it triggers the PyPI upload (Trusted Publishing, wheel and sdist attached to the release) and the docu deployment (#235) (patch)
