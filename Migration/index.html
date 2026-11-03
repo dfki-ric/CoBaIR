@@ -1,0 +1,681 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../WebGUI/">
+      
+      
+        <link rel="next" href="../API/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../images/logo_no_text.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.0">
+    
+    
+      
+        <title>Migrating from 4.x - CoBaIR - Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.57a0d79d.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.fb2fffe2.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="orange" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#migrating-from-4x-to-50" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="CoBaIR - Documentation" class="md-header__button md-logo" aria-label="CoBaIR - Documentation" data-md-component="logo">
+      
+  <img src="../images/logo_no_text_monochrome.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            CoBaIR - Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Migrating from 4.x
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="CoBaIR - Documentation" class="md-nav__button md-logo" aria-label="CoBaIR - Documentation" data-md-component="logo">
+      
+  <img src="../images/logo_no_text_monochrome.png" alt="logo">
+
+    </a>
+    CoBaIR - Documentation
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../WebGUI/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Web GUI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Migrating from 4.x
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Migrating from 4.x
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#install" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Install
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#imports-and-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Imports and API
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#config-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Config files
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#changed-behaviour" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed behaviour
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Documentation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Tutorial/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tutorial
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#install" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Install
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#imports-and-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Imports and API
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#config-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Config files
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#changed-behaviour" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed behaviour
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="migrating-from-4x-to-50">Migrating from 4.x to 5.0</h1>
+<p>CoBaIR 5.0 splits the library into a config model and the inference, brings the web GUI and renames the package
+to lowercase <code>cobair</code>. <strong>Code written for 4.x keeps working in 5.x</strong>, it only shows <code>DeprecationWarning</code>s.
+The deprecated names are removed in 6.0.0
+(<a href="https://github.com/dfki-ric/CoBaIR/issues/199">#199</a>).</p>
+<h2 id="install">Install</h2>
+<p>5.0 needs <strong>Python ≥ 3.10</strong>. The dependencies are split into extras:</p>
+<table>
+<thead>
+<tr>
+<th>4.x</th>
+<th>5.0</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>pip install CoBaIR</code></td>
+<td><code>pip install "cobair[infer]"</code> for the inference, <code>"cobair[all]"</code> for everything</td>
+</tr>
+<tr>
+<td><code>python start_configurator.py</code></td>
+<td><code>pip install "cobair[qt]"</code>, then <code>cobair-qt</code></td>
+</tr>
+<tr>
+<td></td>
+<td><strong>new:</strong> <code>pip install "cobair[web]"</code>, then <code>cobair-web</code> (Python ≥ 3.11)</td>
+</tr>
+</tbody>
+</table>
+<p><code>pip install cobair</code> alone installs only the config model (<code>cobair.model</code>, needs only pyyaml).</p>
+<h2 id="imports-and-api">Imports and API</h2>
+<table>
+<thead>
+<tr>
+<th>4.x (deprecated)</th>
+<th>5.0</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>import CoBaIR</code></td>
+<td><code>import cobair</code></td>
+</tr>
+<tr>
+<td><code>from CoBaIR.bayes_net import BayesNet</code></td>
+<td><code>from cobair.model import Config</code> and <code>from cobair.infer import Inference</code></td>
+</tr>
+<tr>
+<td><code>load_config(path)</code></td>
+<td><code>Config.load(path)</code></td>
+</tr>
+<tr>
+<td><code>BayesNet(config)</code></td>
+<td><code>config = Config.from_dict(config)</code>, <code>inference = Inference(config)</code></td>
+</tr>
+<tr>
+<td><code>bayes_net.add_context(...)</code>, <code>edit_context</code>, <code>del_context</code>, <code>add_intention</code>, <code>edit_intention</code>, <code>del_intention</code>, <code>change_context_apriori_value</code>, <code>change_influence_value</code>, <code>add_combined_influence</code>, <code>del_combined_influence</code>, <code>change_decision_threshold</code></td>
+<td>the same methods on <code>Config</code></td>
+</tr>
+<tr>
+<td><code>bayes_net.validate_config()</code> (warnings)</td>
+<td><code>config.validate()</code> returns the problems as list, <code>config.valid</code></td>
+</tr>
+<tr>
+<td><code>bayes_net.save(path)</code></td>
+<td><code>config.save(path)</code></td>
+</tr>
+<tr>
+<td><code>bayes_net.infer(evidence)</code></td>
+<td><code>Inference(config).infer(evidence)</code></td>
+</tr>
+<tr>
+<td><code>bayes_net.bind_discretization_function(...)</code></td>
+<td><code>inference.bind_discretization_function(...)</code></td>
+</tr>
+<tr>
+<td><code>from CoBaIR.configurator import Configurator</code></td>
+<td><code>from cobair.qt import Configurator</code></td>
+</tr>
+</tbody>
+</table>
+<p>Example:</p>
+<pre><code class="language-python"># 4.x
+from CoBaIR.bayes_net import BayesNet, load_config
+net = BayesNet(load_config('my_scenario.yml'))
+intention, threshold, probabilities = net.infer({'speech commands': 'pickup'})
+
+# 5.0
+from cobair.model import Config
+from cobair.infer import Inference
+inference = Inference(Config.load('my_scenario.yml'))
+intention, threshold, probabilities = inference.infer({'speech commands': 'pickup'})
+</code></pre>
+<p><code>Inference.infer</code> returns a named tuple <code>(intention, decision_threshold, probabilities)</code>, so the 4.x unpacking
+works unchanged. An <code>Inference</code> works on a copy of the config: create a new one after editing the config.</p>
+<h2 id="config-files">Config files</h2>
+<p>The YAML format is <strong>compatible in both directions</strong>: 5.0 reads 4.x files, and 4.x reads files written by 5.0.
+Files written by 5.0 start with a comment and the keys <code>format_version</code> and <code>created_with</code>, which 4.x ignores.
+Contexts, instantiations and intentions keep their order instead of being sorted alphabetically.</p>
+<h2 id="changed-behaviour">Changed behaviour</h2>
+<p>These were bugs in 4.x. If your code relied on them, check the results:</p>
+<ul>
+<li>Editing or deleting a context no longer deletes <strong>all combined influences</strong>. Renaming a context renames it in the
+  combined influences.</li>
+<li><strong>All combinations</strong> of a context tuple count in the inference, 4.x only used the first one.
+  <code>del_combined_influence</code> removes only the given combination.</li>
+<li><strong>Discretization functions</strong> run for every evidence value that is not an instantiation. In 4.x they only ran for
+  unhashable values, so e.g. a float for a bool context was ignored with a warning.</li>
+<li>Renaming a context to the name of another context raises a <code>ValueError</code> instead of overwriting it.</li>
+<li>Apriori probabilities are checked to sum up to 1 with a small tolerance, so <code>0.1 + 0.2 + 0.7</code> is valid.
+  Integers (e.g. a decision threshold of <code>0</code>) count as numbers.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": [], "search": "../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.c21346df.min.js"></script>
+      
+    
+  </body>
+</html>

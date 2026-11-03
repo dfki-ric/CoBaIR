@@ -17,7 +17,7 @@
       
       
       <link rel="icon" href="../images/logo_no_text.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.0">
     
     
       
@@ -25,10 +25,10 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.57a0d79d.min.css">
       
         
-        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../assets/stylesheets/palette.fb2fffe2.min.css">
       
       
 
@@ -210,6 +210,60 @@
     
   
     Getting started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../WebGUI/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Web GUI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Migration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Migrating from 4.x
   
 
     
@@ -505,23 +559,6 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Graphical Representation">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#interacting-with-the-graph" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Interacting with the Graph
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
         
       </ul>
@@ -816,23 +853,6 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Graphical Representation">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#interacting-with-the-graph" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Interacting with the Graph
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
         
       </ul>
@@ -932,72 +952,119 @@ An intention is a binary value e.g. <code>repair pipe</code> that can either be 
 Context can have multiple discrete instantiations e.g. <code>weather:sunny|cloudy|raining</code>.
 If context values are continuous, discretizer functions can be used to create discrete values.</p>
 <h2 id="configuring-a-cobair-scenario-with-the-gui">Configuring a CoBaIR Scenario with the GUI</h2>
+<p>The screenshots show the <a href="../WebGUI/">web GUI</a> (<code>cobair-web</code>). The Qt configurator (<code>cobair-qt</code>) has the same
+settings in a different layout.</p>
+<p><img alt="The web GUI" src="../images/web_gui.png" title="The web GUI with the example config" /></p>
 <h3 id="apriori-probabilities">Apriori Probabilities</h3>
-<p>Apriori probabilities are initial probabilities based on prior knowledge or assumptions, indicating the likelihood of context states. These apriori probabilities will be used during inference if a specific context cannot be observed. In this case it assumed that the instantiations of the context occur with the given probabilities.  </p>
+<p>Apriori probabilities describe how likely each instantiation of a context is <strong>before anything is observed</strong>.
+They are used during inference whenever a context is not observed: CoBaIR then assumes that the instantiations
+occur with these probabilities. Once a context is observed, its apriori probabilities don't matter any more.</p>
+<p>The apriori probabilities of a context must sum up to 1. If you don't know how often the instantiations occur,
+distribute the probability equally, e.g. <code>0.5 / 0.5</code> for two instantiations.</p>
 <h4 id="setting-apriori-probabilities">Setting Apriori Probabilities</h4>
-<p>In the `Apriori Probability of Context`` section:
-1. Select a context or create a new one.
-2. Assign probabilities ensuring they sum to 1.</p>
-<p><img alt="GUI" src="../images/apriori_probability.gif" title="Setting Apriori Probabilities" /></p>
+<ul>
+<li>Add a context with <strong>Add</strong> next to <em>Contexts</em>, or edit one with its pencil icon. The dialog sets the name of the
+  context and its instantiations with their apriori probabilities.</li>
+<li>The apriori probabilities can also be changed directly in the context cards.</li>
+<li>If the probabilities of a context don't sum up to 1, the problems box above says so.</li>
+</ul>
+<p><img alt="Context dialog" src="../images/web_context_dialog.png" title="Editing a context" /></p>
 <h3 id="influence-values">Influence Values</h3>
-<p>These values indicate how much a context influences a particular intention.</p>
+<p>An influence value describes how strongly an instantiation of a context indicates an intention. The scale goes
+from 0 to 5, each value stands for the probability of the intention given only this instantiation:</p>
+<table>
+<thead>
+<tr>
+<th>value</th>
+<th>meaning</th>
+<th>probability</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>not probable</td>
+<td>0 %</td>
+</tr>
+<tr>
+<td>1</td>
+<td>not very probable</td>
+<td>5 %</td>
+</tr>
+<tr>
+<td>2</td>
+<td>somewhat probable</td>
+<td>25 %</td>
+</tr>
+<tr>
+<td>3</td>
+<td>even probability</td>
+<td>50 %</td>
+</tr>
+<tr>
+<td>4</td>
+<td>very probable</td>
+<td>75 %</td>
+</tr>
+<tr>
+<td>5</td>
+<td>definitely probable</td>
+<td>95 %</td>
+</tr>
+</tbody>
+</table>
+<p>For a combination of instantiations, CoBaIR averages these probabilities over all contexts. So every context
+contributes equally, and a single context can't decide an intention on its own. For this, use a
+<a href="#combined-context-influence">combined context influence</a>.</p>
+<p>Ask yourself for every instantiation and intention: <em>"If I only knew this, how probable would the intention
+be?"</em></p>
 <h4 id="setting-influence-values">Setting Influence Values</h4>
-<p>In the <code>Influence of Context on Intention</code> area:
-1. Choose a context and an intention.
-2. Use a slider to assign an influence value on a 0-5 scale.</p>
-<p><img alt="GUI" src="../images/influence.gif" title="Setting Influence Values" /></p>
+<p>In the <em>Influences</em> section, choose a context. The table shows its instantiations as rows and the
+intentions as columns; choose a value of the scale in every cell. New contexts and intentions start with 0.</p>
+<p><img alt="Influences" src="../images/web_influences.png" title="Influence values of a context on all intentions" /></p>
 <h3 id="decision-threshold">Decision Threshold</h3>
-<p>A pre-set level that an intention must meet or exceed to be selected.</p>
+<p>The decision threshold is the probability the most likely intention must <strong>exceed</strong> to be recognized. The inference
+always computes a probability for every intention (normalized, so they sum up to 1). If even the most likely
+intention doesn't exceed the threshold, no intention is recognized, which means <em>"I am not sure"</em>.</p>
 <h4 id="importance-of-setting-it">Importance of Setting It</h4>
-<p>It ensures the system acts on intentions with a certain confidence level, reducing the chance of incorrect actions based on low-probability guesses.</p>
+<p>A robot that acts on an intention should be confident enough: a wrong action is often worse than waiting for more
+context. A high threshold (e.g. 0.8) makes the system cautious, a low one (e.g. 0.3) makes it react to weak
+evidence. With many intentions the probabilities are spread over more options, so the threshold usually needs to be
+lower than with two intentions.</p>
 <h4 id="how-to-set">How to Set</h4>
-<p>In the <code>Decision threshold</code> setting:
-1. Enter a numeric value.
-2. Adjust to balance responsiveness and accuracy. </p>
-<p><img alt="GUI" src="../images/decision_threshold.gif" title="Decision Threshold" /></p>
+<p>Enter a number between 0 and 1 in <em>Decision threshold</em>. Try the <a href="#example-scenario">example</a> with different
+evidence to find a value that fits your scenario.</p>
+<p><img alt="Decision threshold" src="../images/web_threshold.png" title="Decision threshold" /></p>
 <h3 id="combined-context-influence">Combined Context Influence</h3>
-<p>In complex decision-making circumstances, the end result is shaped by the interaction of numerous contexts rather than by a single context in isolation. To effectively simulate the complexity in the real world, the Combined Context Influence is required. </p>
+<p>Influence values describe each context on its own, and their probabilities are averaged. Sometimes only the
+<strong>combination</strong> of instantiations says something, e.g. the speech command <code>pickup</code> <em>while the human is working</em>
+is strong evidence for <code>pick up tool</code>, much stronger than the average of both.</p>
+<p>A combined context influence sets one influence value for a combination of instantiations of two or more contexts.
+If all of them are observed (or assumed during inference), the combined value replaces the single influence
+values of these contexts. If several combinations match, the first one counts.</p>
 <h4 id="configuring-combined-context-influence">Configuring Combined Context Influence</h4>
-<p>In the <code>new combined context influence</code> setting.
-1. Input pairs of contexts that interact with each other.
-2. Assign a numerical value (influence value) to these pairs to indicate their combined effect on an intention.</p>
-<p><img alt="GUI" src="../images/combined_context.gif" title="Combined Context Influence" /></p>
+<p>In <em>Combined influences</em>, <strong>Add</strong> opens a dialog:
+1. Choose the intention.
+2. Choose two or more contexts and one instantiation for each (<strong>+ Context</strong> adds another one).
+3. Choose the influence value of the combination.</p>
+<p>The list shows all combined influences, the trash icon removes one.</p>
+<p><img alt="Combined influence dialog" src="../images/web_combined_dialog.png" title="Adding a combined influence" /></p>
 <h3 id="graphical-representation">Graphical Representation</h3>
+<p>The <em>Graph</em> shows the two-layer Bayesian net of your config: contexts on the left, intentions on the right.</p>
 <ul>
-<li><strong>Visual Overview</strong>: </li>
-<li>
-<p>The graph provides a visual representation of how different contexts and intentions are interconnected.</p>
-</li>
-<li>
-<p><strong>Nodes</strong>: </p>
-</li>
-<li>
-<p>Each node represents a context or intention. Context is displayed on the left side and intentions are displayed on the right side. Context nodes are linked to intentions they influence.</p>
-</li>
-<li>
-<p><strong>Edges</strong>: </p>
-</li>
-<li>Edges between nodes show the relationships and their strength, based on the influence values set in the previous steps. The higher the influence, the thicker and greener the edge.</li>
+<li><strong>Edges</strong> connect every context with every intention. The thicker and the more orange an edge, the higher the
+  influence. For a folded context the edge shows the mean influence of its instantiations; an influence of 0 is a
+  thin dashed line.</li>
+<li><strong>Clicking a context</strong> unfolds it into its instantiations, each with its own edges, and selects the context in the
+  <em>Influences</em> table. Click it again to fold it.</li>
+<li><strong>Clicking an intention</strong> highlights its column in the <em>Influences</em> table, clicking an edge selects both.</li>
+<li><strong>Combined influences</strong> are the dashed boxes in the middle: dashed lines come from the combined contexts, the edge
+  to the intention shows the combined influence value.</li>
+<li>Use the buttons in the corner to zoom or to fit the graph.</li>
 </ul>
-<h4 id="interacting-with-the-graph">Interacting with the Graph</h4>
-<ul>
-<li><strong>Expanding Contexts</strong>: </li>
-<li>
-<p>Upon clicking, a context node unfolds to reveal specific instantiations, each connected to relevant intentions.</p>
-</li>
-<li>
-<p><strong>Adjusting Views</strong>: </p>
-</li>
-<li>
-<p>The graph can be zoomed in or out for a more detailed or broader view, respectively.</p>
-</li>
-<li>
-<p><strong>Dynamic Interaction</strong>: </p>
-</li>
-<li>As you adjust influence values or apriori probabilities in the settings, these changes are reflected in the graph in real-time, offering immediate visual feedback.</li>
-</ul>
-<p><img alt="GUI" src="../images/graph.gif" title="Graphical representation" /></p>
-<p>This graphical representation is allowing for a clear and intuitive understanding of how various contexts and intentions are interrelated. It aids in verifying and adjusting configurations, ensuring that the system accurately interprets intentions based on the given context.</p>
+<p><img alt="Graph" src="../images/web_graph.png" title="The graph with an unfolded context" /></p>
+<p>The graph changes with every edit, so you can check at a glance which contexts drive which intention.
+The Qt configurator has a similar graph.</p>
 <h2 id="example-scenario">Example Scenario</h2>
 <p>Here we describe an example scenario which can be loaded from the file <code>small_example.yml</code>. We have a very small scenario where a human can be assisted by a robot. In this scenario the human either wants the robot to pick up a tool or hand over a tool. What the robot can perceive is if the human is holding an object, the human activity and a speech command from the human.</p>
 <h3 id="1-context-setup">1. Context Setup:</h3>
@@ -1020,7 +1087,25 @@ If context values are continuous, discretizer functions can be used to create di
 <li>Most of the cases can be covered by just setting the influence values for all Context-Intention pairs. But in some cases there is the need to give a very specific influence to the combined occurrence of two or more contexts. In this example we decided to give the case where the human is <code>working</code> while giving the <code>speech command</code> <code>pick up tool</code> a extra high influence to make sure that in this case the robot is very certain that it needs to assist the human to pick up the tool.</li>
 </ul>
 <h3 id="4-outcome">4. Outcome:</h3>
-<p>To test the inference on your config you can use the script <code>small_example_from_yml.py</code> in an interactive Jupyter Shell. Try to change the evidence to see if your configuration describes the scenario as expected.</p>
+<p>Load the example in the web GUI (<strong>Load example</strong>) and open the <em>Live inference</em> tab. Choose <code>pickup</code> as
+speech command: <code>pick up tool</code> gets 77 %, which is below the threshold of 80 %. Add that the human is <code>working</code>
+and holding an object: the combined influence lifts <code>pick up tool</code> to 95 % and it is recognized. Try other evidence
+to see if your configuration describes the scenario as expected, see <a href="../WebGUI/#live-inference">Live inference</a>.</p>
+<p>You can do the same in Python with the script <code>small_example_from_yml.py</code>, e.g. in an interactive Jupyter shell.</p>
+<p>In your own code, load the config and create an inference for it:</p>
+<pre><code class="language-python">from cobair.model import Config
+from cobair.infer import Inference
+
+inference = Inference(Config.load('my_scenario.yml'))
+intention, decision_threshold, probabilities = inference.infer({
+    'speech commands': 'pickup',
+    'human holding object': True,
+})
+</code></pre>
+<p>Contexts you don't observe can be left out, their apriori probabilities are used instead.
+If a context is observed as a continuous value, bind a discretization function which maps the value
+to one of the instantiations, e.g.
+<code>inference.bind_discretization_function('human holding object', lambda distance: distance &lt; 0.2)</code>.</p>
 <p>This example shows how the CoBaIR can assess different contextual factors and their influence on possible intentions, thereby interpreting and acting upon human intentions in a dynamic environment.</p>
 
 
@@ -1071,10 +1156,10 @@ If context values are continuous, discretizer functions can be used to create di
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": [], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": [], "search": "../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      <script src="../assets/javascripts/bundle.c21346df.min.js"></script>
       
     
   </body>

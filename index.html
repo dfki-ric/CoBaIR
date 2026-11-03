@@ -10,14 +10,14 @@
       
       
       
-        <link rel="next" href="API/">
+        <link rel="next" href="WebGUI/">
       
       
         
       
       
       <link rel="icon" href="images/logo_no_text.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.0">
     
     
       
@@ -25,10 +25,10 @@
       
     
     
-      <link rel="stylesheet" href="assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="assets/stylesheets/main.57a0d79d.min.css">
       
         
-        <link rel="stylesheet" href="assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="assets/stylesheets/palette.fb2fffe2.min.css">
       
       
 
@@ -281,7 +281,18 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Install">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Usage">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -301,10 +312,21 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#graphical-user-interface" class="md-nav__link">
+  <a href="#web-gui" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Graphical User Interface
+        Web GUI
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#qt-graphical-user-interface" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Qt Graphical User Interface
       
     </span>
   </a>
@@ -376,6 +398,60 @@
   
 </nav>
       
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="WebGUI/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Web GUI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="Migration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Migrating from 4.x
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -480,7 +556,18 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Install">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Usage
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Usage">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -500,10 +587,21 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#graphical-user-interface" class="md-nav__link">
+  <a href="#web-gui" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Graphical User Interface
+        Web GUI
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#qt-graphical-user-interface" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Qt Graphical User Interface
       
     </span>
   </a>
@@ -588,8 +686,19 @@
 
 
 
-<!-- BEGIN INCLUDE ../README.md -->
 <h1 id="_1"><img alt="CoBaIR" src="images/logo.svg" /></h1>
+<p><a href="https://github.com/dfki-ric/CoBaIR/actions/workflows/tests.yml"><img alt="Tests" src="https://github.com/dfki-ric/CoBaIR/actions/workflows/tests.yml/badge.svg" /></a>
+<a href="https://github.com/dfki-ric/CoBaIR/actions/workflows/build.yml"><img alt="Build" src="https://github.com/dfki-ric/CoBaIR/actions/workflows/build.yml/badge.svg" /></a>
+<a href="https://github.com/dfki-ric/CoBaIR/actions/workflows/docs.yml"><img alt="Docs" src="https://github.com/dfki-ric/CoBaIR/actions/workflows/docs.yml/badge.svg" /></a>
+<a href="https://github.com/dfki-ric/CoBaIR/actions/workflows/quality.yml"><img alt="Quality" src="https://github.com/dfki-ric/CoBaIR/actions/workflows/quality.yml/badge.svg" /></a></p>
+<!-- badges:start -->
+<p><a href="https://github.com/dfki-ric/CoBaIR/actions/workflows/quality.yml"><img alt="Ruff linting issues" src="https://img.shields.io/badge/Ruff%20linting%20issues-594%20issues-yellow" /></a>
+<a href="https://github.com/dfki-ric/CoBaIR/actions/workflows/quality.yml"><img alt="Docstring coverage" src="https://img.shields.io/badge/Docstring%20coverage-98.7%25-brightgreen" /></a></p>
+<!-- badges:end -->
+<!-- coverage-badge:start -->
+<p><a href="https://github.com/dfki-ric/CoBaIR/actions/workflows/tests.yml"><img alt="Test coverage" src="https://img.shields.io/badge/Test%20coverage-84.2%25-green" /></a></p>
+<!-- coverage-badge:end -->
+
 <p>CoBaIR is a python library for <strong>Co</strong>ntext <strong>Ba</strong>sed <strong>I</strong>ntention <strong>R</strong>ecognition.
 It provides the means to infer an intention from given context.
 An intention is a binary value e.g. <code>repair pipe</code> that can either be present or not. Only one intention can be present at a time.
@@ -603,20 +712,73 @@ From the inferred intention in a HRI scenario the robot can perform correspondin
 <li><a href="https://ieeexplore.ieee.org/document/10309581">Full Paper for IEEE RO-MAN Conference</a></li>
 </ul>
 <h2 id="install">Install</h2>
-<pre><code class="language-bash">pip install CoBaIR
+<p>CoBaIR needs Python &gt;= 3.10, the web GUI needs Python &gt;= 3.11. Install it with the extras you need:</p>
+<pre><code class="language-bash">pip install &quot;cobair[all]&quot;
 </code></pre>
-<p>You can install the library from your local copy after cloning this repo with pip using <code>pip install .</code>
-or install the newest experimental features from the <code>develop</code> branch with <code>pip install git+https://github.com/dfki-ric/CoBaIR.git@develop</code></p>
+<table>
+<thead>
+<tr>
+<th>extra</th>
+<th>contains</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>cobair</code></td>
+<td>the config model only (pyyaml)</td>
+</tr>
+<tr>
+<td><code>cobair[infer]</code></td>
+<td>inference with the Bayesian net (pgmpy, bnlearn), needed for <code>cobair.bayes_net</code></td>
+</tr>
+<tr>
+<td><code>cobair[qt]</code></td>
+<td>the Qt configurator (PyQt5, pyqtgraph)</td>
+</tr>
+<tr>
+<td><code>cobair[web]</code></td>
+<td>the web GUI (Reflex, Python &gt;= 3.11)</td>
+</tr>
+<tr>
+<td><code>cobair[all]</code></td>
+<td>everything above (Python &gt;= 3.11, use <code>cobair[infer,qt]</code> on Python 3.10)</td>
+</tr>
+</tbody>
+</table>
+<p>You can install the library from your local copy after cloning this repo with pip using <code>pip install ".[all]"</code>
+or install the newest unreleased features from the <code>main</code> branch with
+<code>pip install "cobair[all] @ git+https://github.com/dfki-ric/CoBaIR.git@main"</code></p>
+<h2 id="usage">Usage</h2>
+<pre><code class="language-python">from cobair.model import Config
+from cobair.infer import Inference
+
+config = Config.load('small_example.yml')
+inference = Inference(config)
+intention, decision_threshold, probabilities = inference.infer({'speech commands': 'pickup'})
+</code></pre>
+<p><code>cobair.model.Config</code> holds the scenario and has methods to edit, validate, load and save it.
+<code>cobair.infer.Inference</code> infers the intentions for given evidence. See the <a href="https://dfki-ric.github.io/CoBaIR/API/">API documentation</a>.</p>
+<p>The 4.x API (<code>from CoBaIR.bayes_net import BayesNet, load_config</code>) still works until 6.0.0, but raises a
+<code>DeprecationWarning</code>.</p>
 <h3 id="known-issues">Known Issues</h3>
 <p>On some Linux Distros there seems to be a problem with a shared library. <a href="https://stackoverflow.com/questions/71010343/cannot-load-swrast-and-iris-drivers-in-fedora-35/72200748#72200748">This Solutions</a> suggests to <code>export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6</code> which works on Ubuntu 22.04.</p>
-<h2 id="graphical-user-interface">Graphical User Interface</h2>
-<p><img alt="GUI" src="images/simpleConfig.gif" title="A simple configuration in the GUI" /></p>
-<p>To make the configuration of a scenario easier we provide a Graphical User Interface(GUI). The GUI can be started with</p>
-<pre><code class="language-bash">python start_configurator.py
+<h2 id="web-gui">Web GUI</h2>
+<p>The web GUI is the easiest way to create and test a configuration:</p>
+<pre><code class="language-bash">pip install &quot;cobair[web]&quot;
+cobair-web
+</code></pre>
+<p>It opens <a href="http://localhost:8000">http://localhost:8000</a> in your browser, see the <a href="https://dfki-ric.github.io/CoBaIR/WebGUI/">Web GUI documentation</a>.</p>
+<p><img alt="Web GUI" src="images/web_gui.png" title="The CoBaIR web GUI" /></p>
+<h2 id="qt-graphical-user-interface">Qt Graphical User Interface</h2>
+<p><img alt="GUI" src="images/simpleConfig.gif" title="A simple configuration in the Qt GUI" /></p>
+<p>The Qt configurator is kept in maintenance mode (no new features).
+Install it with <code>pip install "cobair[qt]"</code> and start it with</p>
+<pre><code class="language-bash">cobair-qt
 </code></pre>
 <p>if you want to start the GUI with a loaded config use</p>
-<pre><code class="language-bash">python start_configurator.py -f config.yml
+<pre><code class="language-bash">cobair-qt -f config.yml
 </code></pre>
+<p>From a source checkout, <code>python start_configurator.py [-f config.yml]</code> does the same.</p>
 <h2 id="tutorial">Tutorial</h2>
 <p>For a step-by-step guide on how to use CoBaIR, check out our <a href="Tutorial/">Tutorial</a>.</p>
 <h2 id="documentation">Documentation</h2>
@@ -625,8 +787,8 @@ or install the newest experimental features from the <code>develop</code> branch
 <p>In the bayesian approach CoBaIR uses a two-layer Bayesian Net of the following structure.
 <img alt="two-layer Bayesian Net" src="images/2layerbayesian.svg" /></p>
 <h2 id="config-format">Config Format</h2>
-<p>Configs will be saved in yml files. For convenience the is a configurator which can be started with</p>
-<pre><code class="language-bash">python start_configurator.py
+<p>Configs will be saved in yml files. For convenience there is a configurator which can be started with</p>
+<pre><code class="language-bash">cobair-qt
 </code></pre>
 <h3 id="bayesian-approach_1">Bayesian Approach</h3>
 <p>The configuration file for a two layer bayesian net for context based intention recognition follows the given format:</p>
@@ -671,16 +833,19 @@ decision_threshold: float
 
 </code></pre>
 <h1 id="how-to-contribute">How to contribute</h1>
-<p>If you find any Bugs or want to contribute/suggest a new feature you can create a Merge Request / Pull Request or contact me directly via adrian.auer@dfki.de</p>
+<p>If you find any Bugs or want to contribute/suggest a new feature you can create an <a href="https://github.com/dfki-ric/CoBaIR/issues">Issue</a> or a Pull Request or contact me directly via adrian.auer@dfki.de.
+See <a href="https://github.com/dfki-ric/CoBaIR/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a> for the development and versioning workflow.</p>
 <h2 id="run-tests">Run tests</h2>
 <p>Tests are implemented with <a href="https://docs.pytest.org/en/7.1.x/">pytest</a>.
-To install test dependencies you need to run</p>
-<pre><code class="language-bash">pip install -r requirements/test_requirements.txt
+All dependencies are declared in <code>pyproject.toml</code>; the development tools are
+<a href="https://packaging.python.org/en/latest/specifications/dependency-groups/">dependency groups</a>
+(<code>test</code>, <code>docs</code>, <code>lint</code>, <code>e2e</code>), which need pip &gt;= 25.1. Install the test dependencies with</p>
+<pre><code class="language-bash">pip install --group test -e &quot;.[all]&quot;
 </code></pre>
 <p>Then you can run</p>
 <pre><code class="language-bash">python -m pytest tests/
 </code></pre>
-<p>You can as well see the test report for a specific commit in gitlab under <a href="hhttps://git.hb.dfki.de/kimmi_sf/implementation/CoBaIR/-/pipelines/39889/test_report">pipeline-&gt;Tests</a></p>
+<p>You can as well see the test report for a specific commit in the <a href="https://github.com/dfki-ric/CoBaIR/actions/workflows/tests.yml">Tests workflow runs</a> (artifact <code>test-reports-py&lt;version&gt;</code>)</p>
 <h3 id="coverage">Coverage</h3>
 <p>If you want to see coverage for the tests you can run</p>
 <pre><code class="language-bash">coverage run -m pytest tests/
@@ -691,13 +856,33 @@ To install test dependencies you need to run</p>
 <p>or</p>
 <pre><code class="language-bash">coverage html
 </code></pre>
-<p>You can as well see the coverage for a specific job in gitlab under <a href="https://git.hb.dfki.de/kimmi_sf/implementation/CoBaIR/-/jobs">jobs</a></p>
+<p>You can as well see the coverage for a specific run in the job summary of the <a href="https://github.com/dfki-ric/CoBaIR/actions/workflows/tests.yml">Tests workflow runs</a></p>
 <p>To show results of the coverage analysis.</p>
+<h2 id="code-quality">Code quality</h2>
+<p>The <a href="https://github.com/dfki-ric/CoBaIR/actions/workflows/quality.yml">Quality workflow</a> runs on every Pull Request into <code>main</code> and on pushes to <code>main</code> and counts
+<a href="https://docs.astral.sh/ruff/">ruff</a> linting issues and the docstring coverage measured by
+<a href="https://interrogate.readthedocs.io/">interrogate</a>. Both tools are configured in <code>pyproject.toml</code> and pinned in its
+<code>lint</code> dependency group. Run them locally with</p>
+<pre><code class="language-bash">pip install --group lint
+ruff check .
+interrogate -c pyproject.toml .
+</code></pre>
+<p>The workflow works as a ratchet against <code>.github/quality-baseline.json</code>: it fails if the number of ruff issues goes up
+or the docstring coverage goes down. If the numbers improved, lower <code>ruff_issues</code> / raise <code>doc_coverage</code> in the
+baseline in the same Pull Request to lock the improvement in. The badges at the top of this README are only
+committed by the workflow on <code>main</code>; on other branches and Pull Requests the numbers are shown in the job summary.</p>
+<p>The test coverage badge comes from the <code>coverage</code> job of the <a href="https://github.com/dfki-ric/CoBaIR/actions/workflows/tests.yml">Tests workflow</a>.
+It combines the coverage of the <code>cobair</code> package from the Python 3.12 tests with all extras and from the end-to-end tests,
+including the <code>cobair-web</code> server they start (configured in <code>[tool.coverage.*]</code> of <code>pyproject.toml</code>). It is only
+shown, not enforced. Measure it locally with</p>
+<pre><code class="language-bash">pip install -e &quot;.[all]&quot;
+coverage run -m pytest tests/ &amp;&amp; coverage combine &amp;&amp; coverage report
+</code></pre>
 <h2 id="build-docu">Build docu</h2>
 <p>Documentation is implemented with the <a href="https://squidfunk.github.io/mkdocs-material/">material theme</a> for <a href="https://www.mkdocs.org/">mkdocs</a>.</p>
 <h3 id="dependencies">Dependencies</h3>
 <p>Install all dependencies for building the docu with</p>
-<pre><code class="language-bash">pip install -r requirements/doc_requirements.txt
+<pre><code class="language-bash">pip install --group docs -e &quot;.[infer,qt]&quot;
 </code></pre>
 <h3 id="build">Build</h3>
 <p>Build the docu with</p>
@@ -736,7 +921,6 @@ CoBaIR been used and/or developed in the <a href="https://robotik.dfki-bremen.de
 <p align="center">
 <img src="https://raw.githubusercontent.com/oarriaga/altamira-data/master/images/funding_partners.png" width="1200">
 </p>
-<!-- END INCLUDE -->
 
 
 
@@ -786,10 +970,10 @@ CoBaIR been used and/or developed in the <a href="https://robotik.dfki-bremen.de
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": ".", "features": [], "search": "assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": ".", "features": [], "search": "assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="assets/javascripts/bundle.d7400e89.min.js"></script>
+      <script src="assets/javascripts/bundle.c21346df.min.js"></script>
       
     
   </body>
