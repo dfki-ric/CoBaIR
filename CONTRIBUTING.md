@@ -11,7 +11,7 @@ Thanks for your interest in CoBaIR! Bugs, feature requests and questions are wel
 - On every Pull Request the [Tests](https://github.com/dfki-ric/CoBaIR/actions/workflows/tests.yml) workflow runs the tests for all supported Python
   versions (including the headless Qt tests) and the end-to-end tests of the web GUI (Playwright, `tests/web`),
   [Build](https://github.com/dfki-ric/CoBaIR/actions/workflows/build.yml) builds the package (with the web GUI frontend, served once from the installed
-  wheel) and smoke-tests the Hugging Face Space image, and [Docs](https://github.com/dfki-ric/CoBaIR/actions/workflows/docs.yml) builds the docu
+  wheel) and smoke-tests the Docker image of the web GUI (`deploy/hf-space`), and [Docs](https://github.com/dfki-ric/CoBaIR/actions/workflows/docs.yml) builds the docu
   (`--strict`).
   The [Quality workflow](https://github.com/dfki-ric/CoBaIR/actions/workflows/quality.yml) counts ruff linting issues
   and the docstring coverage and fails if one of them got worse than `.github/quality-baseline.json`
@@ -58,7 +58,3 @@ A version is created by publishing a GitHub Release on `main`.
      environment `pypi`), or the secret `PYPI_API_TOKEN` if it is set,
    - the [docu workflow](.github/workflows/publishDocu.yml), which publishes the docu of this version on
      [GitHub Pages](https://dfki-ric.github.io/CoBaIR/).
-   - the [Space workflow](.github/workflows/deploy-space.yml), which deploys the web GUI of this version to the
-     Hugging Face Docker Space named in the repository variable `HF_SPACE` (needs the secret `HF_TOKEN`).
-     The Space is built from `deploy/hf-space`; the [Build](https://github.com/dfki-ric/CoBaIR/actions/workflows/build.yml)
-     workflow builds and smoke-tests its Docker image on every Pull Request.

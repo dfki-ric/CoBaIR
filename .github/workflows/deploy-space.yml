@@ -1,9 +1,8 @@
 name: deploy_space
-# Deploys the web GUI to the Hugging Face Docker Space on every published GitHub Release (#208).
+# Deploys the web GUI to a Hugging Face Docker Space, only started manually: Docker Spaces need
+# Hugging Face PRO, so releases are not deployed until a host is chosen (#208).
 # Needs the secret HF_TOKEN and the variable HF_SPACE (e.g. dfki-ric/cobair-editor), see #200.
 on:
-  release:
-    types: [published]
   workflow_dispatch:
 
 jobs:
