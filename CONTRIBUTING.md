@@ -42,17 +42,20 @@ The new version is determined by the most significant change since the last rele
 
 ## Releasing
 
-A version is created by tagging a commit on `main`.
+A version is created by publishing a GitHub Release on `main`.
 
 1. Open a Pull Request that moves the `Unreleased` entries in [CHANGELOG.md](CHANGELOG.md) to a section for the
    new version, e.g. `## 4.1.0 - 2026-11-02`.
 2. Before merging: check that all tests pass and perform the manual tests of the Qt configurator documented in
    [tests/gui_test_protocol.md](tests/gui_test_protocol.md). The web GUI is covered by the end-to-end tests.
-3. After merging, create a GitHub Release on `main` with a new tag named exactly like the version
-   (e.g. `4.1.0`, no `v` prefix) and the changelog of the version as description.
-4. The tag triggers
-   - the [release workflow](.github/workflows/release.yml), which builds the package with the tag as version
-     and uploads it to [PyPI](https://pypi.org/project/cobair/),
+3. After merging, create a GitHub Release (Releases -> Draft a new release) on `main` with a new tag named like the
+   version with a `v` prefix (e.g. `v4.1.0`; the package version is `4.1.0`) and the changelog of the version as
+   description, then publish it.
+4. Publishing the release triggers
+   - the [release workflow](.github/workflows/release.yml), which builds the package with the tag as version,
+     uploads it to [PyPI](https://pypi.org/project/cobair/) and attaches the wheel and sdist to the release.
+     It uses PyPI Trusted Publishing (publisher: repository `dfki-ric/CoBaIR`, workflow `release.yml`,
+     environment `pypi`), or the secret `PYPI_API_TOKEN` if it is set,
    - the [docu workflow](.github/workflows/publishDocu.yml), which publishes the docu of this version on
      [GitHub Pages](https://dfki-ric.github.io/CoBaIR/).
    - the [Space workflow](.github/workflows/deploy-space.yml), which deploys the web GUI of this version to the
